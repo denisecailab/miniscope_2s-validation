@@ -7,7 +7,7 @@
         "time"
     ],
     "experimentName": "cv_pilot0",
-    "animalName": "cv07",
+    "animalName": "m15",
     "recordLengthinSeconds": 300,
 
     "COMMENT_devices": "'devices' defines all input and output devices to the software.",
@@ -30,9 +30,9 @@
                 "windowScale": 1,
                 "windowX": 800,
                 "windowY": 100,
-                "gain": "Low", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
-                "ewl": 50,
-                "led0": 10,
+                "gain": "High", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
+                "ewl": 0,
+                "led0": 0,
                 "frameRate": "30FPS"
             },
             "miniscope_side": {
@@ -50,9 +50,9 @@
                 "windowScale": 1,
                 "windowX": 800,
                 "windowY": 100,
-                "gain": "Low", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
-                "ewl": 50,
-                "led0": 10,
+                "gain": "High", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
+                "ewl": 40,
+                "led0": 15,
                 "frameRate": "30FPS"
             }
         },

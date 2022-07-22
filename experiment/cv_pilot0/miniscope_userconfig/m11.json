@@ -7,7 +7,7 @@
         "time"
     ],
     "experimentName": "cv_pilot0",
-    "animalName": "cv11",
+    "animalName": "m11",
     "recordLengthinSeconds": 300,
 
     "COMMENT_devices": "'devices' defines all input and output devices to the software.",

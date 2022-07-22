@@ -7,7 +7,7 @@
         "time"
     ],
     "experimentName": "cv_pilot0",
-    "animalName": "cv15",
+    "animalName": "m16",
     "recordLengthinSeconds": 300,
 
     "COMMENT_devices": "'devices' defines all input and output devices to the software.",
@@ -51,7 +51,7 @@
                 "windowX": 800,
                 "windowY": 100,
                 "gain": "High", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
-                "ewl": 40,
+                "ewl": 17,
                 "led0": 15,
                 "frameRate": "30FPS"
             }
