@@ -73,6 +73,7 @@ void loop() {
     incomingByte = Serial.read();
     if (incomingByte == 114) {
       rwCount = 0;
+      lastDispense = 255;
       Serial.println("Reward Reset");
     }
   }
