@@ -50,3 +50,9 @@ date,time,type,animal,name,data,comment
 20220728,10:59,habituation,m12,hab6,reward: 17,
 20220728,11:13,habituation,m15,hab6,reward: 5,
 20220728,11:28,habituation,m16,hab6,reward: 16,
+20220729,10:47,habituation,m09,hab7,reward: 29,no cart during transport
+20220729,11:00,habituation,m10,hab7,reward: 19,no cart during transport
+20220729,11:30,habituation,m11,hab7,reward: 13,no cart during transport; one of the port was not working in the later half of the session
+20220729,11:40,habituation,m12,hab7,reward: 16,
+20220729,12:00,habituation,m15,hab7,reward: 7,
+20220729,12:20,habituation,m16,hab7,reward: 13,
