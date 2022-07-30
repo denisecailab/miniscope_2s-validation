@@ -56,3 +56,9 @@ date,time,type,animal,name,data,comment
 20220729,11:40,habituation,m12,hab7,reward: 16,
 20220729,12:00,habituation,m15,hab7,reward: 7,
 20220729,12:20,habituation,m16,hab7,reward: 13,
+20220730,12:41,habituation,m09,hab8,reward: 31,
+20220730,12:56,habituation,m10,hab8,reward: 25,
+20220730,13:10,habituation,m11,hab8,reward: 16,ports not working in the later half of the session
+20220730,13:27,habituation,m12,hab8,reward: 17,
+20220730,13:40,habituation,m15,hab8,reward: 10,
+20220730,13:55,habituation,m16,hab8,reward: 22,
