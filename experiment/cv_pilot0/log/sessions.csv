@@ -74,3 +74,9 @@ date,time,type,animal,name,data,comment
 20220801,13:12,habituation,m12,hab10,reward: 21,
 20220801,13:26,habituation,m15,hab10,reward: 21,
 20220801,13:40,habituation,m16,hab10,reward: 23,
+20220802,11:00,habituation,m09,rec0,m09/2022_08_02/11_00_12,reward: 29
+20220802,11:26,habituation,m10,rec0,m10/2022_08_02/11_26_05,changed ewl to -22; reward: 9
+20220802,11:44,habituation,m11,rec0,m11/2022_08_02/11_44_35,changed led to 16; reward: 14
+20220802,12:00,habituation,m12,rec0,m12/2022_08_02/12_01_00,reward: 10
+20220802,12:19,habituation,m15,rec0,m15/2022_08_02/12_19_25,changed ewl to 35; reward: 1
+20220802,12:30,habituation,m16,rec0,m16/2022_08_02/12_36_24,reward: 3
