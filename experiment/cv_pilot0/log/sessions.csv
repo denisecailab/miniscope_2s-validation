@@ -80,3 +80,15 @@ date,time,type,animal,name,data,comment
 20220802,12:00,recording,m12,rec0,m12/2022_08_02/12_01_00,reward: 10
 20220802,12:19,recording,m15,rec0,m15/2022_08_02/12_19_25,changed ewl to 35; reward: 1
 20220802,12:30,recording,m16,rec0,m16/2022_08_02/12_36_24,reward: 3
+20220803,11:44,habituation,m09,hab11,,reward: 21
+20220803,11:59,habituation,m10,hab11,,reward: 18
+20220803,12:13,habituation,m11,hab11,,reward: 18
+20220803,12:28,habituation,m12,hab11,,reward: 20
+20220803,12:45,habituation,m15,hab11,,reward: 22
+20220803,12:58,habituation,m16,hab11,,reward: 21
+20220804,11:10,recording,m09,rec1,m09/2022_08_04/11_10_47,reward: 26
+20220804,11:30,recording,m10,rec1,m10/2022_08_04/11_27_45,reward: 0; ports not working
+20220804,11:50,recording,m11,rec1,m11/2022_08_04/11_48_43,reward: 4; ports not working
+20220804,12:10,recording,m12,rec1,m12/2022_08_04/12_10_19,reward: 1; ports not working
+20220804,12:30,recording,m15,rec1,m15/2022_08_04/12_34_43,reward: 6
+20220804,12:55,recording,m16,rec1,m16/2022_08_04/12_55_24,reward: 16
