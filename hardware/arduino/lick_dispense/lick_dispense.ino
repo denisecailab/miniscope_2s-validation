@@ -10,7 +10,9 @@ int sensors[] = {0, 1};
 int valves[] = {2, 3};
 
 unsigned long tstart;
+unsigned long treset;
 unsigned long pumpOpen = 400;
+unsigned long resetInterval = 1000;
 bool isRewarding = false;
 int rewardingPort = 0;
 byte lastDispense = 255;
@@ -21,6 +23,12 @@ int nSensors = sizeof(sensors) / sizeof(int);
 Adafruit_MPR121 cap = Adafruit_MPR121();
 int rwCount = 0;
 int incomingByte = 0;
+
+void reset_sensor() {
+    // Clean the I2C Bus
+    pinMode(A5, OUTPUT);
+    pinMode(A5, INPUT);
+}
 
 void setup() {
   Serial.begin(115200);
@@ -44,6 +52,8 @@ void setup() {
   }
 
   cap.setThresholds(3, 2);
+
+  treset = millis();
 
 }
 
@@ -76,5 +86,10 @@ void loop() {
       lastDispense = 255;
       Serial.println("Reward Reset");
     }
+  }
+
+  if (millis() - treset > resetInterval){
+    reset_sensor();
+    treset = millis();
   }
 }
