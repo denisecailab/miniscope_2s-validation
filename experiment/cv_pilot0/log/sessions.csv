@@ -92,3 +92,15 @@ date,time,type,animal,name,data,comment
 20220804,12:10,recording,m12,rec1,m12/2022_08_04/12_10_19,reward: 1; ports not working
 20220804,12:30,recording,m15,rec1,m15/2022_08_04/12_34_43,reward: 6
 20220804,12:55,recording,m16,rec1,m16/2022_08_04/12_55_24,reward: 16
+20220806,11:42,recording,m09,rec2,m09/2022_08_06/11_42_11,reward: 22
+20220806,12:11,recording,m10,rec2,m10/2022_08_06/12_11_28,reward: 6
+20220806,12:28,recording,m11,rec2,m11/2022_08_06/12_27_57,reward: 20
+20220806,13:01,recording,m12,rec2,m12/2022_08_06/13_01_16,changed ewl to 47; reward: 7
+20220806,13:20,recording,m15,rec2,m15/2022_08_06/13_20_49,reward: 9
+20220806,13:49,recording,m16,rec2,m16/2022_08_06/13_49_03,reward: 5
+20220807,13:50,recording,m09,rec3,,changed led to 28; reward: 15
+20220807,14:17,recording,m10,rec3,,changed ewl to -88; reward: 13
+20220807,14:35,recording,m11,rec3,,changed ewl to 34; changed top gain to 2; reward: 21
+20220807,15:00,recording,m12,rec3,,changed ewl to 73; reward: 13
+20220807,15:15,recording,m15,rec3,,reward: 11
+20220807,,recording,m16,rec3,,reward: 16
