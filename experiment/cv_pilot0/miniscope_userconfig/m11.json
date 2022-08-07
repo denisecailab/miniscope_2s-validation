@@ -30,7 +30,7 @@
                 "windowScale": 1,
                 "windowX": 800,
                 "windowY": 100,
-                "gain": "High", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
+                "gain": "Medium", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
                 "ewl": 0,
                 "led0": 0,
                 "frameRate": "30FPS"
@@ -51,7 +51,7 @@
                 "windowX": 800,
                 "windowY": 100,
                 "gain": "High", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
-                "ewl": 44,
+                "ewl": 34,
                 "led0": 16,
                 "frameRate": "30FPS"
             }
