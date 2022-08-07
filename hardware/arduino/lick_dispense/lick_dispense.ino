@@ -26,16 +26,16 @@ int incomingByte = 0;
 void setup() {
   Serial.begin(115200);
 
-  while (!Serial) {
-    delay(10);
-  }
+  while (!Serial);
 
   Serial.println("Serial initialized.");
 
   // Default address is 0x5A at 5V. 
   // If tied to 3.3V it's 0x5B. 
-  if (!cap.begin(0x5A)) {
-    while(1);
+  while(1){
+    if (cap.begin(0x5A)) {
+      break;
+      }
   }
   Serial.println("Sensor found!");
 
