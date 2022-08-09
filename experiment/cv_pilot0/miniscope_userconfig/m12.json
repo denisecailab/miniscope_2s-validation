@@ -51,7 +51,7 @@
                 "windowX": 800,
                 "windowY": 100,
                 "gain": "High", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
-                "ewl": 73,
+                "ewl": 65,
                 "led0": 16,
                 "frameRate": "30FPS"
             }
