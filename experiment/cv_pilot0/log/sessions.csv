@@ -98,9 +98,21 @@ date,time,type,animal,name,data,comment
 20220806,13:01,recording,m12,rec2,m12/2022_08_06/13_01_16,changed ewl to 47; reward: 7
 20220806,13:20,recording,m15,rec2,m15/2022_08_06/13_20_49,reward: 9
 20220806,13:49,recording,m16,rec2,m16/2022_08_06/13_49_03,reward: 5
-20220807,13:50,recording,m09,rec3,,changed led to 28; reward: 15
-20220807,14:17,recording,m10,rec3,,changed ewl to -88; reward: 13
-20220807,14:35,recording,m11,rec3,,changed ewl to 34; changed top gain to 2; reward: 21
-20220807,15:00,recording,m12,rec3,,changed ewl to 73; reward: 13
-20220807,15:15,recording,m15,rec3,,reward: 11
-20220807,15:30,recording,m16,rec3,,reward: 16
+20220807,13:50,recording,m09,rec3,m09/2022_08_07/13_57_12,changed led to 28; reward: 15
+20220807,14:17,recording,m10,rec3,m10/2022_08_07/14_17_10,changed ewl to -88; reward: 13
+20220807,14:35,recording,m11,rec3,m11/2022_08_07/14_34_56,changed ewl to 34; changed top gain to 2; reward: 21
+20220807,15:00,recording,m12,rec3,m12/2022_08_07/14_59_38,changed ewl to 73; reward: 13
+20220807,15:15,recording,m15,rec3,m15/2022_08_07/15_16_53,reward: 11
+20220807,15:30,recording,m16,rec3,m16/2022_08_07/15_32_51,reward: 16
+20220808,12:09,recording,m09,rec4,m09/2022_08_08/12_09_14,reward: 34
+20220808,12:37,recording,m10,rec4,m10/2022_08_08/12_37_26,reward: 16
+20220808,13:01,recording,m11,rec4,m11/2022_08_08/13_01_44,reward: 21
+20220808,13:36,recording,m12,rec4,m12/2022_08_08/13_36_32,reward: 4
+20220808,13:56,recording,m15,rec4,m15/2022_08_08/13_56_13,reward: 7; data wasn't complete due to space issue
+20220808,14:13,recording,m16,rec4,,reward: 10; data not saved due to space issue
+20220809,12:12,recording,m09,rec5,,reward: 20; data not saved due to space issue
+20220809,12:35,recording,m10,rec5,,reward: 20; data not saved due to space issue
+20220809,13:04,recording,m11,rec5,,reward: 18; data not saved due to space issue
+20220809,13:26,recording,m12,rec5,,reward: 15; changed ewl to 65; data not saved due to space issue
+20220809,13:43,recording,m15,rec5,,reward: 18; data not saved due to space issue
+20220809,14:02,recording,m16,rec5,,reward: 17; data not saved due to space issue
