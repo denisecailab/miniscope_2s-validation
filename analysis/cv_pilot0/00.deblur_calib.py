@@ -2,9 +2,10 @@
 import os
 
 import holoviews as hv
+import matplotlib.pyplot as plt
 import torch
-from minian.utilities import load_videos
 from minian.preprocessing import remove_background_perframe
+from minian.utilities import load_videos
 from skimage import io
 from skimage.transform import resize
 
@@ -14,6 +15,8 @@ from routine.utilities import norm
 hv.notebook_extension("bokeh")
 
 IN_DPATH = "./data/bench/2022_07_23/20_03_20"
+FIG_PATH = "./figs/deblur"
+os.makedirs(FIG_PATH, exist_ok=True)
 
 #%% load data and compute calibration image
 vside = load_videos(os.path.join(IN_DPATH, "miniscope_side"), pattern=r"[0-9]+\.avi")
@@ -80,8 +83,17 @@ deblurred_top = deblur(
 )
 
 #%% plotting
-opts = {"cmap": "viridis"}
+fig, (ax0, ax1) = plt.subplots(1, 2)
+ax0.imshow(norm(im_top))
+ax1.imshow(norm(deblurred_top))
+ax0.axis("off")
+ax1.axis("off")
+ax0.set_title("calibration image")
+ax1.set_title("deblurred")
+fig.tight_layout()
+fig.savefig(os.path.join(FIG_PATH, "deblur.png"), dpi=500)
+# opts = {"cmap": "viridis"}
 # hv.Image(norm(im_side), name="before").opts(**opts) + hv.Image(norm(deblurred_side), name="after").opts(**opts)
-hv.Image(norm(im_top), name="before").opts(**opts) + hv.Image(
-    norm(deblurred_top), name="after"
-).opts(**opts)
+# hv.Image(norm(im_top), name="before").opts(**opts) + hv.Image(
+#     norm(deblurred_top), name="after"
+# ).opts(**opts)
