@@ -116,3 +116,39 @@ date,time,type,animal,name,data,comment
 20220809,13:26,recording,m12,rec5,,reward: 15; changed ewl to 65; data not saved due to space issue
 20220809,13:43,recording,m15,rec5,,reward: 18; data not saved due to space issue
 20220809,14:02,recording,m16,rec5,,reward: 17; data not saved due to space issue
+20220810,13:10,recording,m09,rec6,m09/2022_08_10/13_10_55,reward: 32
+20220810,13:37,recording,m10,rec6,m10/2022_08_10/13_37_45,reward: 20
+20220810,14:03,recording,m11,rec6,m11/2022_08_10/14_03_46,reward: 37; misfired a lot of times
+20220810,14:22,recording,m12,rec6,m12/2022_08_10/14_22_30,reward: 23
+20220810,15:02,recording,m15,rec6,m15/2022_08_10/15_02_52,reward: 16
+20220810,15:20,recording,m16,rec6,m16/2022_08_10/15_20_27,reward: 16
+20220811,16:03,recording,m09,rec7,m09/2022_08_11/16_03_54,reward: 32
+20220811,16:25,recording,m10,rec7,m10/2022_08_11/16_25_18,reward: 21
+20220811,16:44,recording,m11,rec7,m11/2022_08_11/16_44_30,reward: 28
+20220811,17:00,recording,m12,rec7,m12/2022_08_11/17_00_29,reward: 29
+20220811,17:19,recording,m15,rec7,m15/2022_08_11/17_19_53,reward: 25
+20220811,17:40,recording,m16,rec7,m16/2022_08_11/17_40_34,reward: 15
+20220812,11:37,recording,m09,rec8,m09/2022_08_12/11_37_37,reward: 29
+20220812,11:59,recording,m10,rec8,m10/2022_08_12/11_59_28 and m10/2022_08_12/12_08_05,"reward: 22; wire got supercoiled late in the recording so I had to start over, so there are  2 recordings for this animal"
+20220812,12:27,recording,m11,rec8,m11/2022_08_12/12_27_15,reward: 14
+20220812,12:46,recording,m12,rec8,m12/2022_08_12/12_46_46,reward: 23
+20220812,13:06,recording,m15,rec8,m15/2022_08_12/13_06_34,reward: 14
+20220812,13:24,recording,m16,rec8,m16/2022_08_12/13_24_01,reward: 12
+20220814,14:51,recording,m09,rec9,m09/2022_08_14/14_51_41,reward: 33
+20220814,15:11,recording,m10,rec9,m10/2022_08_14/15_11_07,reward: 32
+20220814,15:31,recording,m11,rec9,m11/2022_08_14/15_31_39,reward: 30
+20220814,15:55,recording,m12,rec9,m12/2022_08_14/15_57_32,reward: 24
+20220814,16:17,recording,m15,rec9,m15/2022_08_14/16_17_43,reward: 29
+20220814,16:31,recording,m16,rec9,m16/2022_08_14/16_31_48,reward: 19
+20220815,11:36,recording,m09,rec10,m09/2022_08_15/11_36_35,reward: 31
+20220815,11:51,recording,m10,rec10,m10/2022_08_15/11_51_38,reward: 19; wire got supercoiled after halfway point
+20220815,12:06,recording,m11,rec10,m11/2022_08_15/12_06_57,reward: 30
+20220815,12:28,recording,m12,rec10,m12/2022_08_15/12_28_23,reward: 22
+20220815,12:44,recording,m15,rec10,m15/2022_08_15/12_44_19,reward: 19
+20220815,12:57,recording,m16,rec10,m16/2022_08_15/12_57_27,reward: 17
+20220816,15:41,recording,m09,rec11,m09/2022_08_16/15_41_00,reward: 43
+20220816,16:08,recording,m10,rec11,m10/2022_08_16/16_08_20,reward: 24
+20220816,16:25,recording,m11,rec11,m11/2022_08_16/16_25_25,reward: 50; misfired quite a few times
+20220816,16:45,recording,m12,rec11,m12/2022_08_16/16_45_33,reward: 34+; clarity of image decreaed towards end of experiment for some reason
+20220816,17:12,recording,m15,rec11,m15/2022_08_16/17_12_57,reward: 23
+20220816,17:28,recording,m16,rec11,m16/2022_08_16/17_28_13,reward: 27
