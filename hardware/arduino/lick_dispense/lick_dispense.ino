@@ -10,6 +10,7 @@ int sensors[] = {0, 1};
 int valves[] = {2, 3};
 
 unsigned long tstart;
+unsigned long treset;
 unsigned long pumpOpen = 400;
 bool isRewarding = false;
 int rewardingPort = 0;
@@ -25,16 +26,16 @@ int incomingByte = 0;
 void setup() {
   Serial.begin(115200);
 
-  while (!Serial) {
-    delay(10);
-  }
+  while (!Serial);
 
   Serial.println("Serial initialized.");
 
   // Default address is 0x5A at 5V. 
   // If tied to 3.3V it's 0x5B. 
-  if (!cap.begin(0x5A)) {
-    while(1);
+  while(1){
+    if (cap.begin(0x5A)) {
+      break;
+      }
   }
   Serial.println("Sensor found!");
 
@@ -44,7 +45,6 @@ void setup() {
   }
 
   cap.setThresholds(3, 2);
-
 }
 
 void loop() {
@@ -73,6 +73,7 @@ void loop() {
     incomingByte = Serial.read();
     if (incomingByte == 114) {
       rwCount = 0;
+      lastDispense = 255;
       Serial.println("Reward Reset");
     }
   }
