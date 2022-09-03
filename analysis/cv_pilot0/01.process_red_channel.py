@@ -27,7 +27,7 @@ from routine.utilities import subset_sessions
 IN_DPATH = "./data"
 IN_MINIAN_INT_PATH = "~/var/miniscope2s-validation/minian_int"
 IN_WORKER_PATH = "~/var/miniscope2s-validation/dask-worker-space"
-IN_PARAM_FOLDER = "./process_parameters"
+IN_PARAM_FOLDER = "./process_parameters/red_channel"
 IN_SSMAP = "log/sessions.csv"
 IN_SS_SUB = r".*"
 IN_ANM_SUB = r".*"
@@ -77,7 +77,7 @@ if __name__ == "__main__":
             print("skipping {}".format(dp))
             continue
         # determine parameters
-        with open(os.path.join(IN_PARAM_FOLDER, "red_channel.yaml")) as yf:
+        with open(os.path.join(IN_PARAM_FOLDER, "generic.yaml")) as yf:
             param = yaml.full_load(yf)
         try:
             with open(os.path.join(IN_PARAM_FOLDER, "{}.yaml".format(anm))) as yf:
