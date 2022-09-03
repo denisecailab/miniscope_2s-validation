@@ -2,9 +2,10 @@ import os
 import shutil
 
 import dask.array as darr
+import holoviews as hv
 import numpy as np
 import xarray as xr
-from dask.distributed import Client, LocalCluster
+from holoviews import opts
 from minian.cnmf import (
     compute_trace,
     get_noise_fft,
@@ -16,49 +17,44 @@ from minian.cnmf import (
 from minian.initialization import initA, initC, pnr_refine, seeds_init, seeds_merge
 from minian.motion_correction import apply_transform, estimate_motion
 from minian.preprocessing import denoise, remove_background
-from minian.utilities import (
-    TaskAnnotation,
-    get_optimal_chk,
-    load_videos,
-    open_minian,
-    save_minian,
-)
-from minian.visualization import generate_videos
+from minian.utilities import get_optimal_chk, load_videos, save_minian
+from minian.visualization import generate_videos, visualize_motion, visualize_seeds
 
 from .alignment import apply_affine
+from .plotting import plotA_contour
+from .static_channel import constructA, find_seed, mergeA
 
 
 def minian_process(
     dpath,
     intpath,
     param,
-    glow_rm=True,
     return_stage=None,
     varr=None,
-    client=None,
-    n_workers=None,
     flip=False,
     tx=None,
+    video_gen=False,
 ):
     # setup
     dpath = os.path.abspath(os.path.expanduser(dpath))
     intpath = os.path.abspath(os.path.expanduser(intpath))
     shutil.rmtree(intpath, ignore_errors=True)
+    # plotting options
+    plots = dict()
+    opts_crv = opts.Curve(**{"frame_width": 700, "aspect": 2})
+    opts_tr = opts.Image(**{"frame_width": 700, "aspect": 2, "cmap": "viridis"})
+    opts_im = opts.Image(
+        **{
+            "frame_width": 400,
+            "aspect": 1,
+            "cmap": "viridis",
+            "colorbar": True,
+        }
+    )
     os.environ["OMP_NUM_THREADS"] = "1"
     os.environ["MKL_NUM_THREADS"] = "1"
     os.environ["OPENBLAS_NUM_THREADS"] = "1"
     os.environ["MINIAN_INTERMEDIATE"] = intpath
-    if client is None:
-        cluster = LocalCluster(
-            n_workers=n_workers,
-            memory_limit="4GB",
-            resources={"MEM": 1},
-            threads_per_worker=2,
-            dashboard_address="0.0.0.0:12345",
-        )
-        annt_plugin = TaskAnnotation()
-        cluster.scheduler.add_plugin(annt_plugin)
-        client = Client(cluster)
     if varr is None:
         varr = load_videos(dpath, **param["load_videos"])
     else:
@@ -79,23 +75,18 @@ def minian_process(
         overwrite=True,
     )
     varr_ref = varr.sel(param["subset"])
-    if return_stage == "load":
-        return varr
     # preprocessing
-    if glow_rm:
+    if param["glow_rm"] == "min":
         varr_min = varr_ref.min("frame").compute()
         varr_ref = varr_ref - varr_min
-    varr_ref = denoise(varr_ref, **param["denoise"])
-    if param["background_removal"]["method"] == "uniform":
+    else:
         varr_ref = (
-            remove_background(varr_ref.astype(float), **param["background_removal"])
+            remove_background(varr_ref.astype(float), **param["glow_rm"])
             .clip(0, 255)
             .astype(np.uint8)
         )
-    else:
-        varr_ref = remove_background(varr_ref, **param["background_removal"])
-    if param.get("background_removal_it2"):
-        varr_ref = remove_background(varr_ref, **param["background_removal_it2"])
+    varr_ref = denoise(varr_ref, **param["denoise"])
+    varr_ref = remove_background(varr_ref, **param["background_removal"])
     if tx is not None:
         varr_ref = xr.apply_ufunc(
             apply_affine,
@@ -107,12 +98,10 @@ def minian_process(
             dask="parallelized",
         )
     varr_ref = save_minian(varr_ref.rename("varr_ref"), dpath=intpath, overwrite=True)
-    if return_stage == "preprocessing":
-        return varr_ref
     # motion-correction
     motion = estimate_motion(varr_ref, **param["estimate_motion"])
     motion = save_minian(
-        motion.rename("motion").chunk({"frame": chk["frame"]}), **param["save_minian"]
+        motion.rename("motion").chunk({"frame": chk["frame"]}), intpath, overwrite=True
     )
     Y = apply_transform(varr_ref, motion, fill=0)
     Y_fm_chk = save_minian(Y.astype(float).rename("Y_fm_chk"), intpath, overwrite=True)
@@ -122,11 +111,24 @@ def minian_process(
         overwrite=True,
         chunks={"frame": -1, "height": chk["height"], "width": chk["width"]},
     )
+    plots["motion"] = (
+        hv.Image(
+            varr_ref.max("frame").compute().astype(np.float32),
+            ["width", "height"],
+            label="before_mc",
+        ).opts(opts_im)
+        + hv.Image(
+            Y_hw_chk.max("frame").compute().astype(np.float32),
+            ["width", "height"],
+            label="after_mc",
+        ).opts(opts_im)
+        + visualize_motion(motion.compute()).opts(opts_crv)
+    ).cols(2)
     if return_stage == "motion-correction":
-        return motion, Y_fm_chk, Y_hw_chk
+        return xr.merge([motion, Y_fm_chk, Y_hw_chk]), plots
     # initilization
     max_proj = save_minian(
-        Y_fm_chk.max("frame").rename("max_proj"), **param["save_minian"]
+        Y_fm_chk.max("frame").rename("max_proj"), intpath, overwrite=True
     ).compute()
     seeds = seeds_init(Y_fm_chk, **param["seeds_init"])
     seeds, pnr, gmm = pnr_refine(Y_hw_chk, seeds, **param["pnr_refine"])
@@ -158,8 +160,30 @@ def minian_process(
     b, f = update_background(Y_fm_chk, A, C_chk)
     f = save_minian(f.rename("f"), intpath, overwrite=True)
     b = save_minian(b.rename("b"), intpath, overwrite=True)
+    plots["init"] = (
+        hv.Image(
+            A.max("unit_id").rename("A").compute().astype(np.float32),
+            kdims=["width", "height"],
+        )
+        .opts(opts_im)
+        .relabel("Initial Spatial Footprints")
+        + hv.Image(
+            C.sel(frame=slice(0, None, 10)).rename("C").compute().astype(np.float32),
+            kdims=["frame", "unit_id"],
+        )
+        .opts(opts_tr)
+        .relabel("Initial Temporal Components")
+        + hv.Image(
+            b.rename("b").compute().astype(np.float32), kdims=["width", "height"]
+        )
+        .opts(opts_im)
+        .relabel("Initial Background Sptial")
+        + hv.Curve(f.rename("f").compute(), kdims=["frame"])
+        .opts(opts_crv)
+        .relabel("Initial Background Temporal")
+    ).cols(2)
     if return_stage == "initialization":
-        return A, C, b, f
+        return xr.merge([A, C, b, f]), plots
     # cnmf
     sn_spatial = get_noise_fft(Y_hw_chk, **param["get_noise"])
     sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
@@ -189,7 +213,7 @@ def minian_process(
     C = save_minian(C_new.rename("C"), intpath, overwrite=True)
     C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
     if return_stage == "first-spatial":
-        return A, C, b, f
+        return xr.merge([A, C, b, f]), plots
     YrA = save_minian(
         compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"),
         intpath,
@@ -219,7 +243,7 @@ def minian_process(
     )
     A = A.sel(unit_id=C.coords["unit_id"].values)
     if return_stage == "first-temporal":
-        return A, C, S, b, f
+        return xr.merge([A, C, S, b, f]), plots
     ## merge
     try:
         A_mrg, C_mrg, [sig_mrg] = unit_merge(
@@ -262,7 +286,7 @@ def minian_process(
     C = save_minian(C_new.rename("C"), intpath, overwrite=True)
     C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
     if return_stage == "second-spatial":
-        return A, C, S, b, f
+        return xr.merge([A, C, S, b, f]), plots
     YrA = save_minian(
         compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"),
         intpath,
@@ -291,14 +315,74 @@ def minian_process(
         c0_new.rename("c0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True
     )
     A = A.sel(unit_id=C.coords["unit_id"].values)
+    plots["final"] = (
+        hv.Image(
+            A.max("unit_id").compute().astype(np.float32),
+            kdims=["width", "height"],
+        )
+        .opts(opts_im)
+        .relabel("Spatial Footprints")
+        + hv.Image(
+            C.sel(frame=slice(0, None, 10)).compute().astype(np.float32),
+            kdims=["frame", "unit_id"],
+        )
+        .opts(opts_tr)
+        .relabel("Temporal Trace")
+        + hv.Image(b_new.compute().astype(np.float32), kdims=["width", "height"])
+        .opts(opts_im)
+        .relabel("Background Spatial")
+        + hv.Curve(f_new.compute().rename("f").astype(np.float16), kdims=["frame"])
+        .opts(opts_crv)
+        .relabel("Background Temporal")
+    ).cols(2)
     # save result
-    A = save_minian(A.rename("A"), **param["save_minian"])
-    C = save_minian(C.rename("C"), **param["save_minian"])
-    S = save_minian(S.rename("S"), **param["save_minian"])
-    c0 = save_minian(c0.rename("c0"), **param["save_minian"])
-    b0 = save_minian(b0.rename("b0"), **param["save_minian"])
-    b = save_minian(b.rename("b"), **param["save_minian"])
-    f = save_minian(f.rename("f"), **param["save_minian"])
+    A = save_minian(A.rename("A"), intpath, overwrite=True)
+    C = save_minian(C.rename("C"), intpath, overwrite=True)
+    S = save_minian(S.rename("S"), intpath, overwrite=True)
+    c0 = save_minian(c0.rename("c0"), intpath, overwrite=True)
+    b0 = save_minian(b0.rename("b0"), intpath, overwrite=True)
+    b = save_minian(b.rename("b"), intpath, overwrite=True)
+    f = save_minian(f.rename("f"), intpath, overwrite=True)
     # generate video
-    generate_videos(varr, Y_fm_chk, A=A, C=C_chk, vpath=dpath)
-    return A, C, S, b, f
+    if video_gen:
+        generate_videos(varr, Y_fm_chk, A=A, C=C_chk, vpath=intpath)
+    result_ds = xr.merge(
+        [
+            A.rename("A"),
+            C.rename("C"),
+            S.rename("S"),
+            c0.rename("c0"),
+            b0.rename("b0"),
+            b.rename("b"),
+            f.rename("f"),
+            motion,
+            max_proj,
+        ]
+    )
+    return result_ds, plots
+
+
+def red_channel(dpath, intpath, param):
+    opts_im = opts.Image(
+        **{
+            "frame_width": 400,
+            "aspect": 1,
+            "cmap": "viridis",
+            "colorbar": True,
+        }
+    )
+    result_df, plots = minian_process(
+        dpath, intpath, param, return_stage="motion-correction"
+    )
+    max_proj = save_minian(
+        result_df["Y_fm_chk"].max("frame").rename("max_proj"), intpath, overwrite=True
+    ).compute()
+    seeds = find_seed(max_proj, **param["find_seed"])
+    A = constructA(seeds, max_proj, **param["constructA"])
+    A_merge = mergeA(A, **param["mergeA"]).rename("A")
+    plots["footprints"] = (
+        visualize_seeds(max_proj, seeds).opts(opts_im)
+        + plotA_contour(A_merge, max_proj).opts(opts_im)
+        + hv.Image(A_merge.max("unit_id"), ["width", "height"]).opts(opts_im)
+    )
+    return xr.merge([result_df["motion"], max_proj, A_merge]), plots
