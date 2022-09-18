@@ -33,7 +33,7 @@ def minian_process(
     varr=None,
     flip=False,
     tx=None,
-    video_gen=False,
+    video_path=None,
 ):
     # setup
     dpath = os.path.abspath(os.path.expanduser(dpath))
@@ -344,8 +344,9 @@ def minian_process(
     b = save_minian(b.rename("b"), intpath, overwrite=True)
     f = save_minian(f.rename("f"), intpath, overwrite=True)
     # generate video
-    if video_gen:
-        generate_videos(varr, Y_fm_chk, A=A, C=C_chk, vpath=intpath)
+    if video_path is not None:
+        vpath, vname = os.path.split(video_path)
+        generate_videos(varr, Y_fm_chk, A=A, C=C_chk, vpath=vpath, vname=vname)
     result_ds = xr.merge(
         [
             A.rename("A"),
