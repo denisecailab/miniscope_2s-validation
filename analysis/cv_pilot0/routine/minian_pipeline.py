@@ -74,7 +74,7 @@ def minian_process(
         intpath,
         overwrite=True,
     )
-    varr_ref = varr.sel(param["subset"])
+    varr_ref = varr.sel(param.get("subset"))
     # preprocessing
     if param["glow_rm"] == "min":
         varr_min = varr_ref.min("frame").compute()
