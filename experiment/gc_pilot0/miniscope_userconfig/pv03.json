@@ -7,7 +7,7 @@
         "time"
     ],
     "experimentName": "gc_pilot0",
-    "animalName": "gc05",
+    "animalName": "pv03",
     "recordLengthinSeconds": 300,
 
     "COMMENT_devices": "'devices' defines all input and output devices to the software.",
@@ -50,9 +50,9 @@
                 "windowScale": 1,
                 "windowX": 800,
                 "windowY": 100,
-                "gain": "Low", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
-                "ewl": 38,
-                "led0": 17,
+                "gain": "Medium", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
+                "ewl": 20,
+                "led0": 45,
                 "frameRate": "30FPS"
             }
         },

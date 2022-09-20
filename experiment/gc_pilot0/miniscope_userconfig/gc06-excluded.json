@@ -23,7 +23,7 @@
                     "COMMENT_plotTrace": "Add or remove 'roll' 'pitch' and/or 'yaw' to define which get plotted in the time trace display.",
                     "plotTrace": ["roll", "pitch", "yaw"]
                 },
-                "deviceID": 3,
+                "deviceID": 2,
                 "showSaturation": true,
                 "compression": "GREY",
                 "framesPerFile": 1000,
