@@ -23,6 +23,7 @@ from minian.visualization import generate_videos, visualize_motion, visualize_se
 from .alignment import apply_affine
 from .plotting import plotA_contour
 from .static_channel import constructA, find_seed, mergeA
+from .utilities import resample_motion
 
 
 def minian_process(
@@ -34,6 +35,7 @@ def minian_process(
     flip=False,
     tx=None,
     video_path=None,
+    motion=None,
 ):
     # setup
     dpath = os.path.abspath(os.path.expanduser(dpath))
@@ -99,7 +101,17 @@ def minian_process(
         )
     varr_ref = save_minian(varr_ref.rename("varr_ref"), dpath=intpath, overwrite=True)
     # motion-correction
-    motion = estimate_motion(varr_ref, **param["estimate_motion"])
+    if motion is None:
+        motion = estimate_motion(varr_ref, **param["estimate_motion"])
+    else:
+        motion = xr.DataArray(
+            resample_motion(motion.values, varr_ref.sizes["frame"]),
+            dims=motion.dims,
+            coords={
+                "frame": varr_ref.coords["frame"].values,
+                "shift_dim": motion.coords["shift_dim"].values,
+            },
+        )
     motion = save_minian(
         motion.rename("motion").chunk({"frame": chk["frame"]}), intpath, overwrite=True
     )

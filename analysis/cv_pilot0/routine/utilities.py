@@ -3,6 +3,7 @@ import os
 import re
 
 import numpy as np
+from scipy.interpolate import interp1d
 
 
 def norm(a):
@@ -50,3 +51,12 @@ def xr_nditer(arr, dims):
 
 def enumerated_product(*args):
     yield from zip(itt.product(*(range(len(x)) for x in args)), itt.product(*args))
+
+
+def resample_motion(motion, nsmp):
+    motion_ret = np.zeros((nsmp, 2))
+    f_org = np.linspace(0, 1, motion.shape[0], endpoint=True)
+    f_new = np.linspace(0, 1, nsmp, endpoint=True)
+    for i in range(2):
+        motion_ret[:, i] = interp1d(f_org, motion[:, i])(f_new)
+    return motion_ret
