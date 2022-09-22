@@ -347,14 +347,6 @@ def minian_process(
         .opts(opts_crv)
         .relabel("Background Temporal")
     ).cols(2)
-    # save result
-    A = save_minian(A.rename("A"), intpath, overwrite=True)
-    C = save_minian(C.rename("C"), intpath, overwrite=True)
-    S = save_minian(S.rename("S"), intpath, overwrite=True)
-    c0 = save_minian(c0.rename("c0"), intpath, overwrite=True)
-    b0 = save_minian(b0.rename("b0"), intpath, overwrite=True)
-    b = save_minian(b.rename("b"), intpath, overwrite=True)
-    f = save_minian(f.rename("f"), intpath, overwrite=True)
     # generate video
     if video_path is not None:
         vpath, vname = os.path.split(video_path)
