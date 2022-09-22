@@ -8,6 +8,7 @@ import io
 import os
 import shutil
 import traceback
+import warnings
 from contextlib import redirect_stdout
 from datetime import datetime
 
@@ -15,6 +16,7 @@ import dask as da
 import holoviews as hv
 import numpy as np
 import pandas as pd
+import xarray as xr
 import yaml
 from bokeh.plotting import save
 from bokeh.resources import CDN
@@ -28,10 +30,11 @@ IN_DPATH = "./data"
 IN_MINIAN_INT_PATH = "~/var/miniscope2s-validation/minian_int"
 IN_WORKER_PATH = "~/var/miniscope2s-validation/dask-worker-space"
 IN_PARAM_FOLDER = "./process_parameters/green_channel"
+IN_RED_PATH = "./intermediate/processed/red"
 IN_SSMAP = "log/sessions.csv"
 IN_SS_SUB = r".*"
 IN_ANM_SUB = r".*"
-PARAM_SKIP_EXSISTING = False
+PARAM_SKIP_EXSISTING = True
 OUT_ERR_FOLDER = "./process_error"
 OUT_VID_PATH = "./intermediate/green_video"
 OUT_PATH = "./intermediate/processed/green"
@@ -97,6 +100,18 @@ if __name__ == "__main__":
             print("using config {}-{}.yaml".format(anm, ss))
         except FileNotFoundError:
             pass
+        try:
+            motion = (
+                xr.open_dataset(os.path.join(IN_RED_PATH, "{}-{}.nc".format(anm, ss)))[
+                    "motion"
+                ]
+                .squeeze()
+                .drop(["animal", "session"])
+                .compute()
+            )
+        except FileNotFoundError:
+            motion = None
+            warnings.warn("Can't load motion for {} {}".format(anm, ss))
         shutil.rmtree(IN_MINIAN_INT_PATH, ignore_errors=True)
         # start cluster
         started = False
@@ -123,7 +138,8 @@ if __name__ == "__main__":
                     dpath=os.path.join(IN_DPATH, dp, "miniscope_side"),
                     intpath=IN_MINIAN_INT_PATH,
                     param=param,
-                    # video_path=os.path.join(OUT_VID_PATH, "{}-{}.mp4".format(anm, ss)),
+                    flip=True,
+                    motion=motion,
                 )
             tend = datetime.now()
             print("minian success: {}".format(dp))
@@ -135,8 +151,10 @@ if __name__ == "__main__":
             client.close()
             cluster.close()
             continue
-        result_ds = result_ds.assign_coords(animal=anm, session=ss).expand_dims(
-            ["animal", "session"]
+        result_ds = (
+            result_ds.assign_coords(animal=anm, session=ss)
+            .expand_dims(["animal", "session"])
+            .compute()
         )
         result_ds.to_netcdf(
             os.path.join(OUT_PATH, "{}-{}.nc".format(anm, ss)), format="NETCDF4"
