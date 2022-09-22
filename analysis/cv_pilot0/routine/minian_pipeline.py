@@ -159,7 +159,7 @@ def minian_process(
     )
     try:
         A, C = unit_merge(A_init, C_init, **param["init_merge"])
-    except KeyError:
+    except (KeyError, ValueError):
         A, C = A_init, C_init
     A = save_minian(A.rename("A"), intpath, overwrite=True)
     C = save_minian(C.rename("C"), intpath, overwrite=True)
