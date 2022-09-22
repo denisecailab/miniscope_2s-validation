@@ -19,7 +19,7 @@ first_spatial:
   size_thres: !!python/tuple
   - 35
   - null
-  sparse_penal: 0.005
+  sparse_penal: 0.002
 first_temporal:
   add_lag: 100
   jac_thres: 0.2
@@ -42,13 +42,13 @@ load_videos:
   pattern: .*\.avi$
 pnr_refine:
   noise_freq: 0.06
-  thres: 1
+  thres: 1.2
 second_spatial:
   dl_wnd: 10
   size_thres: !!python/tuple
   - 35
   - null
-  sparse_penal: 0.005
+  sparse_penal: 0.002
 second_temporal:
   add_lag: 100
   jac_thres: 0.4
