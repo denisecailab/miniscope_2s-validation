@@ -74,12 +74,12 @@ date,time,type,animal,name,analyze,data,comment
 20220801,13:12,habituation,m12,hab10,False,reward: 21,
 20220801,13:26,habituation,m15,hab10,False,reward: 21,
 20220801,13:40,habituation,m16,hab10,False,reward: 23,
-20220802,11:00,recording,m09,rec0,True,m09/2022_08_02/11_00_12,reward: 29
-20220802,11:26,recording,m10,rec0,True,m10/2022_08_02/11_26_05,changed ewl to -22; reward: 9
-20220802,11:44,recording,m11,rec0,True,m11/2022_08_02/11_44_35,changed led to 16; reward: 14
-20220802,12:00,recording,m12,rec0,True,m12/2022_08_02/12_01_00,reward: 10
-20220802,12:19,recording,m15,rec0,True,m15/2022_08_02/12_19_25,changed ewl to 35; reward: 1
-20220802,12:30,recording,m16,rec0,True,m16/2022_08_02/12_36_24,reward: 3
+20220802,11:00,recording,m09,rec0,False,m09/2022_08_02/11_00_12,reward: 29
+20220802,11:26,recording,m10,rec0,False,m10/2022_08_02/11_26_05,changed ewl to -22; reward: 9
+20220802,11:44,recording,m11,rec0,False,m11/2022_08_02/11_44_35,changed led to 16; reward: 14
+20220802,12:00,recording,m12,rec0,False,m12/2022_08_02/12_01_00,reward: 10
+20220802,12:19,recording,m15,rec0,False,m15/2022_08_02/12_19_25,changed ewl to 35; reward: 1
+20220802,12:30,recording,m16,rec0,False,m16/2022_08_02/12_36_24,reward: 3
 20220803,11:44,habituation,m09,hab11,False,,reward: 21
 20220803,11:59,habituation,m10,hab11,False,,reward: 18
 20220803,12:13,habituation,m11,hab11,False,,reward: 18
