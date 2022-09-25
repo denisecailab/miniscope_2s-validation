@@ -100,6 +100,8 @@ def minian_process(
             dask="parallelized",
         )
     varr_ref = save_minian(varr_ref.rename("varr_ref"), dpath=intpath, overwrite=True)
+    if return_stage == "pre-processing":
+        return varr_ref, plots
     # motion-correction
     if motion is None:
         motion = estimate_motion(varr_ref, **param["estimate_motion"])
