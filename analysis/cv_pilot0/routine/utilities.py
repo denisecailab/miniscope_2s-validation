@@ -3,12 +3,26 @@ import os
 import re
 
 import numpy as np
+import xarray as xr
 from scipy.interpolate import interp1d
 
 
 def norm(a):
     amax, amin = np.nanmax(a), np.nanmin(a)
     return (a - amin) / (amax - amin)
+
+
+def norm_xr(x: xr.DataArray, q=1):
+    xmin = x.min().compute().values
+    if q < 1:
+        xmax = x.compute().quantile(q).compute().values
+    else:
+        xmax = x.max().compute().values
+    diff = xmax - xmin
+    if diff > 0:
+        return ((x - xmin) / diff).clip(0, 1)
+    else:
+        return x
 
 
 def walklevel(path, depth=1):
