@@ -106,7 +106,7 @@ def make_combined_frame(gfm, gfm_ps, rfm, rfm_ps, behav=None):
 def write_video(
     arr: xr.DataArray,
     vname: str = None,
-    options={"crf": "18", "preset": "ultrafast"},
+    options={"crf": "18", "preset": "slow"},
 ) -> str:
     w, h = arr.sizes["width"], arr.sizes["height"]
     process = (
