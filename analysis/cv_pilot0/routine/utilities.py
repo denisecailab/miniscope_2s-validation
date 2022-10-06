@@ -74,3 +74,33 @@ def resample_motion(motion, nsmp):
     for i in range(2):
         motion_ret[:, i] = interp1d(f_org, motion[:, i])(f_new)
     return motion_ret
+
+
+def df_set_metadata(dfs: list, meta: dict):
+    if type(dfs) is not list:
+        return_list = False
+        dfs = [dfs]
+    else:
+        return_list = True
+    for df in dfs:
+        for k, v in meta.items():
+            df[k] = v
+    if return_list:
+        return dfs
+    else:
+        return dfs[0]
+
+
+def df_map_values(dfs: list, mappings: dict):
+    if type(dfs) is not list:
+        return_list = False
+        dfs = [dfs]
+    else:
+        return_list = True
+    for df in dfs:
+        for col, mp in mappings.items():
+            df[col] = df[mp[0]].map(mp[1])
+    if return_list:
+        return dfs
+    else:
+        return dfs[0]

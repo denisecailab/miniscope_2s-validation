@@ -25,6 +25,7 @@ def est_affine(
     lr: float = 0.5,
     niter: int = 1000,
 ):
+    src, dst = np.array(src), np.array(dst)
     sh = est_motion_perframe(src, dst, upsample=100)
     src = sitk.GetImageFromArray(src.astype(np.float32))
     dst = sitk.GetImageFromArray(dst.astype(np.float32))
