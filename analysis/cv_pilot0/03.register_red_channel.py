@@ -57,7 +57,7 @@ window = xr.apply_ufunc(
 A_shifted = apply_transform(As, shiftds["shifts"])
 
 #%%
-param_dist = 5
+param_dist = 10
 cents = calculate_centroids(A_shifted, window)
 dist = calculate_centroid_distance(cents, index_dim=["animal"])
 dist_ft = dist[dist["variable", "distance"] < param_dist].copy()
