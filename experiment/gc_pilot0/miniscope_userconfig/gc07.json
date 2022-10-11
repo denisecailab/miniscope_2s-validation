@@ -23,14 +23,14 @@
                     "COMMENT_plotTrace": "Add or remove 'roll' 'pitch' and/or 'yaw' to define which get plotted in the time trace display.",
                     "plotTrace": ["roll", "pitch", "yaw"]
                 },
-                "deviceID": 3,
+                "deviceID": 0,
                 "showSaturation": true,
                 "compression": "GREY",
                 "framesPerFile": 1000,
                 "windowScale": 1,
                 "windowX": 800,
                 "windowY": 100,
-                "gain": "Low", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
+                "gain": "High", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
                 "ewl": 50,
                 "led0": 10,
                 "frameRate": "30FPS"
@@ -43,36 +43,18 @@
                     "COMMENT_plotTrace": "Add or remove 'roll' 'pitch' and/or 'yaw' to define which get plotted in the time trace display.",
                     "plotTrace": ["roll", "pitch", "yaw"]
                 },
-                "deviceID": 0,
+                "deviceID": 1,
                 "showSaturation": true,
                 "compression": "GREY",
                 "framesPerFile": 1000,
                 "windowScale": 1,
                 "windowX": 800,
                 "windowY": 100,
-                "gain": "Low", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
-                "ewl": 50,
-                "led0": 10,
+                "gain": "High", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
+                "ewl": -17,
+                "led0": 40,
                 "frameRate": "30FPS"
             }
-        },
-        "cameras": {
-            "behavcam":{
-                "deviceType": "WebCam",
-                "deviceID": 4,
-				"showSaturation": true,
-				"ROI": {
-					"leftEdge": 0,
-					"topEdge": 0,
-					"width": 640,
-					"height": 480
-				},
-                "compression": "MJPG",
-                "framesPerFile": 1000,
-                "windowScale": 0.75,
-                "windowX": 800,
-                "windowY": 600
-            }
-       }
+        }
     }
 }
