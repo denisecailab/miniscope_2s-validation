@@ -1,154 +1,155 @@
-date,time,type,animal,name,data,comment
-20220721,11:30,prelim_recording,m07,prelim0,m07/2022_07_21/11_25_20,
-20220721,13:00,prelim_recording,m08,prelim0,m08/2022_07_21/11_38_13,
-20220721,13:00,prelim_recording,m09,prelim0,m09/2022_07_21/11_47_38,
-20220721,13:00,prelim_recording,m10,prelim0,m10/2022_07_21/11_58_04,
-20220721,13:00,prelim_recording,m11,prelim0,m11/2022_07_21/12_06_43,
-20220721,13:00,prelim_recording,m12,prelim0,m12/2022_07_21/12_15_43,
-20220721,13:00,prelim_recording,m13,prelim0,m13/2022_07_21/12_24_53,
-20220721,13:00,prelim_recording,m14,prelim0,m14/2022_07_21/12_34_16,
-20220721,13:00,prelim_recording,m15,prelim0,m15/2022_07_21/12_43_41,
-20220721,13:00,prelim_recording,m16,prelim0,m16/2022_07_21/12_55_07,
-20220722,11:47,habituation,m09,hab0,reward: 9,
-20220722,12:03,habituation,m10,hab0,reward: 3,
-20220722,12:19,habituation,m11,hab0,reward: 7,
-20220722,12:33,habituation,m12,hab0,reward: 6,
-20220722,12:48,habituation,m15,hab0,reward: 5,
-20220722,13:04,habituation,m16,hab0,reward: 5,
-20220723,11:51,habituation,m09,hab1,reward: 0,
-20220723,12:14,habituation,m10,hab1,reward: 1,
-20220723,12:30,habituation,m11,hab1,reward: 3,
-20220723,12:45,habituation,m12,hab1,reward: 3,
-20220723,13:04,habituation,m15,hab1,reward: 1,
-20220723,13:20,habituation,m16,hab1,reward: 2,
-20220724,15:15,habituation,m09,hab2,reward: 5,
-20220724,15:32,habituation,m10,hab2,reward: 0,
-20220724,15:48,habituation,m11,hab2,reward: 7,
-20220724,16:41,habituation,m12,hab2,reward: 7,
-20220724,16:08,habituation,m15,hab2,reward: 3,
-20220724,16:37,habituation,m16,hab2,reward: 6,
-20220725,14:29,habituation,m09,hab3,reward: 5,
-20220725,14:44,habituation,m10,hab3,reward: 1,
-20220725,15:01,habituation,m11,hab3,reward: 11,
-20220725,15:17,habituation,m12,hab3,reward: 7,
-20220725,15:32,habituation,m15,hab3,reward: 4,
-20220725,15:50,habituation,m16,hab3,reward: 7,
-20220726,11:50,habituation,m09,hab4,reward: 4,
-20220726,12:10,habituation,m10,hab4,reward: 5,
-20220726,12:30,habituation,m12,hab4,reward: 7,
-20220726,12:50,habituation,m15,hab4,reward: 5,
-20220726,13:10,habituation,m16,hab4,reward: 12,
-20220727,10:47,habituation,m09,hab5,reward: 7,
-20220727,11:02,habituation,m10,hab5,reward: 5,
-20220727,11:16,habituation,m11,hab5,reward: 15,
-20220727,11:30,habituation,m12,hab5,reward: 12,
-20220727,11:43,habituation,m15,hab5,reward: 4,
-20220727,11:58,habituation,m16,hab5,reward: 7,
-20220728,10:18,habituation,m09,hab6,reward: 13,
-20220728,10:32,habituation,m10,hab6,reward: 19,
-20220728,10:46,habituation,m11,hab6,reward: 17,
-20220728,10:59,habituation,m12,hab6,reward: 17,
-20220728,11:13,habituation,m15,hab6,reward: 5,
-20220728,11:28,habituation,m16,hab6,reward: 16,
-20220729,10:47,habituation,m09,hab7,reward: 29,no cart during transport
-20220729,11:00,habituation,m10,hab7,reward: 19,no cart during transport
-20220729,11:30,habituation,m11,hab7,reward: 13,no cart during transport; one of the port was not working in the later half of the session
-20220729,11:40,habituation,m12,hab7,reward: 16,
-20220729,12:00,habituation,m15,hab7,reward: 7,
-20220729,12:20,habituation,m16,hab7,reward: 13,
-20220730,12:41,habituation,m09,hab8,reward: 31,
-20220730,12:56,habituation,m10,hab8,reward: 25,
-20220730,13:10,habituation,m11,hab8,reward: 16,ports not working in the later half of the session
-20220730,13:27,habituation,m12,hab8,reward: 17,
-20220730,13:40,habituation,m15,hab8,reward: 10,
-20220730,13:55,habituation,m16,hab8,reward: 22,
-20220731,14:51,habituation,m09,hab9,reward: 27,
-20220731,15:04,habituation,m10,hab9,reward: 20,
-20220731,15:17,habituation,m11,hab9,reward: 25,
-20220731,15:29,habituation,m12,hab9,reward: 14,ports not working in beginning half of session
-20220731,15:43,habituation,m15,hab9,reward: 7,
-20220731,15:56,habituation,m16,hab9,reward: 14,
-20220801,12:22,habituation,m09,hab10,reward: 30,
-20220801,12:40,habituation,m10,hab10,reward: 18,
-20220801,12:58,habituation,m11,hab10,reward: 19,
-20220801,13:12,habituation,m12,hab10,reward: 21,
-20220801,13:26,habituation,m15,hab10,reward: 21,
-20220801,13:40,habituation,m16,hab10,reward: 23,
-20220802,11:00,recording,m09,rec0,m09/2022_08_02/11_00_12,reward: 29
-20220802,11:26,recording,m10,rec0,m10/2022_08_02/11_26_05,changed ewl to -22; reward: 9
-20220802,11:44,recording,m11,rec0,m11/2022_08_02/11_44_35,changed led to 16; reward: 14
-20220802,12:00,recording,m12,rec0,m12/2022_08_02/12_01_00,reward: 10
-20220802,12:19,recording,m15,rec0,m15/2022_08_02/12_19_25,changed ewl to 35; reward: 1
-20220802,12:30,recording,m16,rec0,m16/2022_08_02/12_36_24,reward: 3
-20220803,11:44,habituation,m09,hab11,,reward: 21
-20220803,11:59,habituation,m10,hab11,,reward: 18
-20220803,12:13,habituation,m11,hab11,,reward: 18
-20220803,12:28,habituation,m12,hab11,,reward: 20
-20220803,12:45,habituation,m15,hab11,,reward: 22
-20220803,12:58,habituation,m16,hab11,,reward: 21
-20220804,11:10,recording,m09,rec1,m09/2022_08_04/11_10_47,reward: 26
-20220804,11:30,recording,m10,rec1,m10/2022_08_04/11_27_45,reward: 0; ports not working
-20220804,11:50,recording,m11,rec1,m11/2022_08_04/11_48_43,reward: 4; ports not working
-20220804,12:10,recording,m12,rec1,m12/2022_08_04/12_10_19,reward: 1; ports not working
-20220804,12:30,recording,m15,rec1,m15/2022_08_04/12_34_43,reward: 6
-20220804,12:55,recording,m16,rec1,m16/2022_08_04/12_55_24,reward: 16
-20220806,11:42,recording,m09,rec2,m09/2022_08_06/11_42_11,reward: 22
-20220806,12:11,recording,m10,rec2,m10/2022_08_06/12_11_28,reward: 6
-20220806,12:28,recording,m11,rec2,m11/2022_08_06/12_27_57,reward: 20
-20220806,13:01,recording,m12,rec2,m12/2022_08_06/13_01_16,changed ewl to 47; reward: 7
-20220806,13:20,recording,m15,rec2,m15/2022_08_06/13_20_49,reward: 9
-20220806,13:49,recording,m16,rec2,m16/2022_08_06/13_49_03,reward: 5
-20220807,13:50,recording,m09,rec3,m09/2022_08_07/13_57_12,changed led to 28; reward: 15
-20220807,14:17,recording,m10,rec3,m10/2022_08_07/14_17_10,changed ewl to -88; reward: 13
-20220807,14:35,recording,m11,rec3,m11/2022_08_07/14_34_56,changed ewl to 34; changed top gain to 2; reward: 21
-20220807,15:00,recording,m12,rec3,m12/2022_08_07/14_59_38,changed ewl to 73; reward: 13
-20220807,15:15,recording,m15,rec3,m15/2022_08_07/15_16_53,reward: 11
-20220807,15:30,recording,m16,rec3,m16/2022_08_07/15_32_51,reward: 16
-20220808,12:09,recording,m09,rec4,m09/2022_08_08/12_09_14,reward: 34
-20220808,12:37,recording,m10,rec4,m10/2022_08_08/12_37_26,reward: 16
-20220808,13:01,recording,m11,rec4,m11/2022_08_08/13_01_44,reward: 21
-20220808,13:36,recording,m12,rec4,m12/2022_08_08/13_36_32,reward: 4
-20220808,13:56,recording,m15,rec4,m15/2022_08_08/13_56_13,reward: 7; data wasn't complete due to space issue
-20220808,14:13,recording,m16,rec4,,reward: 10; data not saved due to space issue
-20220809,12:12,recording,m09,rec5,,reward: 20; data not saved due to space issue
-20220809,12:35,recording,m10,rec5,,reward: 20; data not saved due to space issue
-20220809,13:04,recording,m11,rec5,,reward: 18; data not saved due to space issue
-20220809,13:26,recording,m12,rec5,,reward: 15; changed ewl to 65; data not saved due to space issue
-20220809,13:43,recording,m15,rec5,,reward: 18; data not saved due to space issue
-20220809,14:02,recording,m16,rec5,,reward: 17; data not saved due to space issue
-20220810,13:10,recording,m09,rec6,m09/2022_08_10/13_10_55,reward: 32
-20220810,13:37,recording,m10,rec6,m10/2022_08_10/13_37_45,reward: 20
-20220810,14:03,recording,m11,rec6,m11/2022_08_10/14_03_46,reward: 37; misfired a lot of times
-20220810,14:22,recording,m12,rec6,m12/2022_08_10/14_22_30,reward: 23
-20220810,15:02,recording,m15,rec6,m15/2022_08_10/15_02_52,reward: 16
-20220810,15:20,recording,m16,rec6,m16/2022_08_10/15_20_27,reward: 16
-20220811,16:03,recording,m09,rec7,m09/2022_08_11/16_03_54,reward: 32
-20220811,16:25,recording,m10,rec7,m10/2022_08_11/16_25_18,reward: 21
-20220811,16:44,recording,m11,rec7,m11/2022_08_11/16_44_30,reward: 28
-20220811,17:00,recording,m12,rec7,m12/2022_08_11/17_00_29,reward: 29
-20220811,17:19,recording,m15,rec7,m15/2022_08_11/17_19_53,reward: 25
-20220811,17:40,recording,m16,rec7,m16/2022_08_11/17_40_34,reward: 15
-20220812,11:37,recording,m09,rec8,m09/2022_08_12/11_37_37,reward: 29
-20220812,11:59,recording,m10,rec8,m10/2022_08_12/11_59_28 and m10/2022_08_12/12_08_05,"reward: 22; wire got supercoiled late in the recording so I had to start over, so there are  2 recordings for this animal"
-20220812,12:27,recording,m11,rec8,m11/2022_08_12/12_27_15,reward: 14
-20220812,12:46,recording,m12,rec8,m12/2022_08_12/12_46_46,reward: 23
-20220812,13:06,recording,m15,rec8,m15/2022_08_12/13_06_34,reward: 14
-20220812,13:24,recording,m16,rec8,m16/2022_08_12/13_24_01,reward: 12
-20220814,14:51,recording,m09,rec9,m09/2022_08_14/14_51_41,reward: 33
-20220814,15:11,recording,m10,rec9,m10/2022_08_14/15_11_07,reward: 32
-20220814,15:31,recording,m11,rec9,m11/2022_08_14/15_31_39,reward: 30
-20220814,15:55,recording,m12,rec9,m12/2022_08_14/15_57_32,reward: 24
-20220814,16:17,recording,m15,rec9,m15/2022_08_14/16_17_43,reward: 29
-20220814,16:31,recording,m16,rec9,m16/2022_08_14/16_31_48,reward: 19
-20220815,11:36,recording,m09,rec10,m09/2022_08_15/11_36_35,reward: 31
-20220815,11:51,recording,m10,rec10,m10/2022_08_15/11_51_38,reward: 19; wire got supercoiled after halfway point
-20220815,12:06,recording,m11,rec10,m11/2022_08_15/12_06_57,reward: 30
-20220815,12:28,recording,m12,rec10,m12/2022_08_15/12_28_23,reward: 22
-20220815,12:44,recording,m15,rec10,m15/2022_08_15/12_44_19,reward: 19
-20220815,12:57,recording,m16,rec10,m16/2022_08_15/12_57_27,reward: 17
-20220816,15:41,recording,m09,rec11,m09/2022_08_16/15_41_00,reward: 43
-20220816,16:08,recording,m10,rec11,m10/2022_08_16/16_08_20,reward: 24
-20220816,16:25,recording,m11,rec11,m11/2022_08_16/16_25_25,reward: 50; misfired quite a few times
-20220816,16:45,recording,m12,rec11,m12/2022_08_16/16_45_33,reward: 34+; clarity of image decreaed towards end of experiment for some reason
-20220816,17:12,recording,m15,rec11,m15/2022_08_16/17_12_57,reward: 23
-20220816,17:28,recording,m16,rec11,m16/2022_08_16/17_28_13,reward: 27
+date,time,type,animal,name,analyze,data,comment
+20220721,11:30,prelim_recording,m07,prelim0,False,m07/2022_07_21/11_25_20,
+20220721,13:00,prelim_recording,m08,prelim0,False,m08/2022_07_21/11_38_13,
+20220721,13:00,prelim_recording,m09,prelim0,False,m09/2022_07_21/11_47_38,
+20220721,13:00,prelim_recording,m10,prelim0,False,m10/2022_07_21/11_58_04,
+20220721,13:00,prelim_recording,m11,prelim0,False,m11/2022_07_21/12_06_43,
+20220721,13:00,prelim_recording,m12,prelim0,False,m12/2022_07_21/12_15_43,
+20220721,13:00,prelim_recording,m13,prelim0,False,m13/2022_07_21/12_24_53,
+20220721,13:00,prelim_recording,m14,prelim0,False,m14/2022_07_21/12_34_16,
+20220721,13:00,prelim_recording,m15,prelim0,False,m15/2022_07_21/12_43_41,
+20220721,13:00,prelim_recording,m16,prelim0,False,m16/2022_07_21/12_55_07,
+20220722,11:47,habituation,m09,hab0,False,reward: 9,
+20220722,12:03,habituation,m10,hab0,False,reward: 3,
+20220722,12:19,habituation,m11,hab0,False,reward: 7,
+20220722,12:33,habituation,m12,hab0,False,reward: 6,
+20220722,12:48,habituation,m15,hab0,False,reward: 5,
+20220722,13:04,habituation,m16,hab0,False,reward: 5,
+20220723,11:51,habituation,m09,hab1,False,reward: 0,
+20220723,12:14,habituation,m10,hab1,False,reward: 1,
+20220723,12:30,habituation,m11,hab1,False,reward: 3,
+20220723,12:45,habituation,m12,hab1,False,reward: 3,
+20220723,13:04,habituation,m15,hab1,False,reward: 1,
+20220723,13:20,habituation,m16,hab1,False,reward: 2,
+20220724,15:15,habituation,m09,hab2,False,reward: 5,
+20220724,15:32,habituation,m10,hab2,False,reward: 0,
+20220724,15:48,habituation,m11,hab2,False,reward: 7,
+20220724,16:41,habituation,m12,hab2,False,reward: 7,
+20220724,16:08,habituation,m15,hab2,False,reward: 3,
+20220724,16:37,habituation,m16,hab2,False,reward: 6,
+20220725,14:29,habituation,m09,hab3,False,reward: 5,
+20220725,14:44,habituation,m10,hab3,False,reward: 1,
+20220725,15:01,habituation,m11,hab3,False,reward: 11,
+20220725,15:17,habituation,m12,hab3,False,reward: 7,
+20220725,15:32,habituation,m15,hab3,False,reward: 4,
+20220725,15:50,habituation,m16,hab3,False,reward: 7,
+20220726,11:50,habituation,m09,hab4,False,reward: 4,
+20220726,12:10,habituation,m10,hab4,False,reward: 5,
+20220726,12:30,habituation,m12,hab4,False,reward: 7,
+20220726,12:50,habituation,m15,hab4,False,reward: 5,
+20220726,13:10,habituation,m16,hab4,False,reward: 12,
+20220727,10:47,habituation,m09,hab5,False,reward: 7,
+20220727,11:02,habituation,m10,hab5,False,reward: 5,
+20220727,11:16,habituation,m11,hab5,False,reward: 15,
+20220727,11:30,habituation,m12,hab5,False,reward: 12,
+20220727,11:43,habituation,m15,hab5,False,reward: 4,
+20220727,11:58,habituation,m16,hab5,False,reward: 7,
+20220728,10:18,habituation,m09,hab6,False,reward: 13,
+20220728,10:32,habituation,m10,hab6,False,reward: 19,
+20220728,10:46,habituation,m11,hab6,False,reward: 17,
+20220728,10:59,habituation,m12,hab6,False,reward: 17,
+20220728,11:13,habituation,m15,hab6,False,reward: 5,
+20220728,11:28,habituation,m16,hab6,False,reward: 16,
+20220729,10:47,habituation,m09,hab7,False,reward: 29,no cart during transport
+20220729,11:00,habituation,m10,hab7,False,reward: 19,no cart during transport
+20220729,11:30,habituation,m11,hab7,False,reward: 13,no cart during transport; one of the port was not working in the later half of the session
+20220729,11:40,habituation,m12,hab7,False,reward: 16,
+20220729,12:00,habituation,m15,hab7,False,reward: 7,
+20220729,12:20,habituation,m16,hab7,False,reward: 13,
+20220730,12:41,habituation,m09,hab8,False,reward: 31,
+20220730,12:56,habituation,m10,hab8,False,reward: 25,
+20220730,13:10,habituation,m11,hab8,False,reward: 16,ports not working in the later half of the session
+20220730,13:27,habituation,m12,hab8,False,reward: 17,
+20220730,13:40,habituation,m15,hab8,False,reward: 10,
+20220730,13:55,habituation,m16,hab8,False,reward: 22,
+20220731,14:51,habituation,m09,hab9,False,reward: 27,
+20220731,15:04,habituation,m10,hab9,False,reward: 20,
+20220731,15:17,habituation,m11,hab9,False,reward: 25,
+20220731,15:29,habituation,m12,hab9,False,reward: 14,ports not working in beginning half of session
+20220731,15:43,habituation,m15,hab9,False,reward: 7,
+20220731,15:56,habituation,m16,hab9,False,reward: 14,
+20220801,12:22,habituation,m09,hab10,False,reward: 30,
+20220801,12:40,habituation,m10,hab10,False,reward: 18,
+20220801,12:58,habituation,m11,hab10,False,reward: 19,
+20220801,13:12,habituation,m12,hab10,False,reward: 21,
+20220801,13:26,habituation,m15,hab10,False,reward: 21,
+20220801,13:40,habituation,m16,hab10,False,reward: 23,
+20220802,11:00,recording,m09,rec0,False,m09/2022_08_02/11_00_12,reward: 29
+20220802,11:26,recording,m10,rec0,False,m10/2022_08_02/11_26_05,changed ewl to -22; reward: 9
+20220802,11:44,recording,m11,rec0,False,m11/2022_08_02/11_44_35,changed led to 16; reward: 14
+20220802,12:00,recording,m12,rec0,False,m12/2022_08_02/12_01_00,reward: 10
+20220802,12:19,recording,m15,rec0,False,m15/2022_08_02/12_19_25,changed ewl to 35; reward: 1
+20220802,12:30,recording,m16,rec0,False,m16/2022_08_02/12_36_24,reward: 3
+20220803,11:44,habituation,m09,hab11,False,,reward: 21
+20220803,11:59,habituation,m10,hab11,False,,reward: 18
+20220803,12:13,habituation,m11,hab11,False,,reward: 18
+20220803,12:28,habituation,m12,hab11,False,,reward: 20
+20220803,12:45,habituation,m15,hab11,False,,reward: 22
+20220803,12:58,habituation,m16,hab11,False,,reward: 21
+20220804,11:10,recording,m09,rec1,True,m09/2022_08_04/11_10_47,reward: 26
+20220804,11:30,recording,m10,rec1,True,m10/2022_08_04/11_27_45,reward: 0; ports not working
+20220804,11:50,recording,m11,rec1,True,m11/2022_08_04/11_48_43,reward: 4; ports not working
+20220804,12:10,recording,m12,rec1,True,m12/2022_08_04/12_10_19,reward: 1; ports not working
+20220804,12:30,recording,m15,rec1,True,m15/2022_08_04/12_34_43,reward: 6
+20220804,12:55,recording,m16,rec1,True,m16/2022_08_04/12_55_24,reward: 16
+20220806,11:42,recording,m09,rec2,True,m09/2022_08_06/11_42_11,reward: 22
+20220806,12:11,recording,m10,rec2,True,m10/2022_08_06/12_11_28,reward: 6
+20220806,12:28,recording,m11,rec2,False,m11/2022_08_06/12_27_57,reward: 20
+20220806,13:01,recording,m12,rec2,True,m12/2022_08_06/13_01_16,changed ewl to 47; reward: 7
+20220806,13:20,recording,m15,rec2,True,m15/2022_08_06/13_20_49,reward: 9
+20220806,13:49,recording,m16,rec2,True,m16/2022_08_06/13_49_03,reward: 5
+20220807,13:50,recording,m09,rec3,True,m09/2022_08_07/13_57_12,changed led to 28; reward: 15
+20220807,14:17,recording,m10,rec3,True,m10/2022_08_07/14_17_10,changed ewl to -88; reward: 13
+20220807,14:35,recording,m11,rec3,True,m11/2022_08_07/14_34_56,changed ewl to 34; changed top gain to 2; reward: 21
+20220807,15:00,recording,m12,rec3,True,m12/2022_08_07/14_59_38,changed ewl to 73; reward: 13
+20220807,15:15,recording,m15,rec3,True,m15/2022_08_07/15_16_53,reward: 11
+20220807,15:30,recording,m16,rec3,True,m16/2022_08_07/15_32_51,reward: 16
+20220808,12:09,recording,m09,rec4,True,m09/2022_08_08/12_09_14,reward: 34
+20220808,12:37,recording,m10,rec4,True,m10/2022_08_08/12_37_26,reward: 16
+20220808,13:01,recording,m11,rec4,True,m11/2022_08_08/13_01_44,reward: 21
+20220808,13:36,recording,m12,rec4,False,m12/2022_08_08/13_36_32,reward: 4
+20220808,13:56,recording,m15,rec4,False,m15/2022_08_08/13_56_13,reward: 7; data wasn't complete due to space issue
+20220808,14:13,recording,m16,rec4,False,,reward: 10; data not saved due to space issue
+20220809,12:12,recording,m09,rec5,False,,reward: 20; data not saved due to space issue
+20220809,12:35,recording,m10,rec5,False,,reward: 20; data not saved due to space issue
+20220809,13:04,recording,m11,rec5,False,,reward: 18; data not saved due to space issue
+20220809,13:26,recording,m12,rec5,False,,reward: 15; changed ewl to 65; data not saved due to space issue
+20220809,13:43,recording,m15,rec5,False,,reward: 18; data not saved due to space issue
+20220809,14:02,recording,m16,rec5,False,,reward: 17; data not saved due to space issue
+20220810,13:10,recording,m09,rec6,True,m09/2022_08_10/13_10_55,reward: 32
+20220810,13:37,recording,m10,rec6,True,m10/2022_08_10/13_37_45,reward: 20
+20220810,14:03,recording,m11,rec6,False,m11/2022_08_10/14_03_46,reward: 37; misfired a lot of times
+20220810,14:22,recording,m12,rec6,True,m12/2022_08_10/14_22_30,reward: 23
+20220810,15:02,recording,m15,rec6,True,m15/2022_08_10/15_02_52,reward: 16
+20220810,15:20,recording,m16,rec6,True,m16/2022_08_10/15_20_27,reward: 16
+20220811,16:03,recording,m09,rec7,True,m09/2022_08_11/16_03_54,reward: 32
+20220811,16:25,recording,m10,rec7,True,m10/2022_08_11/16_25_18,reward: 21
+20220811,16:44,recording,m11,rec7,True,m11/2022_08_11/16_44_30,reward: 28
+20220811,17:00,recording,m12,rec7,True,m12/2022_08_11/17_00_29,reward: 29
+20220811,17:19,recording,m15,rec7,True,m15/2022_08_11/17_19_53,reward: 25
+20220811,17:40,recording,m16,rec7,True,m16/2022_08_11/17_40_34,reward: 15
+20220812,11:37,recording,m09,rec8,True,m09/2022_08_12/11_37_37,reward: 29
+20220812,11:59,recording,m10,rec8,False,m10/2022_08_12/11_59_28,"wire got supercoiled late in the recording so I had to start over, so there are  2 recordings for this animal"
+20220812,12:08,recording,m10,rec8,True,m10/2022_08_12/12_08_05,reward: 22
+20220812,12:27,recording,m11,rec8,True,m11/2022_08_12/12_27_15,reward: 14
+20220812,12:46,recording,m12,rec8,True,m12/2022_08_12/12_46_46,reward: 23
+20220812,13:06,recording,m15,rec8,True,m15/2022_08_12/13_06_34,reward: 14
+20220812,13:24,recording,m16,rec8,True,m16/2022_08_12/13_24_01,reward: 12
+20220814,14:51,recording,m09,rec9,True,m09/2022_08_14/14_51_41,reward: 33
+20220814,15:11,recording,m10,rec9,False,m10/2022_08_14/15_11_07,reward: 32
+20220814,15:31,recording,m11,rec9,True,m11/2022_08_14/15_31_39,reward: 30
+20220814,15:55,recording,m12,rec9,True,m12/2022_08_14/15_57_32,reward: 24
+20220814,16:17,recording,m15,rec9,True,m15/2022_08_14/16_17_43,reward: 29
+20220814,16:31,recording,m16,rec9,True,m16/2022_08_14/16_31_48,reward: 19
+20220815,11:36,recording,m09,rec10,False,m09/2022_08_15/11_36_35,reward: 31
+20220815,11:51,recording,m10,rec10,False,m10/2022_08_15/11_51_38,reward: 19; wire got supercoiled after halfway point
+20220815,12:06,recording,m11,rec10,True,m11/2022_08_15/12_06_57,reward: 30
+20220815,12:28,recording,m12,rec10,True,m12/2022_08_15/12_28_23,reward: 22
+20220815,12:44,recording,m15,rec10,True,m15/2022_08_15/12_44_19,reward: 19
+20220815,12:57,recording,m16,rec10,True,m16/2022_08_15/12_57_27,reward: 17
+20220816,15:41,recording,m09,rec11,False,m09/2022_08_16/15_41_00,reward: 43
+20220816,16:08,recording,m10,rec11,False,m10/2022_08_16/16_08_20,reward: 24
+20220816,16:25,recording,m11,rec11,True,m11/2022_08_16/16_25_25,reward: 50; misfired quite a few times
+20220816,16:45,recording,m12,rec11,True,m12/2022_08_16/16_45_33,reward: 34+; clarity of image decreaed towards end of experiment for some reason
+20220816,17:12,recording,m15,rec11,True,m15/2022_08_16/17_12_57,reward: 23
+20220816,17:28,recording,m16,rec11,True,m16/2022_08_16/17_28_13,reward: 27

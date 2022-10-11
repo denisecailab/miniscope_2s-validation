@@ -129,3 +129,8 @@ dmypy.json
 .pyre/
 
 data
+.vscode
+dask-worker-space
+intermediate
+process_error
+output

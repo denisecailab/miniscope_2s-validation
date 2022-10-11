@@ -1,0 +1,14 @@
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+  - pytorch
+  - scipy
+  - scikit-image
+  - opencv
+  - matplotlib
+  - tqdm
+  - jupyter
+  - black
+  - plotly
+  - pyarrow
