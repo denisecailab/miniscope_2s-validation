@@ -104,3 +104,12 @@ def df_map_values(dfs: list, mappings: dict):
         return dfs
     else:
         return dfs[0]
+
+
+def nan_corr(a, b):
+    a, b = np.array(a).flatten(), np.array(b).flatten()
+    mask = np.logical_and(~np.isnan(a), ~np.isnan(b))
+    a, b = a[mask], b[mask]
+    a = a - np.mean(a)
+    b = b - np.mean(b)
+    return (a * b).sum() / np.sqrt((a**2).sum() * (b**2).sum())
