@@ -116,6 +116,9 @@ for _, row in map_red.iterrows():
     row_new.loc[row.isnull()] = np.nan
     map_green_reg.append(row_new.to_frame().T)
 map_green_reg = pd.concat(map_green_reg, ignore_index=True)
+map_green_reg.to_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
+
+#%% plot results
 map_green_reg["meta", "method"] = "red/registered"
 map_green["meta", "method"] = "green/raw"
 map_green_reg["variable", "stable"] = (
