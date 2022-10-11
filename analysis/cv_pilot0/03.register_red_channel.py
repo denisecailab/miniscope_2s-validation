@@ -67,6 +67,7 @@ mappings_meta = resolve_mapping(mappings)
 mappings_meta_fill = fill_mapping(mappings_meta, cents)
 
 #%%
+shiftds.to_netcdf(os.path.join(OUT_PATH, "shiftds.nc"))
 cents.to_pickle(os.path.join(OUT_PATH, "cents.pkl"))
 dist.to_pickle(os.path.join(OUT_PATH, "dist.pkl"))
 mappings.to_pickle(os.path.join(OUT_PATH, "mappings.pkl"))
