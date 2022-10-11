@@ -100,12 +100,11 @@ mapping = pd.concat(map_ls, ignore_index=True)
 mapping.to_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"), index=False)
 
 #%% compute green mapping based on red
-map_red = pd.read_pickle(IN_RED_MAP).drop(columns=[("session", "rec4")])
-map_green = pd.read_pickle(IN_GREEN_MAP).drop(columns=[("session", "rec4")])
+map_red = pd.read_pickle(IN_RED_MAP)
+map_green = pd.read_pickle(IN_GREEN_MAP)
 map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv")).set_index(
     ["animal", "session", "uid_red"]
 )["uid_green"]
-# map_red = map_red[map_red["session"].notnull().all(axis="columns")]
 map_green_reg = []
 for _, row in map_red.iterrows():
     anm = row["meta", "animal"]
@@ -119,23 +118,38 @@ map_green_reg = pd.concat(map_green_reg, ignore_index=True)
 map_green_reg.to_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
 
 #%% plot results
-map_green_reg["meta", "method"] = "red/registered"
+def find_active(df):
+    df["variable", "nactive"] = (df["session"] >= 0).sum(axis="columns")
+    df["variable", "npresent"] = df["session"].notnull().sum(axis="columns")
+    nsess = df["variable", "npresent"].max()
+    df["variable", "nsess"] = nsess
+    return df
+
+
+map_red = pd.read_pickle(IN_RED_MAP)
+map_green = pd.read_pickle(IN_GREEN_MAP)
+map_green_reg = pd.read_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
+map_red["meta", "method"] = "red/raw"
 map_green["meta", "method"] = "green/raw"
-map_green_reg["variable", "stable"] = (
-    map_green_reg["session"].notnull().all(axis="columns")
-)
-map_green_reg["variable", "nactive"] = (map_green_reg["session"] >= 0).sum(
-    axis="columns"
-)
-map_green_reg["variable", "pactive"] = map_green_reg[
-    "variable", "nactive"
-] / map_green_reg["session"].notnull().sum(axis="columns")
+map_green_reg["meta", "method"] = "red/registered"
+map_red = map_red.groupby(("meta", "animal")).apply(find_active)
+map_green = map_green.groupby(("meta", "animal")).apply(find_active)
+map_green_reg = map_green_reg.groupby(("meta", "animal")).apply(find_active)
+map_red["variable", "stable"] = True
 map_green["variable", "stable"] = True
-map_green["variable", "nactive"] = map_green["session"].notnull().sum(axis="columns")
-map_green["variable", "pactive"] = map_green["variable", "nactive"] / len(
-    map_green["session"].columns
+map_green_reg["variable", "stable"] = (
+    map_green_reg["variable", "npresent"] == map_green_reg["variable", "nsess"]
 )
-map_master = pd.concat([map_green_reg, map_green], ignore_index=True)
+map_red["variable", "pactive"] = (
+    map_red["variable", "nactive"] / map_red["variable", "nsess"]
+)
+map_green["variable", "pactive"] = (
+    map_green["variable", "nactive"] / map_green["variable", "nsess"]
+)
+map_green_reg["variable", "pactive"] = (
+    map_green_reg["variable", "nactive"] / map_green_reg["variable", "npresent"]
+)
+map_master = pd.concat([map_green_reg, map_green, map_red], ignore_index=True)
 map_master.columns = map_master.columns.droplevel(0)
 fig_nactive = px.histogram(
     map_master[map_master["stable"]],
