@@ -146,4 +146,18 @@ fig = scatter_agg(
     legend_dim="map_method",
     marker={"color": "color"},
 )
+fig.update_xaxes(title="Days apart")
+fig.update_yaxes(range=(-0.1, 0.6), title="PV correlation")
 fig.write_html(os.path.join(FIG_PATH, "pv_corr.html"))
+fig = scatter_agg(
+    pv_corr,
+    x="tdist",
+    y="corr",
+    facet_row=None,
+    facet_col=None,
+    legend_dim="map_method",
+    marker={"color": "color"},
+)
+fig.update_xaxes(title="Days apart")
+fig.update_yaxes(range=(-0.1, 0.6), title="PV correlation")
+fig.write_html(os.path.join(FIG_PATH, "pv_corr_master.html"))
