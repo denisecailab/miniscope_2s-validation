@@ -427,7 +427,7 @@ def create_square_mask(self, h, w, outward_height, outward_width, center=None):
     if center is None:
         center = (int(w / 2), int(h / 2))
         self._center = center
-    mask = np.zeros((h, w)) == 0
+    mask = np.ones((h, w), dtype=bool)
     width_range = (center[0] - outward_height, center[0] + outward_height)
     length_range = (center[1] - outward_width, center[1] + outward_width)
     mask[length_range[0] : length_range[1], width_range[0] : width_range[1]] = False
