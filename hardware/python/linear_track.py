@@ -141,12 +141,15 @@ class LinearTrack(QMainWindow):
         # eztrack stuff
         dim = self._config["eztrack_vid_dim"]
         roi = self._config["eztrack_mask"]
-        self._center = None
+        self._center = tuple(roi["center"]) if roi["center"] is not None else None
         self._mask = create_square_mask(
-            self, dim[0], dim[1], roi["outward_length"], roi["outward_width"]
+            self,
+            dim[0],
+            dim[1],
+            roi["outward_length"],
+            roi["outward_width"],
+            self._center,
         )
-        self._r0 = roi["outward_length"]
-        self._r1 = roi["outward_width"]
         self._vid = Video(src=self._config["eztrack_vid_src"])
         self._vid.start()
         self._vid.track_method = "dark"
