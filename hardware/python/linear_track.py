@@ -404,7 +404,6 @@ class LinearTrack(QMainWindow):
                 frame = cv2.drawMarker(
                     img=frame, position=(x, y), color=255, thickness=2
                 )
-                frame = cv2.line(frame, self._center, (x, y), 255, 1)
                 if self._started:
                     self._maze.write_data(
                         {
@@ -414,12 +413,11 @@ class LinearTrack(QMainWindow):
                         }
                     )
             else:
-                frame = cv2.line(
-                    frame,
-                    (self._center[0], self._center[1]),
-                    (self._center[0] + self._r0, self._center[1]),
-                    255,
-                    2,
+                frame = cv2.drawMarker(
+                    img=frame,
+                    position=(self._center[0], self._center[1]),
+                    color=255,
+                    thickness=2,
                 )
             self._wVid.setPixmap(self.pixmap_fromarray(frame))
             time.sleep(1 / 60)
