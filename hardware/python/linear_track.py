@@ -143,7 +143,7 @@ class LinearTrack(QMainWindow):
         roi = self._config["eztrack_mask"]
         self._center = None
         self._mask = create_square_mask(
-           self, dim[0], dim[1], roi["outward_length"], roi["outward_width"]
+            self, dim[0], dim[1], roi["outward_length"], roi["outward_width"]
         )
         self._r0 = roi["outward_length"]
         self._r1 = roi["outward_width"]
@@ -260,7 +260,6 @@ class LinearTrack(QMainWindow):
         except (FileNotFoundError, KeyError):
             self._maze.logger.warning("cannot read miniscope config")
         self.setRewards()
-        
 
     def setFlush(self, flush):
         self._flush = flush
@@ -428,9 +427,9 @@ def create_square_mask(self, h, w, outward_height, outward_width, center=None):
         center = (int(w / 2), int(h / 2))
         self._center = center
     mask = np.zeros((h, w)) == 0
-    width_range = (center[0]-outward_height, center[0]+outward_height)
-    length_range = (center[1]-outward_width, center[1]+outward_width)
-    mask[length_range[0]:length_range[1],width_range[0]:width_range[1]] = False
+    width_range = (center[0] - outward_height, center[0] + outward_height)
+    length_range = (center[1] - outward_width, center[1] + outward_width)
+    mask[length_range[0] : length_range[1], width_range[0] : width_range[1]] = False
     return mask
 
 
