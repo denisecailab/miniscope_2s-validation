@@ -42,7 +42,9 @@ eztrack_vid_src: 0
 eztrack_vid_dim: [480, 640]
 eztrack_calib_sec: 3
 eztrack_mask:
-  outward_length: 270
+  outward_length: 220
   outward_width: 50
-  center: None
+  center:
+    - 310 # width
+    - 255 # height
 sound_device: 1
