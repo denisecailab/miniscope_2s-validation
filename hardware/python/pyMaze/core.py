@@ -188,7 +188,7 @@ class Maze:
         self.states[key] = val
 
     def write_data(self, dat) -> None:
-        self._data = self._data.append(dat, ignore_index=True)
+        self._data = pd.concat([self._data, pd.Series(dat).to_frame().T], ignore_index=True)
         self._data.iloc[-1:].to_csv(self._datafile, mode="a", header=False, index=False)
 
     def update_dpath(self, dpath) -> None:
