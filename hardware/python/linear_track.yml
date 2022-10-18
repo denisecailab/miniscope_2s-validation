@@ -5,7 +5,7 @@ CMD_FLAG: 255
 TIMEOUT: 2
 TIMEOUT_HANDSHAKE: 5
 OUTPUT_PINS:
-  miniscope_ttl: 1
+  miniscope_ttl: 12
   reward1: 2
   reward2: 3
 
@@ -38,13 +38,13 @@ touch_pin: # definition for touch sensor
   0: reward1
   1: reward2
 miniscope_config_dir: "./miniscope_userconfig"
-eztrack_vid_src: 0
+eztrack_vid_src: 2
 eztrack_vid_dim: [480, 640]
 eztrack_calib_sec: 3
 eztrack_mask:
   outward_length: 220
   outward_width: 50
   center:
-    - 310 # width
-    - 255 # height
+    - 325 # width
+    - 260 # height
 sound_device: 1
