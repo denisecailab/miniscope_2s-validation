@@ -19,7 +19,7 @@ void setup()
     ;
   }
   gs.begin(BAUDRATE);
-  cap.setThreshholds(5, 3);
+  cap.setThreshholds(3, 2);
 }
 
 void loop()
