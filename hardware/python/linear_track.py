@@ -218,11 +218,15 @@ class LinearTrack(QMainWindow):
         self._tstart = time.time()
         self._maze.write_data({"timestamp": self._tstart, "event": "START"})
         self._maze.digitalHigh("miniscope_ttl")
+        vpath = os.path.join(dpath, 'behavCam')
+        os.makedirs(vpath, exist_ok=True)
+        self._vid.writer_init(dpath=vpath)
+        self._vid.writer_start()
         timer.start()
         self._wStart.setEnabled(False)
 
     def onCalib(self):
-        self._vid.ref_create(secs=self._config["eztrack_calib_sec"])
+        self._vid.ref_create(secs=self._config["eztrack_calib_sec"], print_sts=False)
         self._wCalib.setEnabled(False)
         self._wReset.setEnabled(True)
         self._vid.track = True
@@ -232,6 +236,7 @@ class LinearTrack(QMainWindow):
     def onFinish(self):
         self._maze.digitalLow("miniscope_ttl")
         self._maze.write_data({"timestamp": time.time(), "event": "TERMINATE"})
+        self._vid.writer_stop()
         self._maze.logger.info("session terminated")
         self._maze.logger.info(
             "total reward count: {}".format(self._maze.states["nReward"])
@@ -286,6 +291,7 @@ class LinearTrack(QMainWindow):
         else:
             confirm = QMessageBox.Yes
         if confirm == QMessageBox.Yes:
+            self._maze.digitalLow("miniscope_ttl")
             self._maze.terminate()
             self._displaying = False
             self._tt.join()
