@@ -192,7 +192,6 @@ for anm, anm_df in cells_im.groupby("animal"):
         os.path.join(fig_cells_path, "{}.svg".format(anm)), dpi=500, bbox_inches="tight"
     )
 
-
 #%% plot results
 def find_active(df):
     df["variable", "nactive"] = (df["session"] >= 0).sum(axis="columns")
