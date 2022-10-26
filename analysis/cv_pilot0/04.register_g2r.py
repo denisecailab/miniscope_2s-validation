@@ -3,9 +3,11 @@ import os
 import warnings
 
 import holoviews as hv
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import seaborn as sns
 import xarray as xr
 from minian.cross_registration import (
     calculate_centroid_distance,
@@ -32,15 +34,18 @@ os.makedirs(OUT_PATH, exist_ok=True)
 os.makedirs(FIG_PATH, exist_ok=True)
 
 #%% load data and align
-im_opts = {"xaxis": None, "yaxis": None}
-fig_path = os.path.join(FIG_PATH, "alignment")
-os.makedirs(fig_path, exist_ok=True)
+red_path = os.path.join(OUT_PATH, "Ared")
+gn_path = os.path.join(OUT_PATH, "Agn")
+gn_trans_path = os.path.join(OUT_PATH, "Agn_trans")
+os.makedirs(red_path, exist_ok=True)
+os.makedirs(gn_path, exist_ok=True)
+os.makedirs(gn_trans_path, exist_ok=True)
 ss_df = pd.read_csv(IN_SS_FILE)
 ss_df = ss_df[ss_df["analyze"]]
 map_ls = []
 for anm, anm_df in ss_df.groupby("animal"):
-    plt_dict = dict()
-    for _, row in tqdm(anm_df.iterrows(), leave=False):
+    plt_algn_dict = dict()
+    for _, row in tqdm(list(anm_df.iterrows()), leave=False):
         ss = row["name"]
         try:
             green_ds = xr.open_dataset(
@@ -54,8 +59,8 @@ for anm, anm_df in ss_df.groupby("animal"):
             continue
         # alignment
         trans, _ = est_affine(green_ds["max_proj"], red_ds["max_proj"])
-        A_red = red_ds["A"]
-        A_green = green_ds["A"]
+        A_red = red_ds["A"].compute()
+        A_green = green_ds["A"].compute()
         A_green_trans = xr.apply_ufunc(
             apply_affine,
             green_ds["A"],
@@ -64,6 +69,9 @@ for anm, anm_df in ss_df.groupby("animal"):
             vectorize=True,
             kwargs={"tx": trans},
         ).compute()
+        A_red.to_netcdf(os.path.join(red_path, "{}-{}.nc".format(anm, ss)))
+        A_green.to_netcdf(os.path.join(gn_path, "{}-{}.nc".format(anm, ss)))
+        A_green_trans.to_netcdf(os.path.join(gn_trans_path, "{}-{}.nc".format(anm, ss)))
         # registration
         cent_red = centroid(A_red)
         cent_green = centroid(A_green_trans)
@@ -81,21 +89,6 @@ for anm, anm_df in ss_df.groupby("animal"):
             .drop(columns="group")
         )
         map_ls.append(mapping)
-        # plotting
-        plt_dict[(ss, "0.before_align")] = hv.RGB(
-            plot_overlap(A_green.max("unit_id"), A_red.max("unit_id"))
-        ).opts(**im_opts)
-        plt_dict[(ss, "1.after_align")] = hv.RGB(
-            plot_overlap(A_green_trans.max("unit_id"), A_red.max("unit_id"))
-        ).opts(**im_opts)
-        plt_dict[(ss, "2.registered")] = hv.RGB(
-            plot_overlap(
-                A_green_trans.sel(unit_id=mapping["uid_green"].values).max("unit_id"),
-                A_red.sel(unit_id=mapping["uid_red"].values).max("unit_id"),
-            )
-        ).opts(**im_opts)
-    ovlp_plot = hv.NdLayout(plt_dict, ["session", "reg"]).cols(6)
-    hv.save(ovlp_plot, os.path.join(fig_path, "{}.html".format(anm)))
 mapping = pd.concat(map_ls, ignore_index=True)
 mapping.to_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"), index=False)
 
@@ -116,6 +109,89 @@ for _, row in map_red.iterrows():
     map_green_reg.append(row_new.to_frame().T)
 map_green_reg = pd.concat(map_green_reg, ignore_index=True)
 map_green_reg.to_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
+
+#%% plot cells
+im_opts = {"xaxis": None, "yaxis": None}
+red_path = os.path.join(OUT_PATH, "Ared")
+gn_path = os.path.join(OUT_PATH, "Agn")
+gn_trans_path = os.path.join(OUT_PATH, "Agn_trans")
+fig_algn_path = os.path.join(FIG_PATH, "alignment")
+fig_cells_path = os.path.join(FIG_PATH, "cells")
+os.makedirs(fig_algn_path, exist_ok=True)
+os.makedirs(fig_cells_path, exist_ok=True)
+map_red = pd.read_pickle(IN_RED_MAP)
+map_green = pd.read_pickle(IN_GREEN_MAP)
+map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"))
+map_green_reg = pd.read_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
+cells_im = []
+for anm, anm_df in map_g2r.groupby("animal"):
+    plt_algn_dict = dict()
+    plt_cells_dict = dict()
+    for ss, mapping in tqdm(list(anm_df.groupby("session")), leave=False):
+        dsname = "{}-{}.nc".format(anm, ss)
+        A_red = xr.open_dataarray(os.path.join(red_path, dsname)).compute()
+        A_green = xr.open_dataarray(os.path.join(gn_path, dsname)).compute()
+        A_green_trans = xr.open_dataarray(os.path.join(gn_trans_path, dsname)).compute()
+        plt_algn_dict[(ss, "0.before_align")] = hv.RGB(
+            plot_overlap(A_green.max("unit_id"), A_red.max("unit_id"))
+        ).opts(**im_opts)
+        plt_algn_dict[(ss, "1.after_align")] = hv.RGB(
+            plot_overlap(A_green_trans.max("unit_id"), A_red.max("unit_id"))
+        ).opts(**im_opts)
+        plt_algn_dict[(ss, "2.registered")] = hv.RGB(
+            plot_overlap(
+                A_green_trans.sel(unit_id=mapping["uid_green"].values).max("unit_id"),
+                A_red.sel(unit_id=mapping["uid_red"].values).max("unit_id"),
+            )
+        ).opts(**im_opts)
+        idx_red = map_red[map_red["meta", "animal"] == anm]["session", ss].dropna()
+        idx_green = map_green_reg[map_green_reg["meta", "animal"] == anm][
+            "session", ss
+        ].dropna()
+        idx_green = idx_green[idx_green > 0]
+        c_ovly, c_gn, c_red = plot_overlap(
+            A_green_trans.sel(unit_id=np.array(idx_green)).max("unit_id"),
+            A_red.sel(unit_id=np.array(idx_red)).max("unit_id"),
+            return_raw=True,
+        )
+        plt_cells_dict[(ss, "0.red")] = hv.RGB(c_red).opts(**im_opts)
+        plt_cells_dict[(ss, "1.green")] = hv.RGB(c_gn).opts(**im_opts)
+        plt_cells_dict[(ss, "2.overlay")] = hv.RGB(c_ovly).opts(**im_opts)
+        cells_im.append(
+            pd.DataFrame(
+                {
+                    "animal": anm,
+                    "session": ss,
+                    "kind": ["red", "green", "ovly"],
+                    "im": [c_red, c_gn, c_ovly],
+                }
+            )
+        )
+    ovlp_plot = hv.NdLayout(plt_algn_dict, ["session", "reg"]).cols(6)
+    cells_plot = hv.NdLayout(plt_cells_dict, ["session", "kind"]).cols(6)
+    hv.save(ovlp_plot, os.path.join(fig_algn_path, "{}.html".format(anm)))
+    hv.save(cells_plot, os.path.join(fig_cells_path, "{}.html".format(anm)))
+cells_im = pd.concat(cells_im, ignore_index=True)
+cells_im.to_pickle(os.path.join(OUT_PATH, "cells_im.pkl"))
+#%% generate cells im figure
+def plot_cells(x, **kwargs):
+    ax = plt.gca()
+    ax.imshow(x.values[0])
+    ax.set_axis_off()
+
+
+fig_cells_path = os.path.join(FIG_PATH, "cells")
+os.makedirs(fig_cells_path, exist_ok=True)
+cells_im = pd.read_pickle(os.path.join(OUT_PATH, "cells_im.pkl"))
+for anm, anm_df in cells_im.groupby("animal"):
+    g = sns.FacetGrid(anm_df, row="kind", col="session", margin_titles=True)
+    g.map(plot_cells, "im")
+    fig = g.fig
+    fig.tight_layout()
+    fig.savefig(
+        os.path.join(fig_cells_path, "{}.svg".format(anm)), dpi=500, bbox_inches="tight"
+    )
+
 
 #%% plot results
 def find_active(df):
