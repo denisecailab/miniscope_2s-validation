@@ -113,3 +113,12 @@ def nan_corr(a, b):
     a = a - np.mean(a)
     b = b - np.mean(b)
     return (a * b).sum() / np.sqrt((a**2).sum() * (b**2).sum())
+
+
+def corr_mat(a: np.ndarray, b: np.ndarray, agg_axis=0):
+    a = a - a.mean(axis=agg_axis)
+    b = b - b.mean(axis=agg_axis)
+    with np.errstate(divide="ignore"):
+        return (a * b).sum(axis=agg_axis) / np.sqrt(
+            (a**2).sum(axis=agg_axis) * (b**2).sum(axis=agg_axis)
+        )
