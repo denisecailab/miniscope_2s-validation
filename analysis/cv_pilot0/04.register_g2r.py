@@ -43,7 +43,7 @@ os.makedirs(gn_trans_path, exist_ok=True)
 ss_df = pd.read_csv(IN_SS_FILE)
 ss_df = ss_df[ss_df["analyze"]]
 map_ls = []
-for anm, anm_df in ss_df.groupby("animal"):
+for anm, anm_df in tqdm(list(ss_df.groupby("animal"))):
     plt_algn_dict = dict()
     for _, row in tqdm(list(anm_df.iterrows()), leave=False):
         ss = row["name"]
