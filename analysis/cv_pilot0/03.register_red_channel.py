@@ -5,6 +5,7 @@ import os
 import holoviews as hv
 import numpy as np
 import pandas as pd
+import plotly.express as px
 import xarray as xr
 from bokeh.palettes import Category20
 from minian.cross_registration import (
@@ -26,7 +27,7 @@ hv.notebook_extension("bokeh")
 IN_DPATH = "./intermediate/processed/red"
 IN_SS_CSV = "./log/sessions.csv"
 IN_DPAT = r".*\.nc$"
-PARAM_DIST = 15
+PARAM_DIST = 5
 OUT_PATH = "./intermediate/cross_reg/red"
 FIG_PATH = "./figs/cross_reg/red"
 os.makedirs(OUT_PATH, exist_ok=True)
@@ -86,6 +87,8 @@ mappings_meta.to_pickle(os.path.join(OUT_PATH, "mappings_meta.pkl"))
 mappings_meta_fill.to_pickle(os.path.join(OUT_PATH, "mappings_meta_fill.pkl"))
 
 #%% plot registration
+fig_path = os.path.join(FIG_PATH, "cells")
+os.makedirs(fig_path, exist_ok=True)
 shiftds = xr.open_dataset(os.path.join(OUT_PATH, "shiftds.nc"))
 A_sh = shiftds["A_sh"]
 projs = shiftds["temps_shifted"]
@@ -115,4 +118,14 @@ for anm, anm_df in tqdm(list(mappings_meta.groupby(("meta", "animal")))):
         plt_dict[(ss, "match")] = im_ma
         plt_dict[(ss, "mismatch")] = im_nm
     cur_plt = hv.NdLayout(plt_dict, ["session", "ma"]).cols(4)
-    hv.save(cur_plt, os.path.join(FIG_PATH, "{}.html".format(anm)))
+    hv.save(cur_plt, os.path.join(fig_path, "{}.html".format(anm)))
+
+#%% plot summary
+mappings_meta_fill = pd.read_pickle(os.path.join(OUT_PATH, "mappings_meta_fill.pkl"))
+mappings_meta_fill.columns = mappings_meta_fill.columns.droplevel(0)
+mappings_meta_fill["grp_len"] = mappings_meta_fill["group"].map(len)
+mappings_meta_fill = (
+    mappings_meta_fill.groupby(["animal", "grp_len"])["group"].count().reset_index()
+)
+fig = px.bar(mappings_meta_fill, x="grp_len", y="group", facet_col="animal")
+fig.write_html(os.path.join(FIG_PATH, "summary.html"))
