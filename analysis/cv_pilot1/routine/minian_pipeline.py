@@ -382,7 +382,7 @@ def red_channel(dpath, intpath, param):
         dpath, intpath, param, return_stage="motion-correction"
     )
     max_proj = save_minian(
-        result_df["Y_fm_chk"].max("frame").rename("max_proj"), intpath, overwrite=True
+        result_df["Y_fm_chk"].mean("frame").rename("max_proj"), intpath, overwrite=True
     ).compute()
     seeds = find_seed(max_proj, **param["find_seed"])
     A = constructA(seeds, max_proj, **param["constructA"])
