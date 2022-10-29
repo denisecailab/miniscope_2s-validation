@@ -123,7 +123,6 @@ metric_df["valid"] = np.logical_and(
     metric_df["stb"] > PARAM_STB_THRES, metric_df["si"] > PARAM_SI_THRES
 )
 metric_df = metric_df.set_index(["animal", "session", "unit_id"])
-# stb_df = metric_df.set_index(["animal", "session", "unit_id"])["stb"]
 fr_df = (
     fr_df.groupby(["animal", "session", "unit_id", "smp_space"])["fr_norm"]
     .mean()
@@ -216,7 +215,7 @@ fig.write_html(os.path.join(FIG_PATH, "pv_corr_master.html"))
 #%% plot cells
 def plot_fr(x, **kwargs):
     ax = plt.gca()
-    ax.imshow(x.values[0], cmap="viridis", aspect=2)
+    ax.imshow(x.values[0], cmap="viridis", aspect="auto")
     ax.set_axis_off()
 
 
@@ -226,9 +225,10 @@ mapping_dict = {
 }
 fr_df = pd.read_feather(os.path.join(OUT_PATH, "fr.feat"))
 metric_df = pd.read_feather(os.path.join(OUT_PATH, "metric.feat"))
-metric_df["valid"] = np.logical_and(
-    metric_df["stb"] > PARAM_STB_THRES, metric_df["si"] > PARAM_SI_THRES
-)
+# metric_df["valid"] = np.logical_and(
+#     metric_df["stb"] > PARAM_STB_THRES, metric_df["si"] > PARAM_SI_THRES
+# )
+metric_df["valid"] = metric_df["si"] > PARAM_SI_THRES
 metric_df = metric_df.set_index(["animal", "session", "unit_id"])
 fr_df = (
     fr_df.groupby(["animal", "session", "unit_id", "smp_space"])["fr_norm"]
@@ -236,7 +236,8 @@ fr_df = (
     .reset_index()
     .set_index(["animal", "session", "unit_id"])
 )
-sess_sub = ["rec6", "rec7", "rec8", "rec9", "rec10", "rec11"]
+# sess_sub = ["rec6", "rec7", "rec8", "rec9", "rec10", "rec11"]
+sess_sub = ["rec9", "rec10", "rec11"]
 fr_ma_ls = []
 for mmethod, mmap in mapping_dict.items():
     mmap_sub = mmap[[("session", s) for s in sess_sub] + [("meta", "animal")]]
@@ -276,7 +277,9 @@ for mmethod, mmap in mapping_dict.items():
             )
 fr_ma = pd.concat(fr_ma_ls, ignore_index=True)
 fr_ma["row"] = fr_ma["mmethod"] + " x " + fr_ma["sortby"]
-g = sns.FacetGrid(fr_ma, row="row", col="session", margin_titles=True)
+g = sns.FacetGrid(
+    fr_ma, row="row", col="session", margin_titles=True, sharey="row", sharex=True
+)
 g.map(plot_fr, "fr_mat")
 fig = g.fig
 fig.tight_layout()
