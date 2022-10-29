@@ -248,3 +248,57 @@ fig_pactive = px.histogram(
 )
 fig_nactive.write_html(os.path.join(FIG_PATH, "nactive.html"))
 fig_pactive.write_html(os.path.join(FIG_PATH, "pactive.html"))
+
+#%% plot summary
+def find_active(df):
+    df["variable", "nactive"] = (df["session"] >= 0).sum(axis="columns")
+    df["variable", "npresent"] = df["session"].notnull().sum(axis="columns")
+    nsess = df["variable", "npresent"].max()
+    df["variable", "nsess"] = nsess
+    return df
+
+
+def agg_pactive(df):
+    df_agg = df.groupby("pactive").size().reset_index(name="counts")
+    df_agg["density"] = df_agg["counts"] / df_agg["counts"].sum()
+    return df_agg.set_index("pactive")
+
+
+map_red = pd.read_pickle(IN_RED_MAP)
+map_green = pd.read_pickle(IN_GREEN_MAP)
+map_green_reg = pd.read_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
+map_red = map_red.groupby(("meta", "animal")).apply(find_active)
+map_green = map_green.groupby(("meta", "animal")).apply(find_active)
+map_green_reg = map_green_reg.groupby(("meta", "animal")).apply(find_active)
+map_red["variable", "pactive"] = (
+    map_red["variable", "nactive"] / map_red["variable", "nsess"]
+)
+map_green["variable", "pactive"] = (
+    map_green["variable", "nactive"] / map_green["variable", "nsess"]
+)
+map_green_reg["variable", "pactive"] = (
+    map_green_reg["variable", "nactive"] / map_green_reg["variable", "npresent"]
+)
+map_red.columns = map_red.columns.droplevel(0)
+map_green.columns = map_green.columns.droplevel(0)
+map_green_reg.columns = map_green_reg.columns.droplevel(0)
+red_agg = map_red.groupby("animal").apply(agg_pactive).reset_index()
+green_agg = map_green.groupby("animal").apply(agg_pactive).reset_index()
+green_reg_agg = map_green_reg.groupby("animal").apply(agg_pactive).reset_index()
+red_agg["method"] = "tdTomato channel"
+green_agg["method"] = "GCaMP channel"
+green_reg_agg["method"] = "GCaMP cells\nregistered to tdTomato"
+agg_df = pd.concat([red_agg, green_agg, green_reg_agg], ignore_index=True)
+g = sns.FacetGrid(agg_df, col="method")
+g.map_dataframe(
+    sns.histplot,
+    x="pactive",
+    weights="density",
+    stat="probability",
+    bins=8,
+    binrange=(0, 1),
+    kde=True,
+)
+g.set_titles("{col_name}")
+g.set_axis_labels(x_var="Proportion of\nsessions active", y_var="Proportion of cells")
+g.fig.savefig(os.path.join(FIG_PATH, "summary.svg"), dpi=500, bbox_inches="tight")
