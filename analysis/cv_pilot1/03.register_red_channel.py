@@ -124,8 +124,8 @@ for anm, anm_df in tqdm(list(mappings_meta.groupby(("meta", "animal")))):
 mappings_meta_fill = pd.read_pickle(os.path.join(OUT_PATH, "mappings_meta_fill.pkl"))
 mappings_meta_fill.columns = mappings_meta_fill.columns.droplevel(0)
 mappings_meta_fill["grp_len"] = mappings_meta_fill["group"].map(len)
-mappings_meta_fill = (
-    mappings_meta_fill.groupby(["animal", "grp_len"])["group"].count().reset_index()
+fig = px.histogram(
+    mappings_meta_fill, x="grp_len", facet_col="animal", histnorm="probability"
 )
-fig = px.bar(mappings_meta_fill, x="grp_len", y="group", facet_col="animal")
+fig.update_xaxes(title="# of sessions<br>registered")
 fig.write_html(os.path.join(FIG_PATH, "summary.html"))
