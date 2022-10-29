@@ -1,79 +1,79 @@
 date,time,type,animal,name,analyze,data,comment
-20221012,15:29,habituation,m09,hab0,,m09/2022_10_12/15_29_11,15 min session
-20221012,15:46,habituation,m10,hab0,,m10/2022_10_12/15_46_18,15 min session
-20221012,16:04,habituation,m11,hab0,,m11/2022_10_12/16_04_37,15 min session
-20221012,16:24,habituation,m12,hab0,,m12/2022_10_12/16_24_49,15 min session
-20221012,16:47,habituation,m15,hab0,,m15/2022_10_12/16_47_17,15 min session
-20221012,17:04,habituation,m16,hab0,,m16/2022_10_12/17_04_33,15 min session
-20221013,11:53,habituation,m09,hab1,,m09/2022_10_13/11_53_03,20 min session
-20221013,12:18,habituation,m10,hab1,,m10/2022_10_13/12_18_40,20 min session
-20221013,12:41,habituation,m11,hab1,,m11/2022_10_13/12_41_58,20 min session
-20221013,13:05,habituation,m12,hab1,,m12/2022_10_13/13_05_04,20 min session
-20221013,13:27,habituation,m15,hab1,,m15/2022_10_13/13_27_55,20 min session
-20221013,13:55,habituation,m16,hab1,,m16/2022_10_13/13_55_45,20 min session
-20221014,12:10,habituation,m09,hab2,,m09/2022_10_14/12_10_04,
-20221014,12:32,habituation,m10,hab2,,m10/2022_10_14/12_32_31,
-20221014,12:54,habituation,m11,hab2,,m11/2022_10_14/12_54_36,water port completely stopped working after 3 trials so mouse got tired and would stay in one corner
-20221014,13:17,habituation,m12,hab2,,m12/2022_10_14/13_17_38,
-20221014,13:40,habituation,m15,hab2,,m15/2022_10_14/13_40_08,"didn't seem motivated, got distracted a lot"
-20221014,14:04,habituation,m16,hab2,,m16/2022_10_14/14_04_14,
-20221015,12:12,habituation,m09,hab3,,m09/2022_10_15/12_12_25,
-20221015,12:35,habituation,m10,hab3,,m10/2022_10_15/12_35_11,
-20221015,12:57,habituation,m11,hab3,,m11/2022_10_15/12_57_14,
-20221015,13:20,habituation,m12,hab3,,m12/2022_10_15/13_20_15,
-20221015,13:43,habituation,m15,hab3,,m15/2022_10_15/13_43_47,would stay at right corner for a long time
-20221015,14:06,habituation,m16,hab3,,m16/2022_10_15/14_06_11,
-20221016,15:18,habituation,m09,hab4,,m09/2022_10_16/15_18_50,
-20221016,15:41,habituation,m10,hab4,,m10/2022_10_16/15_40_54,
-20221016,16:01,habituation,m11,hab4,,m11/2022_10_16/16_01_56,
-20221016,16:23,habituation,m12,hab4,,m12/2022_10_16/16_23_04,
-20221016,16:44,habituation,m15,hab4,,m15/2022_10_16/16_44_28,
-20221016,17:05,habituation,m16,hab4,,m16/2022_10_16/17_05_48,
-20221017,12:47,habituation,m09,hab5,,m09/2022_10_17/12_47_29,
-20221017,13:10,habituation,m10,hab5,,m10/2022_10_17/13_10_40,
-20221017,13:33,habituation,m11,hab5,,m11/2022_10_17/13_33_21,
-20221017,13:56,habituation,m12,hab5,,m12/2022_10_17/13_56_30,
-20221017,14:19,habituation,m15,hab5,,m15/2022_10_17/14_19_30,
-20221017,14:43,habituation,m16,hab5,,m16/2022_10_17/14_43_00,
-20221018,12:43,habituation,m09,hab6,,m09/2022_10_18/12_43_03,
-20221018,13:05,habituation,m10,hab6,,m10/2022_10_18/13_05_52,
-20221018,13:30,habituation,m11,hab6,,m11/2022_10_18/13_30_02,
-20221018,13:52,habituation,m12,hab6,,m12/2022_10_18/13_52_47,"crashed 8 minutes in, had ~20 rewards before crash"
-20221018,14:25,habituation,m15,hab6,,m15/2022_10_18/14_25_29,
-20221018,14:49,habituation,m16,hab6,,m16/2022_10_18/14_49_18,
-20221019,12:34,recording,m09,rec0,,m09/2022_10_19/12_34_12,
-20221019,13:01,recording,m10,rec0,,m10/2022_10_19/13_01_41,
-20221019,13:28,recording,m11,rec0,,m11/2022_10_19/13_28_53,
-20221019,13:55,recording,m12,rec0,,m12/2022_10_19/13_55_52,
-20221019,14:22,recording,m15,rec0,,m15/2022_10_19/14_22_26,"behavecam wasn't picking up on when mouse was in corner "
-20221019,14:49,recording,m16,rec0,,m16/2022_10_19/14_49_56,
-20221020,14:59,recording,m09,rec1,,m09/2022_10_20/14_59_56,
-20221020,15:54,recording,m10,rec1,,m10/2022_10_20/15_54_15,
-20221020,16:26,recording,m11,rec1,,m11/2022_10_20/16_26_46,
-20221020,16:55,recording,m12,rec1,,m12/2022_10_20/16_57_22,
-20221020,17:30,recording,m15,rec1,,m15/2022_10_20/17_30_55,
-20221020,17:58,recording,m16,rec1,,m16/2022_10_20/17_58_52,
-20221022,13:08,recording,m09,rec2,,m09/2022_10_22/13_08_16,
-20221022,13:37,recording,m10,rec2,,m10/2022_10_22/13_37_18,
-20221022,14:07,recording,m11,rec2,,m11/2022_10_22/14_07_50,"water port stopped working about half way through and side camera stopped working, had to reconnect"
-20221022,14:50,recording,m12,rec2,,m12/2022_10_22/14_50_54,top camera stopped working and had to reconnect
-20221022,15:14,recording,m15,rec2,,m15/2022_10_22/15_14_52,side camera stopped working last minute
-20221022,15:46,recording,m16,rec2,,m16/2022_10_22/15_46_23,
-20221024,13:26,recording,m09,rec3,,m09/2022_10_24/13_26_44,
-20221024,13:56,recording,m10,rec3,,m10/2022_10_24/13_56_35,
-20221024,14:40,recording,m11,rec3,,m11/2022_10_24/14_40_11,
-20221024,15:11,recording,m12,rec3,,m12/2022_10_24/15_11_40,
-20221024,15:54,recording,m15,rec3,,m15/2022_10_24/15_54_03,
-20221024,16:21,recording,m16,rec3,,m16/2022_10_24/16_21_19,
-20221026,14:41,recording,m09,rec4,,m09/2022_10_26/14_41_12,
-20221026,15:10,recording,m10,rec4,,m10/2022_10_26/15_10_09,
-20221026,15:38,recording,m11,rec4,,m11/2022_10_26/15_38_25,
-20221026,15:07,recording,m12,rec4,,m12/2022_10_26/16_07_19,
-20221026,16:34,recording,m15,rec4,,m15/2022_10_26/16_34_40,
-20221026,17:06,recording,m16,rec4,,m16/2022_10_26/17_06_04,
-20221028,14:44,recording,m09,rec5,,m09/2022_10_28/14_44_17,
-20221028,15:15,recording,m10,rec5,,m10/2022_10_28/15_15_41,
-20221028,15:43,recording,m11,rec5,,m11/2022_10_28/15_43_50,
-20221028,16:12,recording,m12,rec5,,m12/2022_10_28/16_12_50,
-20221028,16:48,recording,m15,rec5,,m15/2022_10_28/16_48_34,
-20221028,17:16,recording,m16,rec5,,m16/2022_10_28/17_16_03,
+20221012,15:29,habituation,m09,hab0,False,m09/2022_10_12/15_29_11,15 min session
+20221012,15:46,habituation,m10,hab0,False,m10/2022_10_12/15_46_18,15 min session
+20221012,16:04,habituation,m11,hab0,False,m11/2022_10_12/16_04_37,15 min session
+20221012,16:24,habituation,m12,hab0,False,m12/2022_10_12/16_24_49,15 min session
+20221012,16:47,habituation,m15,hab0,False,m15/2022_10_12/16_47_17,15 min session
+20221012,17:04,habituation,m16,hab0,False,m16/2022_10_12/17_04_33,15 min session
+20221013,11:53,habituation,m09,hab1,False,m09/2022_10_13/11_53_03,20 min session
+20221013,12:18,habituation,m10,hab1,False,m10/2022_10_13/12_18_40,20 min session
+20221013,12:41,habituation,m11,hab1,False,m11/2022_10_13/12_41_58,20 min session
+20221013,13:05,habituation,m12,hab1,False,m12/2022_10_13/13_05_04,20 min session
+20221013,13:27,habituation,m15,hab1,False,m15/2022_10_13/13_27_55,20 min session
+20221013,13:55,habituation,m16,hab1,False,m16/2022_10_13/13_55_45,20 min session
+20221014,12:10,habituation,m09,hab2,False,m09/2022_10_14/12_10_04,
+20221014,12:32,habituation,m10,hab2,False,m10/2022_10_14/12_32_31,
+20221014,12:54,habituation,m11,hab2,False,m11/2022_10_14/12_54_36,water port completely stopped working after 3 trials so mouse got tired and would stay in one corner
+20221014,13:17,habituation,m12,hab2,False,m12/2022_10_14/13_17_38,
+20221014,13:40,habituation,m15,hab2,False,m15/2022_10_14/13_40_08,"didn't seem motivated, got distracted a lot"
+20221014,14:04,habituation,m16,hab2,False,m16/2022_10_14/14_04_14,
+20221015,12:12,habituation,m09,hab3,False,m09/2022_10_15/12_12_25,
+20221015,12:35,habituation,m10,hab3,False,m10/2022_10_15/12_35_11,
+20221015,12:57,habituation,m11,hab3,False,m11/2022_10_15/12_57_14,
+20221015,13:20,habituation,m12,hab3,False,m12/2022_10_15/13_20_15,
+20221015,13:43,habituation,m15,hab3,False,m15/2022_10_15/13_43_47,would stay at right corner for a long time
+20221015,14:06,habituation,m16,hab3,False,m16/2022_10_15/14_06_11,
+20221016,15:18,habituation,m09,hab4,False,m09/2022_10_16/15_18_50,
+20221016,15:41,habituation,m10,hab4,False,m10/2022_10_16/15_40_54,
+20221016,16:01,habituation,m11,hab4,False,m11/2022_10_16/16_01_56,
+20221016,16:23,habituation,m12,hab4,False,m12/2022_10_16/16_23_04,
+20221016,16:44,habituation,m15,hab4,False,m15/2022_10_16/16_44_28,
+20221016,17:05,habituation,m16,hab4,False,m16/2022_10_16/17_05_48,
+20221017,12:47,habituation,m09,hab5,False,m09/2022_10_17/12_47_29,
+20221017,13:10,habituation,m10,hab5,False,m10/2022_10_17/13_10_40,
+20221017,13:33,habituation,m11,hab5,False,m11/2022_10_17/13_33_21,
+20221017,13:56,habituation,m12,hab5,False,m12/2022_10_17/13_56_30,
+20221017,14:19,habituation,m15,hab5,False,m15/2022_10_17/14_19_30,
+20221017,14:43,habituation,m16,hab5,False,m16/2022_10_17/14_43_00,
+20221018,12:43,habituation,m09,hab6,False,m09/2022_10_18/12_43_03,
+20221018,13:05,habituation,m10,hab6,False,m10/2022_10_18/13_05_52,
+20221018,13:30,habituation,m11,hab6,False,m11/2022_10_18/13_30_02,
+20221018,13:52,habituation,m12,hab6,False,m12/2022_10_18/13_52_47,"crashed 8 minutes in, had ~20 rewards before crash"
+20221018,14:25,habituation,m15,hab6,False,m15/2022_10_18/14_25_29,
+20221018,14:49,habituation,m16,hab6,False,m16/2022_10_18/14_49_18,
+20221019,12:34,recording,m09,rec0,False,m09/2022_10_19/12_34_12,
+20221019,13:01,recording,m10,rec0,False,m10/2022_10_19/13_01_41,
+20221019,13:28,recording,m11,rec0,False,m11/2022_10_19/13_28_53,
+20221019,13:55,recording,m12,rec0,False,m12/2022_10_19/13_55_52,
+20221019,14:22,recording,m15,rec0,False,m15/2022_10_19/14_22_26,"behavecam wasn't picking up on when mouse was in corner "
+20221019,14:49,recording,m16,rec0,False,m16/2022_10_19/14_49_56,
+20221020,14:59,recording,m09,rec1,True,m09/2022_10_20/14_59_56,
+20221020,15:54,recording,m10,rec1,True,m10/2022_10_20/15_54_15,
+20221020,16:26,recording,m11,rec1,True,m11/2022_10_20/16_26_46,
+20221020,16:55,recording,m12,rec1,True,m12/2022_10_20/16_57_22,
+20221020,17:30,recording,m15,rec1,True,m15/2022_10_20/17_30_55,
+20221020,17:58,recording,m16,rec1,True,m16/2022_10_20/17_58_52,
+20221022,13:08,recording,m09,rec2,False,m09/2022_10_22/13_08_16,
+20221022,13:37,recording,m10,rec2,False,m10/2022_10_22/13_37_18,
+20221022,14:07,recording,m11,rec2,False,m11/2022_10_22/14_07_50,"water port stopped working about half way through and side camera stopped working, had to reconnect"
+20221022,14:50,recording,m12,rec2,False,m12/2022_10_22/14_50_54,top camera stopped working and had to reconnect
+20221022,15:14,recording,m15,rec2,False,m15/2022_10_22/15_14_52,side camera stopped working last minute
+20221022,15:46,recording,m16,rec2,False,m16/2022_10_22/15_46_23,
+20221024,13:26,recording,m09,rec3,True,m09/2022_10_24/13_26_44,
+20221024,13:56,recording,m10,rec3,True,m10/2022_10_24/13_56_35,
+20221024,14:40,recording,m11,rec3,True,m11/2022_10_24/14_40_11,
+20221024,15:11,recording,m12,rec3,True,m12/2022_10_24/15_11_40,
+20221024,15:54,recording,m15,rec3,True,m15/2022_10_24/15_54_03,
+20221024,16:21,recording,m16,rec3,True,m16/2022_10_24/16_21_19,
+20221026,14:41,recording,m09,rec4,True,m09/2022_10_26/14_41_12,
+20221026,15:10,recording,m10,rec4,True,m10/2022_10_26/15_10_09,
+20221026,15:38,recording,m11,rec4,True,m11/2022_10_26/15_38_25,
+20221026,15:07,recording,m12,rec4,True,m12/2022_10_26/16_07_19,
+20221026,16:34,recording,m15,rec4,True,m15/2022_10_26/16_34_40,
+20221026,17:06,recording,m16,rec4,True,m16/2022_10_26/17_06_04,
+20221028,14:44,recording,m09,rec5,True,m09/2022_10_28/14_44_17,
+20221028,15:15,recording,m10,rec5,True,m10/2022_10_28/15_15_41,
+20221028,15:43,recording,m11,rec5,True,m11/2022_10_28/15_43_50,
+20221028,16:12,recording,m12,rec5,True,m12/2022_10_28/16_12_50,
+20221028,16:48,recording,m15,rec5,True,m15/2022_10_28/16_48_34,
+20221028,17:16,recording,m16,rec5,True,m16/2022_10_28/17_16_03,
