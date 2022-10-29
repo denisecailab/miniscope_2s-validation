@@ -40,6 +40,17 @@ def convexity_score(im):
         return 0
 
 
+def circularity_score(im):
+    cnt = cv2.findContours(
+        im.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
+    )[0][0]
+    peri = cv2.arcLength(cnt, True)
+    if peri > 0:
+        return np.abs(4 * np.pi * im.sum() / peri**2 - 1)
+    else:
+        return 1000
+
+
 def im_floodfill(im):
     im_floodfill = im.astype(np.uint8)
     h, w = im.shape
@@ -48,20 +59,26 @@ def im_floodfill(im):
     return im_floodfill != 255
 
 
-def cvx_opt_cb(thres, proj, min_size, pad, sd_h, sd_w):
+def opt_cb(thres, proj, min_size, max_size, pad, sd_h, sd_w, metric="circ"):
     im_labs = proj < thres
     im_labs[max(sd_h - pad, 0) : sd_h + pad, max(sd_w - pad, 0) : sd_w + pad] = True
     im_labs = imlabel(im_labs)
     labs = im_labs[sd_h, sd_w]
     im_sd = im_labs == labs
     size = im_sd.sum()
-    if size > min_size:
-        return -convexity_score(im_sd)
+    if size > min_size and size < max_size:
+        if metric == "circ":
+            return circularity_score(im_sd)
+        elif metric == "cvx":
+            return -convexity_score(im_sd)
     else:
-        return 0
+        if metric == "circ":
+            return 1000
+        elif metric == "cvx":
+            return 0
 
 
-def constructA(seeds, max_proj, min_size=8 * 8, max_size=20 * 20, pad=2):
+def constructA(seeds, max_proj, min_size=8 * 8, max_size=20 * 20, pad=2, me_thres=1):
     img = np.array(max_proj)
     dx = cv2.Sobel(img, ddepth=-1, dx=1, dy=0)
     dy = cv2.Sobel(img, ddepth=-1, dx=0, dy=1)
@@ -76,12 +93,12 @@ def constructA(seeds, max_proj, min_size=8 * 8, max_size=20 * 20, pad=2):
         gang = np.arctan2(gy, gx)
         proj = mag * np.cos(gang - ang)
         res = minimize_scalar(
-            cvx_opt_cb,
+            opt_cb,
             bounds=(-200, 5),
-            args=(proj, min_size, pad, sd_h, sd_w),
+            args=(proj, min_size, max_size, pad, sd_h, sd_w),
             method="Bounded",
         )
-        if res.success:
+        if res.success and res.fun <= me_thres:
             im_labs = proj < res.x
             im_labs[
                 max(sd_h - pad, 0) : sd_h + pad, max(sd_w - pad, 0) : sd_w + pad
@@ -89,11 +106,10 @@ def constructA(seeds, max_proj, min_size=8 * 8, max_size=20 * 20, pad=2):
             im_labs = imlabel(im_labs)
             labs = im_labs[sd_h, sd_w]
             mask = im_floodfill(im_labs == labs)
-            if mask.sum() <= max_size:
-                curA = np.where(mask, max_proj, np.nan)
-                curA[np.isnan(curA)] = np.nanmin(curA)
-                A_ls.append(norm(curA))
-                idx_ls.append(isd)
+            curA = np.where(mask, max_proj, np.nan)
+            curA[np.isnan(curA)] = np.nanmin(curA)
+            A_ls.append(norm(curA))
+            idx_ls.append(isd)
     A = xr.DataArray(
         np.stack(A_ls, axis=0),
         dims=["unit_id", "height", "width"],
