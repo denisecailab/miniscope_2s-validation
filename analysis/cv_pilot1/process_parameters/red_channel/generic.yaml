@@ -1,0 +1,28 @@
+subset: null
+glow_rm:
+  method: uniform
+  wnd: 80
+background_removal:
+  method: tophat
+  wnd: 15
+denoise:
+  ksize: 5
+  method: median
+estimate_motion:
+  aggregation: max
+  alt_error: null
+  dim: frame
+  upsample: 10
+load_videos:
+  dtype: !!python/name:numpy.uint8 ''
+  pattern: .*\.avi$
+find_seed:
+  wnd_k0: 8
+  wnd_k1: 15
+  diff_thres: 8
+constructA:
+  min_size: 64
+  max_size: 400
+  pad: 2
+mergeA:
+  cos_thres: 0.5
