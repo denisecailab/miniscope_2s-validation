@@ -61,7 +61,7 @@ def cvx_opt_cb(thres, proj, min_size, pad, sd_h, sd_w):
         return 0
 
 
-def constructA(seeds, max_proj, min_size=8 * 8, pad=2):
+def constructA(seeds, max_proj, min_size=8 * 8, max_size=20 * 20, pad=2):
     img = np.array(max_proj)
     dx = cv2.Sobel(img, ddepth=-1, dx=1, dy=0)
     dy = cv2.Sobel(img, ddepth=-1, dx=0, dy=1)
@@ -89,10 +89,11 @@ def constructA(seeds, max_proj, min_size=8 * 8, pad=2):
             im_labs = imlabel(im_labs)
             labs = im_labs[sd_h, sd_w]
             mask = im_floodfill(im_labs == labs)
-            curA = np.where(mask, max_proj, np.nan)
-            curA[np.isnan(curA)] = np.nanmin(curA)
-            A_ls.append(norm(curA))
-            idx_ls.append(isd)
+            if mask.sum() <= max_size:
+                curA = np.where(mask, max_proj, np.nan)
+                curA[np.isnan(curA)] = np.nanmin(curA)
+                A_ls.append(norm(curA))
+                idx_ls.append(isd)
     A = xr.DataArray(
         np.stack(A_ls, axis=0),
         dims=["unit_id", "height", "width"],

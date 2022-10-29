@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy.signal import medfilt
+from scipy.ndimage import label
 
 
 def merge_ts(ms_ts: pd.DataFrame, behav_ts: pd.DataFrame) -> pd.DataFrame:
@@ -64,3 +65,18 @@ def code_direction(pos, smooth, diff_thres=None):
     if diff_thres is not None:
         pos_sign = np.where(np.abs(diff) > diff_thres, pos_sign, np.nan)
     return pos_sign
+
+
+def determine_trial(pos, smooth, rw_low=10, rw_high=90, min_time=2 * 60):
+    pos = medfilt(pos, smooth)
+    rw = np.full_like(pos, np.nan)
+    rw = np.where(pos < rw_low, 0, rw)
+    rw = np.where(pos > rw_high, 1, rw)
+    start = rw[~np.isnan(rw)][0]
+    trial, ntrial = label(rw == start)
+    for t in range(ntrial):
+        tidx = np.where(trial == t + 1)[0]
+        trial[tidx] = 0
+        if len(tidx) > min_time:
+            trial[tidx[0]] = 1
+    return trial.cumsum()

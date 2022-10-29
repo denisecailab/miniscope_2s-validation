@@ -4,7 +4,7 @@ glow_rm:
   wnd: 80
 background_removal:
   method: tophat
-  wnd: 10
+  wnd: 15
 denoise:
   ksize: 5
   method: median
@@ -22,6 +22,7 @@ find_seed:
   diff_thres: 8
 constructA:
   min_size: 64
+  max_size: 400
   pad: 2
 mergeA:
   cos_thres: 0.5

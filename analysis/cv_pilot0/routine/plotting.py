@@ -10,15 +10,21 @@ from plotly import graph_objects as go
 hv.notebook_extension("bokeh")
 
 
-def plotA_contour(A: xr.DataArray, im: xr.DataArray):
+def plotA_contour(A: xr.DataArray, im: xr.DataArray, cmap=None, im_opts=None):
     im = hv.Image(im, ["width", "height"])
+    if im_opts is not None:
+        im = im.opts(**im_opts)
+    im = im * hv.Path([])
     for uid in A.coords["unit_id"].values:
         curA = (np.array(A.sel(unit_id=uid)) > 0).astype(np.uint8)
         cnt = cv2.findContours(curA, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[0][
             0
         ].squeeze()
         if cnt.ndim > 1:
-            im = im * hv.Path(cnt.squeeze())
+            pth = hv.Path(cnt.squeeze())
+            if cmap is not None:
+                pth = pth.opts(color=cmap[uid])
+            im = im * pth
     return im
 
 
