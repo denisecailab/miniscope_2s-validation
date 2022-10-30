@@ -1,2 +1,2 @@
-pnr_refine:
-  thres: 1.5
+seeds_init:
+  diff_thres: 8

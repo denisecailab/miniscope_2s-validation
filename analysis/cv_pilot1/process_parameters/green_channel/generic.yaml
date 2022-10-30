@@ -42,7 +42,7 @@ load_videos:
   pattern: .*\.avi$
 pnr_refine:
   noise_freq: 0.06
-  thres: 1.2
+  thres: 1.5
 second_spatial:
   dl_wnd: 10
   size_thres: !!python/tuple
@@ -57,7 +57,7 @@ second_temporal:
   p: 1
   sparse_penal: 1
 seeds_init:
-  diff_thres: 5
+  diff_thres: 6
   max_wnd: 40
   method: rolling
   stp_size: 3000
