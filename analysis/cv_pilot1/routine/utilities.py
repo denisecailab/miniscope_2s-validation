@@ -122,3 +122,9 @@ def corr_mat(a: np.ndarray, b: np.ndarray, agg_axis=0):
         return (a * b).sum(axis=agg_axis) / np.sqrt(
             (a**2).sum(axis=agg_axis) * (b**2).sum(axis=agg_axis)
         )
+
+
+def unique_seg(x: np.ndarray):
+    _, x_cat = np.unique(x, return_inverse=True)
+    d = np.diff(x_cat, prepend=x_cat[0]) != 0
+    return np.cumsum(d)
