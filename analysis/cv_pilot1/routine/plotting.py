@@ -17,9 +17,12 @@ def plotA_contour(A: xr.DataArray, im: xr.DataArray, cmap=None, im_opts=None):
     im = im * hv.Path([])
     for uid in A.coords["unit_id"].values:
         curA = (np.array(A.sel(unit_id=uid)) > 0).astype(np.uint8)
-        cnt = cv2.findContours(curA, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[0][
-            0
-        ].squeeze()
+        try:
+            cnt = cv2.findContours(curA, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[0][
+                0
+            ].squeeze()
+        except IndexError:
+            continue
         if cnt.ndim > 1:
             pth = hv.Path(cnt.squeeze())
             if cmap is not None:
