@@ -24,6 +24,7 @@ def est_affine(
     dst_ma=None,
     lr: float = 0.5,
     niter: int = 1000,
+    typ="affine",
 ):
     src, dst = np.array(src), np.array(dst)
     sh = est_motion_perframe(src, dst, upsample=100)
@@ -34,15 +35,23 @@ def est_affine(
         reg.SetMetricMovingMask(sitk.GetImageFromArray(src_ma.astype(np.uint8)))
     if dst_ma is not None:
         reg.SetMetricFixedMask(sitk.GetImageFromArray(dst_ma.astype(np.uint8)))
+    if typ == "affine":
+        topt = sitk.AffineTransform(2)
+    elif typ == "euler":
+        topt = sitk.Euler2DTransform()
+    elif typ == "translation":
+        return sitk.TranslationTransform(2, (-sh[1], -sh[0])), None
+    else:
+        raise ValueError("Don't understand transform: {}".format(typ))
     trans_opt = sitk.CenteredTransformInitializer(
         dst,
         src,
-        sitk.AffineTransform(2),
+        topt,
         sitk.CenteredTransformInitializerFilter.GEOMETRY,
     )
     trans_opt.SetParameters(np.array([1.0, 0.0, 0.0, 1.0, -sh[1], -sh[0]]))
-    reg.SetShrinkFactorsPerLevel(shrinkFactors=[4, 2, 1])
-    reg.SetSmoothingSigmasPerLevel(smoothingSigmas=[2, 1, 0])
+    # reg.SetShrinkFactorsPerLevel(shrinkFactors=[4, 2, 1])
+    # reg.SetSmoothingSigmasPerLevel(smoothingSigmas=[2, 1, 0])
     reg.SetInitialTransform(trans_opt)
     reg.SetMetricAsMeanSquares()
     reg.SetInterpolator(sitk.sitkLinear)
