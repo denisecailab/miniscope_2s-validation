@@ -18,7 +18,7 @@ from routine.utilities import nan_corr, norm
 IN_SS_CSV = "./log/sessions.csv"
 IN_PS_PATH = "./intermediate/processed/green"
 IN_FM_LABEL = "./intermediate/frame_label/fm_label.nc"
-IN_RAW_MAP = "./intermediate/cross_reg/green/mappings_meta.pkl"
+IN_RAW_MAP = "./intermediate/cross_reg/green/mappings_meta_fill.pkl"
 IN_REG_MAP = "./intermediate/register_g2r/green_mapping_reg.pkl"
 PARAM_BW = 3
 PARAM_SMP_SPACE = np.linspace(-100, 100, 200)
@@ -119,9 +119,10 @@ mapping_dict = {
 }
 fr_df = pd.read_feather(os.path.join(OUT_PATH, "fr.feat"))
 metric_df = pd.read_feather(os.path.join(OUT_PATH, "metric.feat"))
-metric_df["valid"] = np.logical_and(
-    metric_df["stb"] > PARAM_STB_THRES, metric_df["si"] > PARAM_SI_THRES
-)
+# metric_df["valid"] = np.logical_and(
+#     metric_df["stb"] > PARAM_STB_THRES, metric_df["si"] > PARAM_SI_THRES
+# )
+metric_df["valid"] = metric_df["si"] > PARAM_SI_THRES
 metric_df = metric_df.set_index(["animal", "session", "unit_id"])
 fr_df = (
     fr_df.groupby(["animal", "session", "unit_id", "smp_space"])["fr_norm"]
@@ -139,10 +140,7 @@ for mmethod, mmap in mapping_dict.items():
         mmap_sub.columns = mmap_sub.columns.droplevel(0)
         for anm, mp in mmap_sub.groupby("animal"):
             tdist = np.abs(
-                (
-                    ss_csv.loc[anm, ssA]["date"].iloc[0]
-                    - ss_csv.loc[anm, ssB]["date"].iloc[0]
-                ).days
+                (ss_csv.loc[anm, ssA]["date"] - ss_csv.loc[anm, ssB]["date"]).days
             )
             meA = metric_df.loc[anm, ssA, mp[ssA].values].reset_index()
             meB = metric_df.loc[anm, ssB, mp[ssB].values].reset_index()
@@ -184,7 +182,9 @@ pv_corr.to_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
 
 #%% plot result
 cmap = {"green/raw": qualitative.Plotly[0], "red/registered": qualitative.Plotly[1]}
+lmap = {"green/raw": "GCaMP channel", "red/registered": "Registered GCaMP cells"}
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
+pv_corr = pv_corr[pv_corr["animal"] != "m09"].copy()
 pv_corr["color"] = pv_corr["map_method"].map(cmap)
 fig = scatter_agg(
     pv_corr,
@@ -199,18 +199,32 @@ fig = scatter_agg(
 fig.update_xaxes(title="Days apart")
 fig.update_yaxes(range=(-0.1, 0.6), title="PV correlation")
 fig.write_html(os.path.join(FIG_PATH, "pv_corr.html"))
-fig = scatter_agg(
+fig, ax = plt.subplots(figsize=(7.5, 4.8))
+pv_corr["map_method"] = pv_corr["map_method"].map(lmap)
+ax = sns.swarmplot(
     pv_corr,
     x="tdist",
     y="corr",
-    facet_row=None,
-    facet_col=None,
-    legend_dim="map_method",
-    marker={"color": "color"},
+    hue="map_method",
+    edgecolor="gray",
+    dodge=True,
+    ax=ax,
+    legend=False,
+    native_scale=True,
 )
-fig.update_xaxes(title="Days apart")
-fig.update_yaxes(range=(-0.1, 0.6), title="PV correlation")
-fig.write_html(os.path.join(FIG_PATH, "pv_corr_master.html"))
+ax = sns.lineplot(
+    pv_corr,
+    x="tdist",
+    y="corr",
+    hue="map_method",
+    errorbar="se",
+    ax=ax,
+)
+ax.set_xlabel("Days apart")
+ax.set_ylabel("PV correlation")
+ax.set_ylim((0, 1.1))
+plt.legend(title=None)
+fig.savefig(os.path.join(FIG_PATH, "pv_corr.svg"), dpi=500)
 
 #%% plot cells
 def plot_fr(x, **kwargs):
@@ -236,8 +250,7 @@ fr_df = (
     .reset_index()
     .set_index(["animal", "session", "unit_id"])
 )
-# sess_sub = ["rec6", "rec7", "rec8", "rec9", "rec10", "rec11"]
-sess_sub = ["rec9", "rec10", "rec11"]
+sess_sub = ["rec1", "rec3", "rec4", "rec5", "rec6"]
 fr_ma_ls = []
 for mmethod, mmap in mapping_dict.items():
     mmap_sub = mmap[[("session", s) for s in sess_sub] + [("meta", "animal")]]
@@ -278,7 +291,13 @@ for mmethod, mmap in mapping_dict.items():
 fr_ma = pd.concat(fr_ma_ls, ignore_index=True)
 fr_ma["row"] = fr_ma["mmethod"] + " x " + fr_ma["sortby"]
 g = sns.FacetGrid(
-    fr_ma, row="row", col="session", margin_titles=True, sharey="row", sharex=True
+    fr_ma,
+    row="row",
+    col="session",
+    margin_titles=True,
+    sharey="row",
+    sharex=True,
+    aspect=0.7,
 )
 g.map(plot_fr, "fr_mat")
 fig = g.fig
