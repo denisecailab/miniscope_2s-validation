@@ -13,10 +13,11 @@ def kde_est(
     smp_space: np.ndarray,
     weight_name: str = None,
     zero_thres: float = 0,
+    spk_count_thres: int = 5,
 ) -> pd.DataFrame:
     if data[var_name].nunique() > 1:
         if weight_name is not None:
-            if (data[weight_name] > 0).sum() > 1:
+            if (data[weight_name] > 0).sum() > spk_count_thres:
                 kernel = gaussian_kde(
                     data[var_name], bw_method=bw_method, weights=data[weight_name]
                 )
