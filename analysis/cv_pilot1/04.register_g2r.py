@@ -24,9 +24,9 @@ from routine.utilities import df_set_metadata
 IN_GREEN_PATH = "./intermediate/processed/green"
 IN_RED_PATH = "./intermediate/processed/red"
 IN_SS_FILE = "./log/sessions.csv"
-IN_RED_MAP = "./intermediate/cross_reg/red/mappings_meta.pkl"
-IN_GREEN_MAP = "./intermediate/cross_reg/green/mappings_meta.pkl"
-PARAM_DIST_THRES = 10
+IN_RED_MAP = "./intermediate/cross_reg/red/mappings_meta_fill.pkl"
+IN_GREEN_MAP = "./intermediate/cross_reg/green/mappings_meta_fill.pkl"
+PARAM_DIST_THRES = 8
 OUT_PATH = "./intermediate/register_g2r"
 FIG_PATH = "./figs/register_g2r/"
 
@@ -58,9 +58,9 @@ for anm, anm_df in tqdm(list(ss_df.groupby("animal"))):
             warnings.warn("Missing data for {} {}".format(anm, ss))
             continue
         # alignment
-        trans, _ = est_affine(green_ds["max_proj"], red_ds["max_proj"])
         A_red = red_ds["A"].compute()
         A_green = green_ds["A"].compute()
+        trans, _ = est_affine(A_green.max("unit_id"), A_red.max("unit_id"))
         A_green_trans = xr.apply_ufunc(
             apply_affine,
             green_ds["A"],
@@ -123,8 +123,13 @@ map_red = pd.read_pickle(IN_RED_MAP)
 map_green = pd.read_pickle(IN_GREEN_MAP)
 map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"))
 map_green_reg = pd.read_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
+map_red = map_red[map_red["session"].notnull().sum(axis="columns") > 1].copy()
+map_green = map_green[map_green["session"].notnull().sum(axis="columns") > 1].copy()
+map_green_reg = map_green_reg[
+    map_green_reg["session"].notnull().sum(axis="columns") > 1
+].copy()
 cells_im = []
-for anm, anm_df in map_g2r.groupby("animal"):
+for anm, anm_df in tqdm(list(map_g2r.groupby("animal"))):
     plt_algn_dict = dict()
     plt_cells_dict = dict()
     for ss, mapping in tqdm(list(anm_df.groupby("session")), leave=False):
@@ -149,8 +154,19 @@ for anm, anm_df in map_g2r.groupby("animal"):
             "session", ss
         ].dropna()
         idx_green = idx_green[idx_green > 0]
+        if len(idx_green) > 0:
+            ag = A_green_trans.sel(unit_id=np.array(idx_green)).max("unit_id")
+        else:
+            h, w = np.array(A_green_trans.coords["height"]), np.array(
+                A_green_trans.coords["width"]
+            )
+            ag = xr.DataArray(
+                np.zeros((len(h), len(w))),
+                dims=["height", "width"],
+                coords={"height": h, "width": w},
+            )
         c_ovly, c_gn, c_red = plot_overlap(
-            A_green_trans.sel(unit_id=np.array(idx_green)).max("unit_id"),
+            ag,
             A_red.sel(unit_id=np.array(idx_red)).max("unit_id"),
             return_raw=True,
         )
@@ -173,6 +189,7 @@ for anm, anm_df in map_g2r.groupby("animal"):
     hv.save(cells_plot, os.path.join(fig_cells_path, "{}.html".format(anm)))
 cells_im = pd.concat(cells_im, ignore_index=True)
 cells_im.to_pickle(os.path.join(OUT_PATH, "cells_im.pkl"))
+
 #%% generate cells im figure
 def plot_cells(x, **kwargs):
     ax = plt.gca()
@@ -264,41 +281,93 @@ def agg_pactive(df):
     return df_agg.set_index("pactive")
 
 
+def agg_per_ss(df):
+    ret_df = []
+    for ss in df["session"]:
+        cur_df = df[df[("session", ss)].notnull()].copy()
+        cur_df.columns = cur_df.columns.droplevel(0)
+        cur_agg = cur_df.groupby("nactive").size().reset_index(name="counts")
+        cur_agg["density"] = cur_agg["counts"] / cur_agg["counts"].sum()
+        cur_agg["session"] = ss
+        ret_df.append(cur_agg)
+    return pd.concat(ret_df, ignore_index=True).set_index("nactive")
+
+
+def hist_wrap(data, x, **kwargs):
+    if len(data[x].dropna()) > 0:
+        ax = plt.gca()
+        sns.histplot(data=data, x=x, ax=ax, **kwargs)
+
+
+def bar_wrap(data, x, **kwargs):
+    if len(data[x].dropna()) > 0:
+        ax = plt.gca()
+        sns.barplot(data=data, x=x, ax=ax, **kwargs)
+
+
+def swarm_wrap(data, x, **kwargs):
+    if len(data[x].dropna()) > 0:
+        ax = plt.gca()
+        sns.swarmplot(data=data, x=x, ax=ax, **kwargs)
+
+
 map_red = pd.read_pickle(IN_RED_MAP)
 map_green = pd.read_pickle(IN_GREEN_MAP)
 map_green_reg = pd.read_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
 map_red = map_red.groupby(("meta", "animal")).apply(find_active)
 map_green = map_green.groupby(("meta", "animal")).apply(find_active)
 map_green_reg = map_green_reg.groupby(("meta", "animal")).apply(find_active)
-map_red["variable", "pactive"] = (
-    map_red["variable", "nactive"] / map_red["variable", "nsess"]
+red_agg = (
+    map_red.groupby(("meta", "animal"))
+    .apply(agg_per_ss)
+    .reset_index()
+    .rename(columns={("meta", "animal"): "animal"})
 )
-map_green["variable", "pactive"] = (
-    map_green["variable", "nactive"] / map_green["variable", "nsess"]
+green_agg = (
+    map_green.groupby(("meta", "animal"))
+    .apply(agg_per_ss)
+    .reset_index()
+    .rename(columns={("meta", "animal"): "animal"})
 )
 map_green_reg["variable", "pactive"] = (
     map_green_reg["variable", "nactive"] / map_green_reg["variable", "npresent"]
 )
-map_red.columns = map_red.columns.droplevel(0)
-map_green.columns = map_green.columns.droplevel(0)
 map_green_reg.columns = map_green_reg.columns.droplevel(0)
-red_agg = map_red.groupby("animal").apply(agg_pactive).reset_index()
-green_agg = map_green.groupby("animal").apply(agg_pactive).reset_index()
 green_reg_agg = map_green_reg.groupby("animal").apply(agg_pactive).reset_index()
 red_agg["method"] = "tdTomato channel"
 green_agg["method"] = "GCaMP channel"
-green_reg_agg["method"] = "GCaMP cells\nregistered to tdTomato"
+green_reg_agg["method"] = "GCaMP cells registered\nto tdTomato"
 agg_df = pd.concat([red_agg, green_agg, green_reg_agg], ignore_index=True)
-g = sns.FacetGrid(agg_df, col="method")
+agg_df = agg_df[agg_df["animal"] != "m09"]
+g = sns.FacetGrid(
+    agg_df, row="method", col="animal", margin_titles=True, sharex="row", sharey="row"
+)
+g.set_xlabels(clear_inner=False)
 g.map_dataframe(
-    sns.histplot,
+    bar_wrap,
+    x="nactive",
+    y="density",
+    errorbar="se",
+    saturation=0.8,
+    errwidth=1.5,
+    capsize=0.3,
+)
+g.map_dataframe(
+    hist_wrap,
     x="pactive",
     weights="density",
     stat="probability",
-    bins=8,
+    bins=5,
     binrange=(0, 1),
-    kde=True,
 )
-g.set_titles("{col_name}")
-g.set_axis_labels(x_var="Proportion of\nsessions active", y_var="Proportion of cells")
+g.map_dataframe(swarm_wrap, x="nactive", y="density", color="black", alpha=0.8)
+g.set_titles(row_template="{row_name}")
+for ax in g.axes[0, :]:
+    ax.set_xlabel("# of sessions active")
+for ax in g.axes[1, :]:
+    ax.set_xlabel("# of sessions active")
+for ax in g.axes[2, :]:
+    ax.set_xlabel("Probability of active")
+g.set_ylabels("Proportion of cells")
+g.fig.tight_layout()
 g.fig.savefig(os.path.join(FIG_PATH, "summary.svg"), dpi=500, bbox_inches="tight")
