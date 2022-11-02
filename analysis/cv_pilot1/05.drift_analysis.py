@@ -13,14 +13,15 @@ from tqdm.auto import tqdm
 
 from routine.place_cell import compute_si, compute_stb, find_peak_field, kde_est
 from routine.plotting import scatter_agg
-from routine.utilities import nan_corr, norm
+from routine.utilities import corr_mat, nan_corr, norm, thres_gmm
 
 IN_SS_CSV = "./log/sessions.csv"
 IN_PS_PATH = "./intermediate/processed/green"
 IN_FM_LABEL = "./intermediate/frame_label/fm_label.nc"
 IN_RAW_MAP = "./intermediate/cross_reg/green/mappings_meta_fill.pkl"
 IN_REG_MAP = "./intermediate/register_g2r/green_mapping_reg.pkl"
-PARAM_BW = 3
+PARAM_BW = 0.5
+PARAM_BW_OCCP = 0.2
 PARAM_SMP_SPACE = np.linspace(-100, 100, 200)
 PARAM_STB_THRES = 0.1
 PARAM_SI_THRES = 0.3
@@ -44,14 +45,22 @@ for _, row in tqdm(list(ss_csv.iterrows())):
     except FileNotFoundError:
         warnings.warn("missing data for {}-{}".format(anm, ss))
         continue
-    S_df = ps_ds["S"].to_dataframe().dropna().reset_index()
+    Sbin = xr.apply_ufunc(
+        thres_gmm,
+        ps_ds["S"],
+        input_core_dims=[["frame"]],
+        output_core_dims=[["frame"]],
+        kwargs={"pos_thres": 0.3},
+        vectorize=True,
+    ).compute()
+    S_df = Sbin.to_dataframe().dropna().reset_index()
     pos_df = S_df[["animal", "session", "frame", "linpos", "trial"]].drop_duplicates()
     occp = (
         pos_df.groupby(["animal", "session", "trial"])
         .apply(
             kde_est,
             var_name="linpos",
-            bw_method=PARAM_BW,
+            bw_method=PARAM_BW_OCCP,
             smp_space=PARAM_SMP_SPACE,
             zero_thres=1e-4,
         )
@@ -119,10 +128,9 @@ mapping_dict = {
 }
 fr_df = pd.read_feather(os.path.join(OUT_PATH, "fr.feat"))
 metric_df = pd.read_feather(os.path.join(OUT_PATH, "metric.feat"))
-# metric_df["valid"] = np.logical_and(
-#     metric_df["stb"] > PARAM_STB_THRES, metric_df["si"] > PARAM_SI_THRES
-# )
-metric_df["valid"] = metric_df["si"] > PARAM_SI_THRES
+metric_df["valid"] = np.logical_and(
+    metric_df["stb"] > PARAM_STB_THRES, metric_df["si"] > PARAM_SI_THRES
+)
 metric_df = metric_df.set_index(["animal", "session", "unit_id"])
 fr_df = (
     fr_df.groupby(["animal", "session", "unit_id", "smp_space"])["fr_norm"]
@@ -160,23 +168,22 @@ for mmethod, mmap in mapping_dict.items():
                     .set_index(["unit_id", "smp_space"])["fr_norm"]
                     .to_xarray()
                 )
-                r = nan_corr(frA, frB)
-            else:
-                r = np.nan
-            pv_corr_ls.append(
-                pd.DataFrame(
-                    [
+                r_all = nan_corr(np.array(frA), np.array(frB))
+                r_cell = corr_mat(np.array(frA), np.array(frB), agg_axis=1)
+                pv_corr_ls.append(
+                    pd.DataFrame(
                         {
                             "map_method": mmethod,
                             "animal": anm,
                             "ssA": ssA,
                             "ssB": ssB,
+                            "uidA": np.concatenate([["mat"], uidA]),
+                            "uidB": np.concatenate([["mat"], uidB]),
                             "tdist": tdist,
-                            "corr": r,
+                            "corr": np.concatenate([[r_all], r_cell]),
                         }
-                    ]
+                    )
                 )
-            )
 pv_corr = pd.concat(pv_corr_ls, ignore_index=True)
 pv_corr.to_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
 
@@ -186,45 +193,52 @@ lmap = {"green/raw": "GCaMP channel", "red/registered": "Registered GCaMP cells"
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
 pv_corr = pv_corr[pv_corr["animal"] != "m09"].copy()
 pv_corr["color"] = pv_corr["map_method"].map(cmap)
-fig = scatter_agg(
-    pv_corr,
-    x="tdist",
-    y="corr",
-    facet_row=None,
-    facet_col="animal",
-    col_wrap=3,
-    legend_dim="map_method",
-    marker={"color": "color"},
-)
-fig.update_xaxes(title="Days apart")
-fig.update_yaxes(range=(-0.1, 0.6), title="PV correlation")
-fig.write_html(os.path.join(FIG_PATH, "pv_corr.html"))
-fig, ax = plt.subplots(figsize=(7.5, 4.8))
 pv_corr["map_method"] = pv_corr["map_method"].map(lmap)
-ax = sns.swarmplot(
-    pv_corr,
-    x="tdist",
-    y="corr",
-    hue="map_method",
-    edgecolor="gray",
-    dodge=True,
-    ax=ax,
-    legend=False,
-    native_scale=True,
-)
-ax = sns.lineplot(
-    pv_corr,
-    x="tdist",
-    y="corr",
-    hue="map_method",
-    errorbar="se",
-    ax=ax,
-)
-ax.set_xlabel("Days apart")
-ax.set_ylabel("PV correlation")
-ax.set_ylim((0, 1.1))
-plt.legend(title=None)
-fig.savefig(os.path.join(FIG_PATH, "pv_corr.svg"), dpi=500)
+corr_dict = {
+    "by_cell": pv_corr[pv_corr["uidA"] != "mat"].copy(),
+    "by_session": pv_corr[pv_corr["uidA"] == "mat"].copy(),
+}
+for by, cur_corr in corr_dict.items():
+    fig = scatter_agg(
+        cur_corr,
+        x="tdist",
+        y="corr",
+        facet_row=None,
+        facet_col="animal",
+        col_wrap=3,
+        legend_dim="map_method",
+        marker={"color": "color"},
+    )
+    fig.update_xaxes(title="Days apart")
+    fig.update_yaxes(range=(-0.1, 0.6), title="PV correlation")
+    fig.write_html(os.path.join(FIG_PATH, "pv_corr-{}.html".format(by)))
+    fig, ax = plt.subplots(figsize=(7.5, 4.8))
+    ax = sns.swarmplot(
+        cur_corr,
+        x="tdist",
+        y="corr",
+        hue="map_method",
+        edgecolor="gray",
+        dodge=True,
+        ax=ax,
+        legend=False,
+        native_scale=True,
+        size=3,
+    )
+    ax = sns.lineplot(
+        pv_corr,
+        x="tdist",
+        y="corr",
+        hue="map_method",
+        errorbar="se",
+        ax=ax,
+    )
+    ax.set_xlabel("Days apart")
+    ax.set_ylabel("PV correlation")
+    ax.set_ylim((0, 1.1))
+    plt.legend(title=None)
+    fig.savefig(os.path.join(FIG_PATH, "pv_corr-{}.svg".format(by)), dpi=500)
+    plt.close(fig)
 
 #%% plot cells
 def plot_fr(x, **kwargs):
@@ -239,10 +253,9 @@ mapping_dict = {
 }
 fr_df = pd.read_feather(os.path.join(OUT_PATH, "fr.feat"))
 metric_df = pd.read_feather(os.path.join(OUT_PATH, "metric.feat"))
-# metric_df["valid"] = np.logical_and(
-#     metric_df["stb"] > PARAM_STB_THRES, metric_df["si"] > PARAM_SI_THRES
-# )
-metric_df["valid"] = metric_df["si"] > PARAM_SI_THRES
+metric_df["valid"] = np.logical_and(
+    metric_df["stb"] > PARAM_STB_THRES, metric_df["si"] > PARAM_SI_THRES
+)
 metric_df = metric_df.set_index(["animal", "session", "unit_id"])
 fr_df = (
     fr_df.groupby(["animal", "session", "unit_id", "smp_space"])["fr_norm"]
