@@ -5,6 +5,7 @@ import re
 import numpy as np
 import xarray as xr
 from scipy.interpolate import interp1d
+from sklearn.mixture import GaussianMixture
 
 
 def norm(a):
@@ -116,8 +117,8 @@ def nan_corr(a, b):
 
 
 def corr_mat(a: np.ndarray, b: np.ndarray, agg_axis=0):
-    a = a - a.mean(axis=agg_axis)
-    b = b - b.mean(axis=agg_axis)
+    a = a - a.mean(axis=agg_axis, keepdims=True)
+    b = b - b.mean(axis=agg_axis, keepdims=True)
     with np.errstate(divide="ignore"):
         return (a * b).sum(axis=agg_axis) / np.sqrt(
             (a**2).sum(axis=agg_axis) * (b**2).sum(axis=agg_axis)
@@ -128,3 +129,14 @@ def unique_seg(x: np.ndarray):
     _, x_cat = np.unique(x, return_inverse=True)
     d = np.diff(x_cat, prepend=x_cat[0]) != 0
     return np.cumsum(d)
+
+
+def thres_gmm(a: np.ndarray, com=-1, pos_thres=0.5) -> np.ndarray:
+    ret = np.zeros_like(a)
+    gmm = GaussianMixture(n_components=2)
+    gmm.fit(a.reshape(-1, 1))
+    idg = np.argsort(gmm.means_.reshape(-1))[com]
+    s = (gmm.predict(a.reshape(-1, 1)) == idg).reshape(-1)
+    if s.sum() / len(s) < pos_thres:
+        ret = np.where(s, a, 0)
+    return ret
