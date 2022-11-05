@@ -27,11 +27,18 @@ IN_SS_FILE = "./log/sessions.csv"
 IN_RED_MAP = "./intermediate/cross_reg/red/mappings_meta_fill.pkl"
 IN_GREEN_MAP = "./intermediate/cross_reg/green/mappings_meta_fill.pkl"
 PARAM_DIST_THRES = 8
+PARAM_PLT_RC = {
+    "axes.titlesize": 11,
+    "axes.labelsize": 10,
+    "legend.fontsize": 10,
+    "font.sans-serif": "Arial",
+}
 OUT_PATH = "./intermediate/register_g2r"
 FIG_PATH = "./figs/register_g2r/"
 
 os.makedirs(OUT_PATH, exist_ok=True)
 os.makedirs(FIG_PATH, exist_ok=True)
+plt.rcParams.update(**PARAM_PLT_RC)
 
 #%% load data and align
 red_path = os.path.join(OUT_PATH, "Ared")
@@ -200,14 +207,19 @@ def plot_cells(x, **kwargs):
 fig_cells_path = os.path.join(FIG_PATH, "cells")
 os.makedirs(fig_cells_path, exist_ok=True)
 cells_im = pd.read_pickle(os.path.join(OUT_PATH, "cells_im.pkl"))
+cells_im["kind"] = cells_im["kind"].map(
+    {"red": "tdTomato", "green": "GCaMP", "ovly": "Overlay"}
+)
 for anm, anm_df in cells_im.groupby("animal"):
-    g = sns.FacetGrid(anm_df, row="kind", col="session", margin_titles=True)
+    g = sns.FacetGrid(anm_df, row="kind", col="session", margin_titles=True, height=2)
     g.map(plot_cells, "im")
+    g.set_titles(row_template="{row_name}", col_template="Session: {col_name}")
     fig = g.fig
     fig.tight_layout()
     fig.savefig(
         os.path.join(fig_cells_path, "{}.svg".format(anm)), dpi=500, bbox_inches="tight"
     )
+    plt.close(fig)
 
 #%% plot results
 def find_active(df):
