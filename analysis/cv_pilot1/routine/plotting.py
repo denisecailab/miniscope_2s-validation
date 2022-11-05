@@ -1,11 +1,15 @@
 import colorcet as cc
 import cv2
 import holoviews as hv
+import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
+import seaborn as sns
 import xarray as xr
 from matplotlib import cm
 from plotly import graph_objects as go
+
+from .utilities import unique_seg
 
 hv.notebook_extension("bokeh")
 
@@ -380,3 +384,33 @@ def line(error_y_mode=None, **kwargs):
             reordered_data.append(fig.data[i])
         fig.data = tuple(reordered_data)
     return fig
+
+
+def plot_behav(
+    data,
+    fm="frame",
+    pos="linpos",
+    pos_sgn="linpos_sign",
+    trial="trial",
+    ax=None,
+    **kwargs,
+):
+    data = data.copy()
+    if ax is None:
+        ax = plt.gca()
+    # plot trial
+    tidx = np.diff(data[trial], prepend=0) > 0
+    for f in data[fm][tidx]:
+        ax.axvline(f, linestyle=":", color="black", linewidth=0.5)
+    # plot position
+    seg_cmap = kwargs.get("seg_cmap", {0: "gray", 1: "blue", -1: "orange"})
+    seg_lmap = kwargs.get(
+        "seg_lmap", {0: "idle", 1: "running right", -1: "running left"}
+    )
+    data["seg_sign"] = np.sign(data[pos_sgn]).fillna(0)
+    data["pos_seg"] = unique_seg(data["seg_sign"])
+    for _, seg in data.groupby("pos_seg"):
+        s = seg["seg_sign"].unique().item()
+        sns.lineplot(
+            seg, x=fm, y=pos, color=seg_cmap[s], label=seg_lmap[s], ax=ax, linewidth=0.5
+        )
