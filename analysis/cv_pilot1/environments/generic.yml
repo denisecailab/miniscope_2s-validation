@@ -12,3 +12,6 @@ dependencies:
   - black
   - plotly
   - pyarrow
+  - svgutils
+  - seaborn
+  - scikit-learn
