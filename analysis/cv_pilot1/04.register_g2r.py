@@ -21,6 +21,8 @@ from routine.alignment import apply_affine, est_affine
 from routine.plotting import plot_overlap
 from routine.utilities import df_set_metadata
 
+from plotly.express.colors import qualitative
+
 IN_GREEN_PATH = "./intermediate/processed/green"
 IN_RED_PATH = "./intermediate/processed/red"
 IN_SS_FILE = "./log/sessions.csv"
@@ -306,19 +308,23 @@ def agg_per_ss(df):
 
 
 def hist_wrap(data, x, **kwargs):
-    if len(data[x].dropna()) > 0:
+    data = data[data[x].notnull()].copy()
+    if len(data) > 0:
         ax = plt.gca()
         sns.histplot(data=data, x=x, ax=ax, **kwargs)
 
 
 def bar_wrap(data, x, **kwargs):
-    if len(data[x].dropna()) > 0:
+    data = data[data[x].notnull()].copy()
+    if len(data) > 0:
         ax = plt.gca()
+        data[x] = data[x].astype(int)
         sns.barplot(data=data, x=x, ax=ax, **kwargs)
 
 
 def swarm_wrap(data, x, **kwargs):
-    if len(data[x].dropna()) > 0:
+    data = data[data[x].notnull()].copy()
+    if len(data) > 0:
         ax = plt.gca()
         sns.swarmplot(data=data, x=x, ax=ax, **kwargs)
 
@@ -346,13 +352,25 @@ map_green_reg["variable", "pactive"] = (
 )
 map_green_reg.columns = map_green_reg.columns.droplevel(0)
 green_reg_agg = map_green_reg.groupby("animal").apply(agg_pactive).reset_index()
-red_agg["method"] = "tdTomato channel"
-green_agg["method"] = "GCaMP channel"
-green_reg_agg["method"] = "GCaMP cells registered\nto tdTomato"
+red_agg["method"] = "tdTomato"
+green_agg["method"] = "GCaMP"
+green_reg_agg["method"] = "GCaMP cells registered\nwith tdTomato"
+cmap = {
+    "tdTomato": qualitative.Plotly[1],
+    "GCaMP": qualitative.Plotly[2],
+    "GCaMP cells registered\nwith tdTomato": qualitative.Plotly[4],
+}
 agg_df = pd.concat([red_agg, green_agg, green_reg_agg], ignore_index=True)
 agg_df = agg_df[agg_df["animal"] != "m09"]
 g = sns.FacetGrid(
-    agg_df, row="method", col="animal", margin_titles=True, sharex="row", sharey="row"
+    agg_df,
+    row="method",
+    col="animal",
+    margin_titles=True,
+    sharex="row",
+    sharey=True,
+    height=2.5,
+    aspect=0.8,
 )
 g.set_xlabels(clear_inner=False)
 g.map_dataframe(
@@ -363,6 +381,8 @@ g.map_dataframe(
     saturation=0.8,
     errwidth=1.5,
     capsize=0.3,
+    hue="method",
+    palette=cmap,
 )
 g.map_dataframe(
     hist_wrap,
@@ -371,15 +391,31 @@ g.map_dataframe(
     stat="probability",
     bins=5,
     binrange=(0, 1),
+    hue="method",
+    palette=cmap,
+    alpha=0.9,
 )
-g.map_dataframe(swarm_wrap, x="nactive", y="density", color="black", alpha=0.8)
-g.set_titles(row_template="{row_name}")
+g.map_dataframe(
+    swarm_wrap,
+    x="nactive",
+    y="density",
+    hue="method",
+    palette=cmap,
+    edgecolor="gray",
+    linewidth=1,
+    size=3,
+)
+g.set_titles(row_template="{row_name}", col_template="Animal: {col_name}")
 for ax in g.axes[0, :]:
-    ax.set_xlabel("# of sessions active")
+    ax.set_xlabel("# of sessions active", style="italic")
 for ax in g.axes[1, :]:
-    ax.set_xlabel("# of sessions active")
+    ax.set_xlabel("# of sessions active", style="italic")
 for ax in g.axes[2, :]:
-    ax.set_xlabel("Probability of active")
-g.set_ylabels("Proportion of cells")
-g.fig.tight_layout()
+    ax.set_xlabel("Probability of active", style="italic")
+    if ax.texts:
+        for tx in ax.texts:
+            x, y = tx.get_unitless_position()
+            tx.set(horizontalalignment="center", x=x + 0.08)
+g.set_ylabels("Proportion of cells", style="italic")
 g.fig.savefig(os.path.join(FIG_PATH, "summary.svg"), dpi=500, bbox_inches="tight")
+plt.close(g.fig)
