@@ -25,11 +25,18 @@ PARAM_BW_OCCP = 0.2
 PARAM_SMP_SPACE = np.linspace(-100, 100, 200)
 PARAM_STB_THRES = 0.1
 PARAM_SI_THRES = 0.3
+PARAM_PLT_RC = {
+    "axes.titlesize": 11,
+    "axes.labelsize": 10,
+    "legend.fontsize": 10,
+    "font.sans-serif": "Arial",
+}
 OUT_PATH = "./intermediate/drift"
 FIG_PATH = "./figs/drift"
 
 os.makedirs(OUT_PATH, exist_ok=True)
 os.makedirs(FIG_PATH, exist_ok=True)
+plt.rcParams.update(**PARAM_PLT_RC)
 
 #%% compute fr
 ss_csv = pd.read_csv(IN_SS_CSV)
@@ -188,8 +195,11 @@ pv_corr = pd.concat(pv_corr_ls, ignore_index=True)
 pv_corr.to_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
 
 #%% plot result
-cmap = {"green/raw": qualitative.Plotly[0], "red/registered": qualitative.Plotly[1]}
-lmap = {"green/raw": "GCaMP channel", "red/registered": "Registered GCaMP cells"}
+cmap = {"green/raw": qualitative.Plotly[2], "red/registered": qualitative.Plotly[4]}
+lmap = {
+    "green/raw": "GCaMP channel",
+    "red/registered": "GCaMP cells registered\nwith tdTomato",
+}
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
 pv_corr = pv_corr[pv_corr["animal"] != "m09"].copy()
 pv_corr["color"] = pv_corr["map_method"].map(cmap)
@@ -212,31 +222,42 @@ for by, cur_corr in corr_dict.items():
     fig.update_xaxes(title="Days apart")
     fig.update_yaxes(range=(-0.1, 0.6), title="PV correlation")
     fig.write_html(os.path.join(FIG_PATH, "pv_corr-{}.html".format(by)))
-    fig, ax = plt.subplots(figsize=(7.5, 4.8))
+    fig, ax = plt.subplots(figsize=(5, 4))
     ax = sns.swarmplot(
         cur_corr,
         x="tdist",
         y="corr",
         hue="map_method",
+        palette={lmap[k]: v for k, v in cmap.items()},
         edgecolor="gray",
         dodge=True,
         ax=ax,
         legend=False,
         native_scale=True,
         size=3,
+        linewidth=1,
+        warn_thresh=0.8,
     )
     ax = sns.lineplot(
         pv_corr,
         x="tdist",
         y="corr",
         hue="map_method",
+        palette={lmap[k]: v for k, v in cmap.items()},
         errorbar="se",
         ax=ax,
     )
     ax.set_xlabel("Days apart")
     ax.set_ylabel("PV correlation")
-    ax.set_ylim((0, 1.1))
-    plt.legend(title=None)
+    # ax.set_ylim((0, 1.15))
+    plt.legend(
+        title=None,
+        loc="lower center",
+        bbox_to_anchor=(0, 1.02, 1, 0.2),
+        mode="expand",
+        ncol=2,
+    )
+    fig.tight_layout()
     fig.savefig(os.path.join(FIG_PATH, "pv_corr-{}.svg".format(by)), dpi=500)
     plt.close(fig)
 
