@@ -222,7 +222,7 @@ for by, cur_corr in corr_dict.items():
     fig.update_xaxes(title="Days apart")
     fig.update_yaxes(range=(-0.1, 0.6), title="PV correlation")
     fig.write_html(os.path.join(FIG_PATH, "pv_corr-{}.html".format(by)))
-    fig, ax = plt.subplots(figsize=(5, 4))
+    fig, ax = plt.subplots(figsize=(6, 4))
     ax = sns.swarmplot(
         cur_corr,
         x="tdist",
@@ -247,8 +247,8 @@ for by, cur_corr in corr_dict.items():
         errorbar="se",
         ax=ax,
     )
-    ax.set_xlabel("Days apart")
-    ax.set_ylabel("PV correlation")
+    ax.set_xlabel("Days apart", style="italic")
+    ax.set_ylabel("PV correlation", style="italic")
     # ax.set_ylim((0, 1.15))
     plt.legend(
         title=None,
