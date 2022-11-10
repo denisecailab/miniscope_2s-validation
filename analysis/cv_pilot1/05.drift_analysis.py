@@ -7,8 +7,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import statsmodels.api as sm
 import xarray as xr
 from plotly.express.colors import qualitative
+from statsmodels.formula.api import ols
 from tqdm.auto import tqdm
 
 from routine.place_cell import compute_si, compute_stb, find_peak_field, kde_est
@@ -192,7 +194,7 @@ for mmethod, mmap in mapping_dict.items():
                     )
                 )
 pv_corr = pd.concat(pv_corr_ls, ignore_index=True)
-pv_corr.to_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
+pv_corr.to_csv(os.path.join(OUT_PATH, "pv_corr.csv"), index=False)
 
 #%% plot result
 cmap = {"green/raw": qualitative.Plotly[2], "red/registered": qualitative.Plotly[4]}
@@ -249,7 +251,6 @@ for by, cur_corr in corr_dict.items():
     )
     ax.set_xlabel("Days apart", style="italic")
     ax.set_ylabel("PV correlation", style="italic")
-    # ax.set_ylim((0, 1.15))
     plt.legend(
         title=None,
         loc="lower center",
@@ -260,6 +261,12 @@ for by, cur_corr in corr_dict.items():
     fig.tight_layout()
     fig.savefig(os.path.join(FIG_PATH, "pv_corr-{}.svg".format(by)), dpi=500)
     plt.close(fig)
+
+#%% run stats
+pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
+pv_corr = pv_corr[(pv_corr["animal"] != "m09") & (pv_corr["uidA"] == "mat")].copy()
+lm = ols("corr ~ C(map_method)*tdist", data=pv_corr).fit()
+anova = sm.stats.anova_lm(lm, typ=3)
 
 #%% plot cells
 def plot_fr(x, **kwargs):
