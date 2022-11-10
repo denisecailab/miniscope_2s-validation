@@ -199,8 +199,8 @@ pv_corr.to_csv(os.path.join(OUT_PATH, "pv_corr.csv"), index=False)
 #%% plot result
 cmap = {"green/raw": qualitative.Plotly[2], "red/registered": qualitative.Plotly[4]}
 lmap = {
-    "green/raw": "GCaMP channel",
-    "red/registered": "GCaMP cells registered\nwith tdTomato",
+    "green/raw": "All GCaMP cells\n(regardless of tdTomato channel)",
+    "red/registered": "GCaMP cells\nregistered with tdTomato",
 }
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
 pv_corr = pv_corr[pv_corr["animal"] != "m09"].copy()
