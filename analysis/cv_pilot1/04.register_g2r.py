@@ -200,22 +200,33 @@ cells_im = pd.concat(cells_im, ignore_index=True)
 cells_im.to_pickle(os.path.join(OUT_PATH, "cells_im.pkl"))
 
 #%% generate cells im figure
-def plot_cells(x, **kwargs):
+def plot_cells(x, gain=1.8, **kwargs):
     ax = plt.gca()
-    ax.imshow(x.values[0])
+    im = x.values[0]
+    im[:, :, :3] = (im[:, :, :3] * gain).clip(0, 1)
+    ax.imshow(im)
     ax.set_axis_off()
 
 
 fig_cells_path = os.path.join(FIG_PATH, "cells")
 os.makedirs(fig_cells_path, exist_ok=True)
 cells_im = pd.read_pickle(os.path.join(OUT_PATH, "cells_im.pkl"))
+cells_im["session"] = cells_im["session"].map(
+    {
+        "rec1": "Session 1",
+        "rec3": "Session 2",
+        "rec4": "Session 3",
+        "rec5": "Session 4",
+        "rec6": "Session 5",
+    }
+)
 cells_im["kind"] = cells_im["kind"].map(
     {"red": "tdTomato", "green": "GCaMP", "ovly": "Overlay"}
 )
 for anm, anm_df in cells_im.groupby("animal"):
     g = sns.FacetGrid(anm_df, row="kind", col="session", margin_titles=True, height=2)
     g.map(plot_cells, "im")
-    g.set_titles(row_template="{row_name}", col_template="Session: {col_name}")
+    g.set_titles(row_template="{row_name}", col_template="{col_name}")
     fig = g.fig
     fig.tight_layout()
     fig.savefig(
