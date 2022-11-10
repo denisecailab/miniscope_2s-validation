@@ -8,6 +8,7 @@ import seaborn as sns
 import xarray as xr
 from matplotlib import cm
 from plotly import graph_objects as go
+from plotly.express.colors import qualitative
 
 from .utilities import unique_seg
 
@@ -403,7 +404,10 @@ def plot_behav(
     for f in data[fm][tidx]:
         ax.axvline(f, linestyle=":", color="black", linewidth=0.5)
     # plot position
-    seg_cmap = kwargs.get("seg_cmap", {0: "gray", 1: "blue", -1: "orange"})
+    seg_cmap = kwargs.get(
+        "seg_cmap",
+        {0: qualitative.D3[7], 1: qualitative.Dark24[0], -1: qualitative.Dark24[1]},
+    )
     seg_lmap = kwargs.get(
         "seg_lmap", {0: "idle", 1: "running right", -1: "running left"}
     )
