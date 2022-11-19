@@ -25,7 +25,7 @@
             "miniscope_top": {
                 "deviceType": "Miniscope_V4_BNO",
 				"headOrientation": {
-					"enabled": true,
+					"enabled": false,
                     "filterBadData": true,
                     "COMMENT_plotTrace": "Add or remove 'roll' 'pitch' and/or 'yaw' to define which get plotted in the time trace display.",
                     "plotTrace": []
@@ -45,7 +45,7 @@
             "miniscope_side": {
                 "deviceType": "Miniscope_V4_BNO",
 				"headOrientation": {
-					"enabled": true,
+					"enabled": false,
                     "filterBadData": true,
                     "COMMENT_plotTrace": "Add or remove 'roll' 'pitch' and/or 'yaw' to define which get plotted in the time trace display.",
                     "plotTrace": []
