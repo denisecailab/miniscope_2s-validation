@@ -34,6 +34,7 @@ PARAM_PLT_RC = {
     "axes.labelsize": 10,
     "legend.fontsize": 10,
     "font.sans-serif": "Arial",
+    "svg.fonttype": "none",
 }
 OUT_PATH = "./intermediate/register_g2r"
 FIG_PATH = "./figs/register_g2r/"
@@ -211,22 +212,14 @@ def plot_cells(x, gain=1.8, **kwargs):
 fig_cells_path = os.path.join(FIG_PATH, "cells")
 os.makedirs(fig_cells_path, exist_ok=True)
 cells_im = pd.read_pickle(os.path.join(OUT_PATH, "cells_im.pkl"))
-cells_im["session"] = cells_im["session"].map(
-    {
-        "rec1": "Session 1",
-        "rec3": "Session 2",
-        "rec4": "Session 3",
-        "rec5": "Session 4",
-        "rec6": "Session 5",
-    }
-)
+cells_im = cells_im[cells_im["session"] == "rec3"].copy()
 cells_im["kind"] = cells_im["kind"].map(
     {"red": "tdTomato", "green": "GCaMP", "ovly": "Overlay"}
 )
 for anm, anm_df in cells_im.groupby("animal"):
-    g = sns.FacetGrid(anm_df, row="kind", col="session", margin_titles=True, height=2)
+    g = sns.FacetGrid(anm_df, col="kind", margin_titles=True, height=2)
     g.map(plot_cells, "im")
-    g.set_titles(row_template="{row_name}", col_template="{col_name}")
+    g.set_titles(col_template="{col_name}")
     fig = g.fig
     fig.tight_layout()
     fig.savefig(
@@ -371,16 +364,15 @@ cmap = {
     "GCaMP": qualitative.Plotly[2],
     "GCaMP cells registered\nwith tdTomato": qualitative.Plotly[4],
 }
-agg_df = pd.concat([red_agg, green_agg, green_reg_agg], ignore_index=True)
-agg_df = agg_df[agg_df["animal"] != "m09"]
+agg_df = pd.concat([red_agg, green_agg], ignore_index=True)
+agg_df = agg_df[agg_df["animal"] == "m16"]
 g = sns.FacetGrid(
     agg_df,
-    row="method",
-    col="animal",
+    col="method",
     margin_titles=True,
     sharex="row",
     sharey=True,
-    height=2.5,
+    height=2.2,
     aspect=0.8,
 )
 g.set_xlabels(clear_inner=False)
@@ -396,17 +388,6 @@ g.map_dataframe(
     palette=cmap,
 )
 g.map_dataframe(
-    hist_wrap,
-    x="pactive",
-    weights="density",
-    stat="probability",
-    bins=5,
-    binrange=(0, 1),
-    hue="method",
-    palette=cmap,
-    alpha=0.9,
-)
-g.map_dataframe(
     swarm_wrap,
     x="nactive",
     y="density",
@@ -416,17 +397,8 @@ g.map_dataframe(
     linewidth=1,
     size=3,
 )
-g.set_titles(row_template="{row_name}", col_template="Animal: {col_name}")
-for ax in g.axes[0, :]:
-    ax.set_xlabel("# of sessions active", style="italic")
-for ax in g.axes[1, :]:
-    ax.set_xlabel("# of sessions active", style="italic")
-for ax in g.axes[2, :]:
-    ax.set_xlabel("Probability of active", style="italic")
-    if ax.texts:
-        for tx in ax.texts:
-            x, y = tx.get_unitless_position()
-            tx.set(horizontalalignment="center", x=x + 0.08)
+g.set_titles(col_template="{col_name}")
+g.set_xlabels("# of sessions active", style="italic")
 g.set_ylabels("Proportion of cells", style="italic")
 g.fig.savefig(os.path.join(FIG_PATH, "summary.svg"), dpi=500, bbox_inches="tight")
 plt.close(g.fig)

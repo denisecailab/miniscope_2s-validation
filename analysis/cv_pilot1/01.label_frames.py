@@ -26,6 +26,7 @@ PARAM_PLT_RC = {
     "axes.labelsize": 10,
     "legend.fontsize": 10,
     "font.sans-serif": "Arial",
+    "svg.fonttype": "none",
 }
 FIG_PATH = "./figs/frame_label/"
 OUT_FM_LABEL = "./intermediate/frame_label"
@@ -88,18 +89,16 @@ for anm, anm_df in behav.groupby("animal"):
 
 #%% plot specific animals
 behav = pd.read_feather(os.path.join(OUT_FM_LABEL, "behav.feat"))
-behav = behav[
-    (behav["session"] == "rec6") & (behav["animal"].isin(["m09", "m11", "m12"]))
-].copy()
+behav = behav[(behav["session"] == "rec6") & (behav["animal"].isin(["m09"]))].copy()
 behav["time"] = behav["frame"] / 30
 g = sns.FacetGrid(behav, row="animal", legend_out=False, height=2, aspect=2.5)
 g.map_dataframe(plot_behav, fm="time")
-g.add_legend(
-    loc="lower center", bbox_to_anchor=(0, 1.15, 1, 0.2), mode="expand", ncol=3
-)
 g.set_xlabels("Time (s)", style="italic")
 g.set_ylabels("Linearized Position", style="italic")
-g.set_titles(row_template="Animal: {row_name}")
+g.add_legend(
+    loc="lower center", bbox_to_anchor=(0, 1.01, 1, 0.2), mode="expand", ncol=3
+)
+g.set_titles(row_template="")
 fig = g.figure
 fig.savefig(os.path.join(FIG_PATH, "example.svg"), dpi=500, bbox_inches="tight")
 plt.close(fig)
