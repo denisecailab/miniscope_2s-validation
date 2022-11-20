@@ -13,3 +13,4 @@ dependencies:
   - black
   - plotly
   - pyarrow
+  - seaborn
