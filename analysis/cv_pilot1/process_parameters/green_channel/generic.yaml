@@ -66,3 +66,4 @@ seeds_merge:
   noise_freq: 0.06
   thres_corr: 0.6
   thres_dist: 15
+stripe_corr: null

@@ -27,3 +27,4 @@ constructA:
   me_thres: 0.5
 mergeA:
   cos_thres: 0.5
+stripe_corr: null
