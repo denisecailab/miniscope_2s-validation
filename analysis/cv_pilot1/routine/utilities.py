@@ -68,12 +68,16 @@ def enumerated_product(*args):
     yield from zip(itt.product(*(range(len(x)) for x in args)), itt.product(*args))
 
 
-def resample_motion(motion, nsmp):
-    motion_ret = np.zeros((nsmp, 2))
-    f_org = np.linspace(0, 1, motion.shape[0], endpoint=True)
-    f_new = np.linspace(0, 1, nsmp, endpoint=True)
+def resample_motion(motion, nsmp=None, f_org=None, f_new=None):
+    if f_org is None:
+        f_org = np.linspace(0, 1, motion.shape[0], endpoint=True)
+    if f_new is None:
+        f_new = np.linspace(0, 1, nsmp, endpoint=True)
+    motion_ret = np.zeros((len(f_new), 2))
     for i in range(2):
-        motion_ret[:, i] = interp1d(f_org, motion[:, i])(f_new)
+        motion_ret[:, i] = interp1d(
+            f_org, motion[:, i], bounds_error=False, fill_value="extrapolate"
+        )(f_new)
     return motion_ret
 
 
