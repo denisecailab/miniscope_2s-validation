@@ -28,6 +28,7 @@ IN_DPATH = "./intermediate/processed/red"
 IN_SS_CSV = "./log/sessions.csv"
 IN_DPAT = r".*\.nc$"
 PARAM_DIST = 5
+PARAM_SUB_SS = ["rec{}".format(s) for s in range(3, 12)]
 OUT_PATH = "./intermediate/cross_reg/red"
 FIG_PATH = "./figs/cross_reg/red"
 os.makedirs(OUT_PATH, exist_ok=True)
@@ -74,7 +75,11 @@ window = shift_ds["window"]
 cents = calculate_centroids(A_shifted, window)
 dist = calculate_centroid_distance(cents, index_dim=["animal"])
 dist_ft = dist[dist["variable", "distance"] < PARAM_DIST].copy()
+dist_ft = dist_ft[
+    list(filter(lambda c: c[0] != "session" or c[1] in PARAM_SUB_SS, dist_ft.columns))
+].copy()
 dist_ft = group_by_session(dist_ft)
+dist_ft = dist_ft.loc[dist_ft["group", "group"].apply(len) > 1, :].copy()
 mappings = calculate_mapping(dist_ft)
 mappings_meta = resolve_mapping(mappings)
 mappings_meta_fill = fill_mapping(mappings_meta, cents)

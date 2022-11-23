@@ -29,6 +29,7 @@ IN_SS_FILE = "./log/sessions.csv"
 IN_RED_MAP = "./intermediate/cross_reg/red/mappings_meta_fill.pkl"
 IN_GREEN_MAP = "./intermediate/cross_reg/green/mappings_meta_fill.pkl"
 PARAM_DIST_THRES = 8
+PARAM_SUB_SS = ["rec{}".format(s) for s in range(3, 12)]
 PARAM_PLT_RC = {
     "axes.titlesize": 11,
     "axes.labelsize": 10,
@@ -131,6 +132,7 @@ os.makedirs(fig_cells_path, exist_ok=True)
 map_red = pd.read_pickle(IN_RED_MAP)
 map_green = pd.read_pickle(IN_GREEN_MAP)
 map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"))
+map_g2r = map_g2r.loc[map_g2r["session"].isin(PARAM_SUB_SS)].copy()
 map_green_reg = pd.read_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
 map_red = map_red[map_red["session"].notnull().sum(axis="columns") > 1].copy()
 map_green = map_green[map_green["session"].notnull().sum(axis="columns") > 1].copy()
@@ -400,7 +402,7 @@ g.map_dataframe(
     x="pactive",
     weights="density",
     stat="probability",
-    bins=5,
+    bins=9,
     binrange=(0, 1),
     hue="method",
     palette=cmap,
@@ -413,8 +415,9 @@ g.map_dataframe(
     hue="method",
     palette=cmap,
     edgecolor="gray",
-    linewidth=1,
-    size=3,
+    linewidth=0.8,
+    size=2,
+    warn_thresh=0.8,
 )
 g.set_titles(row_template="{row_name}", col_template="Animal: {col_name}")
 for ax in g.axes[0, :]:
