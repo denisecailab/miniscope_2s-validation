@@ -83,7 +83,7 @@ date,time,type,animal,name,analyze,data,comment
 20221030,15:46,recording,m12,rec6,True,m12/2022_10_30/15_46_31,
 20221030,16:24,recording,m15,rec6,True,m15/2022_10_30/16_24_03,
 20221030,16:55,recording,m16,rec6,True,m16/2022_10_30/16_55_32,
-20221101,13:48,recording,m09,rec7,True,m09/2022_11_01/13_48_18,
+20221101,13:48,recording,m09,rec7,False,m09/2022_11_01/13_48_18,
 20221101,14:14,recording,m10,rec7,True,m10/2022_11_01/14_14_56,
 20221101,14:42,recording,m11,rec7,True,m11/2022_11_01/14_42_21,
 20221101,15:08,recording,m12,rec7,True,m12/2022_11_01/15_08_19,
@@ -95,19 +95,19 @@ date,time,type,animal,name,analyze,data,comment
 20221103,16:44,recording,m12,rec8,True,m12/2022_11_03/16_44_30,
 20221103,17:14,recording,m15,rec8,True,m15/2022_11_03/17_14_06,
 20221103,17:47,recording,m16,rec8,True,m16/2022_11_03/17_47_39,
-20221105,16:57,recording,m09,rec9,True,m09/2022_11_05/16_57_48,
+20221105,16:57,recording,m09,rec9,False,m09/2022_11_05/16_57_48,
 20221105,18:04,recording,m10,rec9,True,m10/2022_11_05/18_04_20,
 20221105,18:33,recording,m11,rec9,True,m11/2022_11_05/18_33_15,
 20221105,19:00,recording,m12,rec9,True,m12/2022_11_05/19_00_49,
 20221105,19:27,recording,m15,rec9,True,m15/2022_11_05/19_27_37,wire got super tangled near end
 20221105,19:55,recording,m16,rec9,True,m16/2022_11_05/19_55_01,behavecam wouldn't pick up on mouse when it was in corner
-20221107,14:21,recording,m09,rec10,True,m09/2022_11_07/14_21_13,
+20221107,14:21,recording,m09,rec10,False,m09/2022_11_07/14_21_13,
 20221107,14:52,recording,m10,rec10,True,m10/2022_11_07/14_52_56,
 20221107,15:18,recording,m11,rec10,True,m11/2022_11_07/15_18_09,
 20221107,15:46,recording,m12,rec10,True,m12/2022_11_07/15_46_45,some frames dropped and gain seemed to get lower during recording
 20221107,16:58,recording,m15,rec10,True,m15/2022_11_07/16_58_27,some frames dropped and gain seemed to get lower during recording
 20221107,17:25,recording,m16,rec10,True,m16/2022_11_07/17_25_53,
-20221109,15:38,recording,m09,rec11,True,m09/2022_11_09/15_38_59,top channel glitched with horizontal lines for like a minute then returned to normal
+20221109,15:38,recording,m09,rec11,False,m09/2022_11_09/15_38_59,top channel glitched with horizontal lines for like a minute then returned to normal
 20221109,16:30,recording,m10,rec11,True,m10/2022_11_09/16_30_08,gain lowered randomly during recording and never changed back
 20221109,16:58,recording,m11,rec11,True,m11/2022_11_09/16_58_24,
 20221109,17:26,recording,m12,rec11,True,m12/2022_11_09/17_26_01,
