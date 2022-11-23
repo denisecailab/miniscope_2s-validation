@@ -23,6 +23,7 @@ from minian.visualization import generate_videos, visualize_motion, visualize_se
 from .alignment import apply_affine
 from .plotting import plotA_contour
 from .static_channel import constructA, find_seed, mergeA
+from .stripe_correction import label_good_frames
 from .utilities import resample_motion
 
 
@@ -76,6 +77,9 @@ def minian_process(
         intpath,
         overwrite=True,
     )
+    if param["stripe_corr"] is not None:
+        good_frame = label_good_frames(varr, **param["stripe_corr"])
+        varr = varr.sel(frame=good_frame)
     varr_ref = varr.sel(param.get("subset"))
     # preprocessing
     if param["glow_rm"] == "min":
@@ -99,7 +103,13 @@ def minian_process(
             vectorize=True,
             dask="parallelized",
         )
-    varr_ref = save_minian(varr_ref.rename("varr_ref"), dpath=intpath, overwrite=True)
+    varr_ref = save_minian(
+        varr_ref.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename(
+            "varr_ref"
+        ),
+        dpath=intpath,
+        overwrite=True,
+    )
     if return_stage == "pre-processing":
         return varr_ref, plots
     # motion-correction
@@ -107,13 +117,17 @@ def minian_process(
         motion = estimate_motion(varr_ref, **param["estimate_motion"])
     else:
         motion = xr.DataArray(
-            resample_motion(motion.values, varr_ref.sizes["frame"]),
+            resample_motion(
+                motion.values,
+                f_org=motion.coords["frame"].values,
+                f_new=varr_ref.coords["frame"].values,
+            ),
             dims=motion.dims,
             coords={
                 "frame": varr_ref.coords["frame"].values,
                 "shift_dim": motion.coords["shift_dim"].values,
             },
-        )
+        ).sel(frame=varr_ref.coords["frame"].values)
     motion = save_minian(
         motion.rename("motion").chunk({"frame": chk["frame"]}), intpath, overwrite=True
     )
