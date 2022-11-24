@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import gaussian_kde
 from scipy.ndimage import center_of_mass
+from sklearn.neighbors import KernelDensity
 
 from .utilities import corr_mat
 
@@ -9,29 +10,33 @@ from .utilities import corr_mat
 def kde_est(
     data: pd.DataFrame,
     var_name: str,
-    bw_method: float,
+    bandwidth: float,
     smp_space: np.ndarray,
+    kernel="cosine",
     weight_name: str = None,
-    zero_thres: float = 0,
-    spk_count_thres: int = 5,
+    spk_count_thres: int = 0,
+    **kwargs,
 ) -> pd.DataFrame:
-    if data[var_name].nunique() > 1:
+    dat = data[var_name]
+    if dat.nunique() > 1:
+        kde = KernelDensity(kernel=kernel, bandwidth=bandwidth, **kwargs)
+        dat = np.array(dat)
         if weight_name is not None:
-            if (data[weight_name] > 0).sum() > spk_count_thres:
-                kernel = gaussian_kde(
-                    data[var_name], bw_method=bw_method, weights=data[weight_name]
-                )
+            wt = np.array(data[weight_name])
+            if (wt > 0).sum() > spk_count_thres:
+                dat = dat[wt > 0]
+                wt = wt[wt > 0]
+                kde.fit(dat.reshape((-1, 1)), sample_weight=wt)
             else:
                 return pd.DataFrame({"smp_space": smp_space, var_name: np.nan})
         else:
-            kernel = gaussian_kde(data[var_name], bw_method=bw_method)
-        kde = kernel(smp_space)
-        kde[kde < zero_thres] = 0
-        if kde.sum() == 0:
-            kde = np.nan
+            kde.fit(dat.reshape((-1, 1)))
+        density = np.exp(kde.score_samples(smp_space.reshape((-1, 1))))
+        if density.sum() == 0:
+            density = np.nan
     else:
-        kde = np.nan
-    return pd.DataFrame({"smp_space": smp_space, var_name: kde})
+        density = np.nan
+    return pd.DataFrame({"smp_space": smp_space, var_name: density})
 
 
 def compute_stb(
