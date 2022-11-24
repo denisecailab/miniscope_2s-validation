@@ -21,12 +21,14 @@ IN_SS_CSV = "./log/sessions.csv"
 IN_PS_PATH = "./intermediate/processed/green"
 IN_FM_LABEL = "./intermediate/frame_label/fm_label.nc"
 IN_RAW_MAP = "./intermediate/cross_reg/green/mappings_meta_fill.pkl"
+IN_RED_MAP = "./intermediate/cross_reg/red/mappings_meta_fill.pkl"
 IN_REG_MAP = "./intermediate/register_g2r/green_mapping_reg.pkl"
-PARAM_BW = 0.5
-PARAM_BW_OCCP = 0.2
+PARAM_BW = 5
+PARAM_BW_OCCP = 5
 PARAM_SMP_SPACE = np.linspace(-100, 100, 200)
-PARAM_STB_THRES = 0.1
-PARAM_SI_THRES = 0.3
+PARAM_SUB_SS = ["rec{}".format(s) for s in range(3, 12)]
+PARAM_STB_THRES = 0
+PARAM_SI_THRES = 0
 PARAM_PLT_RC = {
     "axes.titlesize": 11,
     "axes.labelsize": 10,
@@ -59,7 +61,7 @@ for _, row in tqdm(list(ss_csv.iterrows())):
         ps_ds["S"],
         input_core_dims=[["frame"]],
         output_core_dims=[["frame"]],
-        kwargs={"pos_thres": 0.3},
+        kwargs={"pos_thres": 0.5},
         vectorize=True,
     ).compute()
     S_df = Sbin.to_dataframe().dropna().reset_index()
@@ -69,9 +71,8 @@ for _, row in tqdm(list(ss_csv.iterrows())):
         .apply(
             kde_est,
             var_name="linpos",
-            bw_method=PARAM_BW_OCCP,
+            bandwidth=PARAM_BW_OCCP,
             smp_space=PARAM_SMP_SPACE,
-            zero_thres=1e-4,
         )
         .rename(columns={"linpos": "occp"})
         .reset_index()
@@ -81,7 +82,7 @@ for _, row in tqdm(list(ss_csv.iterrows())):
         .apply(
             kde_est,
             var_name="linpos",
-            bw_method=PARAM_BW,
+            bandwidth=PARAM_BW,
             smp_space=PARAM_SMP_SPACE,
             weight_name="S",
         )
@@ -125,13 +126,14 @@ metric_df = stb_df.merge(
 ).merge(si_df, on=["animal", "session", "unit_id"], validate="one_to_one")
 metric_df.to_feather(os.path.join(OUT_PATH, "metric.feat"))
 
-#%% compute pv corr
+#%% compute pv corr and ovlp
 ss_csv = (
     pd.read_csv(IN_SS_CSV, parse_dates=["date"])
     .sort_values(["animal", "name"])
     .set_index(["animal", "name"])
 )
 mapping_dict = {
+    "red/raw": pd.read_pickle(IN_RED_MAP),
     "green/raw": pd.read_pickle(IN_RAW_MAP),
     "red/registered": pd.read_pickle(IN_REG_MAP),
 }
@@ -148,17 +150,48 @@ fr_df = (
     .set_index(["animal", "session", "unit_id"])
 )
 pv_corr_ls = []
+ovlp_ls = []
 for mmethod, mmap in mapping_dict.items():
     for ssA, ssB in tqdm(
         list(itt.combinations(mmap["session"].columns, 2)), leave=False
     ):
         mmap_sub = mmap[[("meta", "animal"), ("session", ssA), ("session", ssB)]]
-        mmap_sub = mmap_sub[(mmap_sub["session"] >= 0).all(axis="columns")]
+        mmap_sub = mmap_sub[mmap_sub["session"].notnull().any(axis="columns")]
         mmap_sub.columns = mmap_sub.columns.droplevel(0)
         for anm, mp in mmap_sub.groupby("animal"):
             tdist = np.abs(
                 (ss_csv.loc[anm, ssA]["date"] - ss_csv.loc[anm, ssB]["date"]).days
             )
+            if mmethod == "red_registered":
+                mp = mp[mp[[ssA, ssB]].notnull().all(axis="columns")]
+            novlp = (mp[[ssA, ssB]] >= 0).all(axis="columns").sum()
+            nAll = (mp[[ssA, ssB]] >= 0).any(axis="columns").sum()
+            nA = (mp[ssA] >= 0).sum()
+            nB = (mp[ssB] >= 0).sum()
+            actA = novlp / nA
+            actB = novlp / nB
+            act = np.mean([actA, actB])
+            ovlp = novlp / nAll
+            ovlp_ls.append(
+                pd.DataFrame(
+                    [
+                        {
+                            "map_method": mmethod,
+                            "animal": anm,
+                            "ssA": ssA,
+                            "ssB": ssB,
+                            "tdist": tdist,
+                            "actA": actA,
+                            "actB": actB,
+                            "actMean": act,
+                            "ovlp": ovlp,
+                        }
+                    ]
+                )
+            )
+            mp = mp[(mp[[ssA, ssB]] >= 0).all(axis="columns")]
+            if mmethod == "red/raw" or len(mp) == 0:
+                continue
             meA = metric_df.loc[anm, ssA, mp[ssA].values].reset_index()
             meB = metric_df.loc[anm, ssB, mp[ssB].values].reset_index()
             me = meA.join(meB, lsuffix="A", rsuffix="B")
@@ -194,21 +227,35 @@ for mmethod, mmap in mapping_dict.items():
                     )
                 )
 pv_corr = pd.concat(pv_corr_ls, ignore_index=True)
+ovlp = pd.concat(ovlp_ls, ignore_index=True)
 pv_corr.to_csv(os.path.join(OUT_PATH, "pv_corr.csv"), index=False)
+ovlp.to_csv(os.path.join(OUT_PATH, "ovlp.csv"), index=False)
 
-#%% plot result
-cmap = {"green/raw": qualitative.Plotly[2], "red/registered": qualitative.Plotly[4]}
+#%% plot pv corr
+cmap = {
+    "green/raw": qualitative.Plotly[2],
+    "red/registered": qualitative.Plotly[4],
+}
 lmap = {
     "green/raw": "All GCaMP cells\n(regardless of tdTomato channel)",
     "red/registered": "GCaMP cells\nregistered with tdTomato",
 }
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
-pv_corr = pv_corr[pv_corr["animal"] != "m09"].copy()
+pv_corr = pv_corr[~pv_corr["animal"].isin(["m09"])].copy()
+pv_corr_med = (
+    pv_corr[pv_corr["uidA"] != "mat"]
+    .groupby(["map_method", "animal", "ssA", "ssB", "tdist"])["corr"]
+    .median()
+    .reset_index()
+)
 pv_corr["color"] = pv_corr["map_method"].map(cmap)
 pv_corr["map_method"] = pv_corr["map_method"].map(lmap)
+pv_corr_med["color"] = pv_corr_med["map_method"].map(cmap)
+pv_corr_med["map_method"] = pv_corr_med["map_method"].map(lmap)
 corr_dict = {
     "by_cell": pv_corr[pv_corr["uidA"] != "mat"].copy(),
     "by_session": pv_corr[pv_corr["uidA"] == "mat"].copy(),
+    "by_cell_med": pv_corr_med,
 }
 for by, cur_corr in corr_dict.items():
     fig = scatter_agg(
@@ -222,9 +269,18 @@ for by, cur_corr in corr_dict.items():
         marker={"color": "color"},
     )
     fig.update_xaxes(title="Days apart")
-    fig.update_yaxes(range=(-0.1, 0.6), title="PV correlation")
+    fig.update_yaxes(range=(0, 1), title="PV correlation")
     fig.write_html(os.path.join(FIG_PATH, "pv_corr-{}.html".format(by)))
     fig, ax = plt.subplots(figsize=(6, 4))
+    ax = sns.lineplot(
+        cur_corr,
+        x="tdist",
+        y="corr",
+        hue="map_method",
+        palette={lmap[k]: v for k, v in cmap.items()},
+        errorbar="se",
+        ax=ax,
+    )
     ax = sns.swarmplot(
         cur_corr,
         x="tdist",
@@ -240,15 +296,6 @@ for by, cur_corr in corr_dict.items():
         linewidth=1,
         warn_thresh=0.8,
     )
-    ax = sns.lineplot(
-        pv_corr,
-        x="tdist",
-        y="corr",
-        hue="map_method",
-        palette={lmap[k]: v for k, v in cmap.items()},
-        errorbar="se",
-        ax=ax,
-    )
     ax.set_xlabel("Days apart", style="italic")
     ax.set_ylabel("PV correlation", style="italic")
     plt.legend(
@@ -262,6 +309,73 @@ for by, cur_corr in corr_dict.items():
     fig.savefig(os.path.join(FIG_PATH, "pv_corr-{}.svg".format(by)), dpi=500)
     plt.close(fig)
 
+#%% plot overlap
+cmap = {
+    "red/raw": qualitative.Plotly[1],
+    "green/raw": qualitative.Plotly[2],
+    "red/registered": qualitative.Plotly[4],
+}
+lmap = {
+    "red/raw": "tdTomato cells",
+    "green/raw": "All GCaMP cells\n(regardless of tdTomato channel)",
+    "red/registered": "GCaMP cells\nregistered with tdTomato",
+}
+ovlp = pd.read_csv(os.path.join(OUT_PATH, "ovlp.csv"))
+ovlp = ovlp[~ovlp["animal"].isin(["m09"])].copy()
+ovlp["color"] = ovlp["map_method"].map(cmap)
+ovlp["map_method"] = ovlp["map_method"].map(lmap)
+for metric in ["actMean", "ovlp"]:
+    fig = scatter_agg(
+        ovlp,
+        x="tdist",
+        y=metric,
+        facet_row=None,
+        facet_col="animal",
+        col_wrap=3,
+        legend_dim="map_method",
+        marker={"color": "color"},
+    )
+    fig.update_xaxes(title="Days apart")
+    fig.update_yaxes(range=(0, 1), title="Overlap")
+    fig.write_html(os.path.join(FIG_PATH, "overlap-{}.html".format(metric)))
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax = sns.swarmplot(
+        ovlp,
+        x="tdist",
+        y=metric,
+        hue="map_method",
+        palette={lmap[k]: v for k, v in cmap.items()},
+        edgecolor="gray",
+        dodge=True,
+        ax=ax,
+        legend=False,
+        native_scale=True,
+        size=3,
+        linewidth=1,
+        warn_thresh=0.8,
+    )
+    ax = sns.lineplot(
+        ovlp,
+        x="tdist",
+        y=metric,
+        hue="map_method",
+        palette={lmap[k]: v for k, v in cmap.items()},
+        errorbar="se",
+        ax=ax,
+    )
+    ax.set_xlabel("Days apart", style="italic")
+    ax.set_ylabel("Overlap", style="italic")
+    plt.legend(
+        title=None,
+        loc="lower center",
+        bbox_to_anchor=(0, 1.02, 1, 0.2),
+        mode="expand",
+        ncol=2,
+    )
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG_PATH, "overlap-{}.svg".format(metric)), dpi=500)
+    plt.close(fig)
+
 #%% run stats
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
 pv_corr = pv_corr[(pv_corr["animal"] != "m09") & (pv_corr["uidA"] == "mat")].copy()
@@ -271,7 +385,7 @@ anova = sm.stats.anova_lm(lm, typ=3)
 #%% plot cells
 def plot_fr(x, **kwargs):
     ax = plt.gca()
-    ax.imshow(x.values[0], cmap="viridis", aspect="auto")
+    ax.imshow(x.values[0], cmap="viridis", aspect="auto", interpolation="none")
     ax.set_axis_off()
 
 
@@ -291,7 +405,7 @@ fr_df = (
     .reset_index()
     .set_index(["animal", "session", "unit_id"])
 )
-sess_sub = ["rec1", "rec3", "rec4", "rec5", "rec6"]
+sess_sub = ["rec3", "rec4", "rec5", "rec6", "rec7", "rec8", "rec9", "rec10", "rec11"]
 fr_ma_ls = []
 for mmethod, mmap in mapping_dict.items():
     mmap_sub = mmap[[("session", s) for s in sess_sub] + [("meta", "animal")]]
