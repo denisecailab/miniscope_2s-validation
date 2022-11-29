@@ -58,7 +58,7 @@ for _, row in tqdm(list(ss_csv.iterrows())):
         continue
     Sbin = xr.apply_ufunc(
         thres_gmm,
-        ps_ds["S"],
+        ps_ds["S"].dropna("unit_id", how="all"),
         input_core_dims=[["frame"]],
         output_core_dims=[["frame"]],
         kwargs={"pos_thres": 0.5},
@@ -106,7 +106,7 @@ stb_df = (
 )
 fr_agg = (
     fr_df.groupby(["animal", "session", "unit_id", "smp_space"])
-    .agg({"fr_norm": "mean", "occp": "mean"})
+    .agg({"fr_norm": "mean", "occp": "mean", "fr": "mean"})
     .reset_index()
 )
 pos_df = (
