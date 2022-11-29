@@ -342,9 +342,16 @@ def swarm_wrap(data, x, **kwargs):
         sns.swarmplot(data=data, x=x, ax=ax, **kwargs)
 
 
-map_red = pd.read_pickle(IN_RED_MAP)
-map_green = pd.read_pickle(IN_GREEN_MAP)
-map_green_reg = pd.read_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
+def subset_sessions(df, ss):
+    cols = list(filter(lambda c: c[0] != "session" or c[1] in ss, df.columns))
+    return df[cols].copy()
+
+
+map_red = subset_sessions(pd.read_pickle(IN_RED_MAP), PARAM_SUB_SS)
+map_green = subset_sessions(pd.read_pickle(IN_GREEN_MAP), PARAM_SUB_SS)
+map_green_reg = subset_sessions(
+    pd.read_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl")), PARAM_SUB_SS
+)
 map_red = map_red.groupby(("meta", "animal")).apply(find_active)
 map_green = map_green.groupby(("meta", "animal")).apply(find_active)
 map_green_reg = map_green_reg.groupby(("meta", "animal")).apply(find_active)
@@ -364,6 +371,9 @@ map_green_reg["variable", "pactive"] = (
     map_green_reg["variable", "nactive"] / map_green_reg["variable", "npresent"]
 )
 map_green_reg.columns = map_green_reg.columns.droplevel(0)
+map_green_reg = map_green_reg[
+    (map_green_reg["npresent"] > 1) & (map_green_reg["nactive"] > 0)
+].copy()
 green_reg_agg = map_green_reg.groupby("animal").apply(agg_pactive).reset_index()
 red_agg["method"] = "tdTomato"
 green_agg["method"] = "GCaMP"
