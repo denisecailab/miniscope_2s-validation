@@ -117,7 +117,11 @@ def nan_corr(a, b):
     a, b = a[mask], b[mask]
     a = a - np.mean(a)
     b = b - np.mean(b)
-    return (a * b).sum() / np.sqrt((a**2).sum() * (b**2).sum())
+    ssum = (a**2).sum() * (b**2).sum()
+    if ssum > 0:
+        return (a * b).sum() / np.sqrt(ssum)
+    else:
+        return np.nan
 
 
 def corr_mat(a: np.ndarray, b: np.ndarray, agg_axis=0):
