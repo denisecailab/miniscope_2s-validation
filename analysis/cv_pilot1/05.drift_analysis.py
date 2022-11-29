@@ -377,11 +377,20 @@ for metric in ["actMean", "ovlp"]:
     fig.savefig(os.path.join(FIG_PATH, "overlap-{}.svg".format(metric)), dpi=500)
     plt.close(fig)
 
-#%% run stats
-pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
-pv_corr = pv_corr[(pv_corr["animal"] != "m09") & (pv_corr["uidA"] == "mat")].copy()
-lm = ols("corr ~ C(map_method)*tdist", data=pv_corr).fit()
+#%% run stats on pv corr
+df = pd.read_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
+df = df[(df["animal"].isin(PARAM_SUB_ANM)) & (df["uidA"] == "mat")].copy()
+lm = ols("corr ~ C(map_method)*tdist", data=df).fit(cov_type="HC1")
 anova = sm.stats.anova_lm(lm, typ=3)
+
+#%% run stats on overlap
+df = pd.read_csv(os.path.join(OUT_PATH, "ovlp.csv"))
+df = df[(df["animal"].isin(PARAM_SUB_ANM)) & (df["map_method"] != "red/raw")].copy()
+lm = ols("actMean ~ C(map_method)*tdist", data=df).fit(cov_type="HC1")
+anova = sm.stats.anova_lm(lm, typ=3)
+lm_dict = dict()
+for mmethod, mdf in df.groupby("map_method"):
+    lm_dict[mmethod] = ols("actMean ~ tdist", data=mdf).fit(cov_type="HC1")
 
 #%% plot cells
 def plot_fr(x, **kwargs):
