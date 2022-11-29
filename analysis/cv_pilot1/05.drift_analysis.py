@@ -26,7 +26,7 @@ IN_REG_MAP = "./intermediate/register_g2r/green_mapping_reg.pkl"
 PARAM_BW = 5
 PARAM_BW_OCCP = 5
 PARAM_SMP_SPACE = np.linspace(-100, 100, 200)
-PARAM_SUB_SS = ["rec{}".format(s) for s in range(3, 12)]
+PARAM_SUB_ANM = ["m12", "m15", "m16"]
 PARAM_STB_THRES = 0
 PARAM_SI_THRES = 0
 PARAM_PLT_RC = {
@@ -132,11 +132,12 @@ ss_csv = (
     .sort_values(["animal", "name"])
     .set_index(["animal", "name"])
 )
-mapping_dict = {
-    "red/raw": pd.read_pickle(IN_RED_MAP),
-    "green/raw": pd.read_pickle(IN_RAW_MAP),
-    "red/registered": pd.read_pickle(IN_REG_MAP),
-}
+map_red = pd.read_pickle(IN_RED_MAP)
+map_green = pd.read_pickle(IN_RAW_MAP)
+map_reg = pd.read_pickle(IN_REG_MAP)
+map_red = map_red[map_red["session"].notnull().all(axis="columns")].copy()
+map_reg = map_reg[map_reg["session"].notnull().all(axis="columns")].copy()
+mapping_dict = {"red/raw": map_red, "green/raw": map_green, "red/registered": map_reg}
 fr_df = pd.read_feather(os.path.join(OUT_PATH, "fr.feat"))
 metric_df = pd.read_feather(os.path.join(OUT_PATH, "metric.feat"))
 metric_df["valid"] = np.logical_and(
@@ -241,7 +242,7 @@ lmap = {
     "red/registered": "GCaMP cells\nregistered with tdTomato",
 }
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
-pv_corr = pv_corr[~pv_corr["animal"].isin(["m09"])].copy()
+pv_corr = pv_corr[pv_corr["animal"].isin(PARAM_SUB_ANM)].copy()
 pv_corr_med = (
     pv_corr[pv_corr["uidA"] != "mat"]
     .groupby(["map_method", "animal", "ssA", "ssB", "tdist"])["corr"]
@@ -321,7 +322,7 @@ lmap = {
     "red/registered": "GCaMP cells\nregistered with tdTomato",
 }
 ovlp = pd.read_csv(os.path.join(OUT_PATH, "ovlp.csv"))
-ovlp = ovlp[~ovlp["animal"].isin(["m09"])].copy()
+ovlp = ovlp[ovlp["animal"].isin(PARAM_SUB_ANM)].copy()
 ovlp["color"] = ovlp["map_method"].map(cmap)
 ovlp["map_method"] = ovlp["map_method"].map(lmap)
 for metric in ["actMean", "ovlp"]:
@@ -389,9 +390,13 @@ def plot_fr(x, **kwargs):
     ax.set_axis_off()
 
 
+map_gn = pd.read_pickle(IN_RAW_MAP)
+map_rd = pd.read_pickle(IN_REG_MAP)
+map_gn = map_gn[map_gn["meta", "animal"].isin(PARAM_SUB_ANM)].copy()
+map_rd = map_rd[map_rd["meta", "animal"].isin(PARAM_SUB_ANM)].copy()
 mapping_dict = {
-    "green": pd.read_pickle(IN_RAW_MAP),
-    "red": pd.read_pickle(IN_REG_MAP),
+    "green": map_gn,
+    "red": map_rd,
 }
 fr_df = pd.read_feather(os.path.join(OUT_PATH, "fr.feat"))
 metric_df = pd.read_feather(os.path.join(OUT_PATH, "metric.feat"))
