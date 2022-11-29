@@ -4,7 +4,7 @@ from scipy.stats import gaussian_kde
 from scipy.ndimage import center_of_mass
 from sklearn.neighbors import KernelDensity
 
-from .utilities import corr_mat
+from .utilities import nan_corr
 
 
 def kde_est(
@@ -75,18 +75,29 @@ def compute_stb(
         .to_xarray()
         .values
     )
-    rs = np.array([corr_mat(first, last), corr_mat(odd, even)])
+    if first.max() > 0 and last.max() > 0:
+        r_fl = nan_corr(first, last)
+    else:
+        r_fl = np.nan
+    if odd.max() > 0 and even.max() > 0:
+        r_oe = nan_corr(odd, even)
+    else:
+        r_oe = np.nan
+    rs = np.array([r_fl, r_oe])
     if np.isnan(rs).all():
         return np.nan
     else:
         return np.nanmean(rs)
 
 
-def compute_si(df, fr_name="fr_norm", occp_name="occp") -> float:
+def compute_si(df, fr_name="fr", occp_name="occp") -> float:
     fr, occp = df[fr_name].values, df[occp_name].values
     mfr = fr.mean()
-    fr_norm = fr / mfr
-    return (occp * fr_norm * np.log2(fr_norm, where=fr_norm > 0)).sum()
+    if mfr > 0:
+        fr_norm = fr / mfr
+        return (occp * fr_norm * np.log2(fr_norm, where=fr_norm > 0)).sum()
+    else:
+        return np.nan
 
 
 def find_peak_field(df, fr_name="fr_norm", space_name="smp_space", method="com"):
