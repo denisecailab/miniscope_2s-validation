@@ -371,6 +371,7 @@ def minian_process(
         [
             A.rename("A"),
             C.rename("C"),
+            YrA.rename("YrA"),
             S.rename("S"),
             c0.rename("c0"),
             b0.rename("b0"),
@@ -392,18 +393,26 @@ def red_channel(dpath, intpath, param):
             "colorbar": True,
         }
     )
-    result_df, plots = minian_process(
+    result_ds, plots = minian_process(
         dpath, intpath, param, return_stage="motion-correction"
     )
+    Y = result_ds["Y_fm_chk"]
     max_proj = save_minian(
-        result_df["Y_fm_chk"].mean("frame").rename("max_proj"), intpath, overwrite=True
+        Y.mean("frame").rename("max_proj"), intpath, overwrite=True
     ).compute()
     seeds = find_seed(max_proj, **param["find_seed"])
     A = constructA(seeds, max_proj, **param["constructA"])
     A_merge = mergeA(A, **param["mergeA"]).rename("A")
+    C = initC(Y, A_merge.chunk({"height": -1, "width": -1, "unit_id": 1}))
+    C = save_minian(
+        C.rename("C_init"),
+        intpath,
+        overwrite=True,
+        chunks={"unit_id": 1, "frame": -1},
+    )
     plots["footprints"] = (
         visualize_seeds(max_proj, seeds).opts(opts_im)
         + plotA_contour(A_merge, max_proj).opts(opts_im)
         + hv.Image(A_merge.max("unit_id"), ["width", "height"]).opts(opts_im)
     )
-    return xr.merge([result_df["motion"], max_proj, A_merge]), plots
+    return xr.merge([result_ds["motion"], max_proj, A_merge, C]), plots
