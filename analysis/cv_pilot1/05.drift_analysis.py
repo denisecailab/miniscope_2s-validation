@@ -238,7 +238,7 @@ cmap = {
     "red/registered": qualitative.Plotly[4],
 }
 lmap = {
-    "green/raw": "All GCaMP cells\n(regardless of tdTomato channel)",
+    "green/raw": "All GCaMP cells",
     "red/registered": "GCaMP cells\nregistered with tdTomato",
 }
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
@@ -281,6 +281,7 @@ for by, cur_corr in corr_dict.items():
         palette={lmap[k]: v for k, v in cmap.items()},
         errorbar="se",
         ax=ax,
+        zorder=5,
     )
     ax = sns.swarmplot(
         cur_corr,
@@ -289,7 +290,7 @@ for by, cur_corr in corr_dict.items():
         hue="map_method",
         palette={lmap[k]: v for k, v in cmap.items()},
         edgecolor="gray",
-        dodge=True,
+        dodge=False,
         ax=ax,
         legend=False,
         native_scale=True,
@@ -312,19 +313,19 @@ for by, cur_corr in corr_dict.items():
 
 #%% plot overlap
 cmap = {
-    "red/raw": qualitative.Plotly[1],
+    # "red/raw": qualitative.Plotly[1],
     "green/raw": qualitative.Plotly[2],
     "red/registered": qualitative.Plotly[4],
 }
 lmap = {
-    "red/raw": "tdTomato cells",
-    "green/raw": "All GCaMP cells\n(regardless of tdTomato channel)",
+    # "red/raw": "tdTomato cells",
+    "green/raw": "All GCaMP cells",
     "red/registered": "GCaMP cells\nregistered with tdTomato",
 }
 ovlp = pd.read_csv(os.path.join(OUT_PATH, "ovlp.csv"))
 ovlp = ovlp[ovlp["animal"].isin(PARAM_SUB_ANM)].copy()
-ovlp["color"] = ovlp["map_method"].map(cmap)
-ovlp["map_method"] = ovlp["map_method"].map(lmap)
+ovlp["color"] = ovlp["map_method"].map(cmap).dropna()
+ovlp["map_method"] = ovlp["map_method"].map(lmap).dropna()
 for metric in ["actMean", "ovlp"]:
     fig = scatter_agg(
         ovlp,
@@ -347,7 +348,7 @@ for metric in ["actMean", "ovlp"]:
         hue="map_method",
         palette={lmap[k]: v for k, v in cmap.items()},
         edgecolor="gray",
-        dodge=True,
+        dodge=False,
         ax=ax,
         legend=False,
         native_scale=True,
@@ -363,9 +364,10 @@ for metric in ["actMean", "ovlp"]:
         palette={lmap[k]: v for k, v in cmap.items()},
         errorbar="se",
         ax=ax,
+        zorder=5,
     )
     ax.set_xlabel("Days apart", style="italic")
-    ax.set_ylabel("Overlap", style="italic")
+    ax.set_ylabel("Reactivation", style="italic")
     plt.legend(
         title=None,
         loc="lower center",
@@ -395,8 +397,9 @@ for mmethod, mdf in df.groupby("map_method"):
 #%% plot cells
 def plot_fr(x, **kwargs):
     ax = plt.gca()
-    ax.imshow(x.values[0], cmap="viridis", aspect="auto", interpolation="none")
-    ax.set_axis_off()
+    ax.imshow(x.values[0], cmap="plasma", aspect="auto", interpolation="none")
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
 
 
 map_gn = pd.read_pickle(IN_RAW_MAP)
@@ -406,6 +409,10 @@ map_rd = map_rd[map_rd["meta", "animal"].isin(PARAM_SUB_ANM)].copy()
 mapping_dict = {
     "green": map_gn,
     "red": map_rd,
+}
+lmap = {
+    "green": "All GCaMP cells",
+    "red": "GCaMP cells\nregistered with tdTomato",
 }
 fr_df = pd.read_feather(os.path.join(OUT_PATH, "fr.feat"))
 metric_df = pd.read_feather(os.path.join(OUT_PATH, "metric.feat"))
@@ -420,6 +427,7 @@ fr_df = (
     .set_index(["animal", "session", "unit_id"])
 )
 sess_sub = ["rec3", "rec4", "rec5", "rec6", "rec7", "rec8", "rec9", "rec10", "rec11"]
+day_dict = {ss: "Day {}".format(2 * i + 1) for i, ss in enumerate(sess_sub)}
 fr_ma_ls = []
 for mmethod, mmap in mapping_dict.items():
     mmap_sub = mmap[[("session", s) for s in sess_sub] + [("meta", "animal")]]
@@ -458,17 +466,38 @@ for mmethod, mmap in mapping_dict.items():
                 )
             )
 fr_ma = pd.concat(fr_ma_ls, ignore_index=True)
+fr_ma["day"] = fr_ma["session"].map(day_dict)
+fr_ma["mmethod"] = fr_ma["mmethod"].map(lmap)
 fr_ma["row"] = fr_ma["mmethod"] + " x " + fr_ma["sortby"]
 g = sns.FacetGrid(
     fr_ma,
     row="row",
-    col="session",
+    col="day",
     margin_titles=True,
     sharey="row",
     sharex=True,
-    aspect=0.7,
+    height=2,
+    aspect=0.5,
 )
 g.map(plot_fr, "fr_mat")
+g.set_titles(row_template="{row_name}", col_template="{col_name}")
+for ax in g.axes[:, -1]:
+    if ax.texts:
+        for tx in ax.texts:
+            x, y = tx.get_unitless_position()
+            tx.set(
+                horizontalalignment="center",
+                x=x + 0.3,
+                text=tx.get_text().partition(" x ")[0],
+            )
+for crd in [(0, 0), (1, -1), (2, 0), (3, -1)]:
+    ax = g.axes[crd]
+    ax.spines[:].set_visible(True)
+    ax.spines[:].set_linewidth(3)
+    ax.spines[:].set_linestyle(":")
+    ax.spines[:].set_color("dimgray")
+    ax.spines[:].set_position(("outward", 1.6))
 fig = g.fig
 fig.tight_layout()
+plt.subplots_adjust(wspace=0.12, hspace=0.08)
 fig.savefig(os.path.join(FIG_PATH, "drifting_cells.svg"), dpi=500, bbox_inches="tight")

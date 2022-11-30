@@ -92,14 +92,18 @@ behav = behav[
     (behav["session"] == "rec6") & (behav["animal"].isin(["m09", "m11", "m12"]))
 ].copy()
 behav["time"] = behav["frame"] / 30
-g = sns.FacetGrid(behav, row="animal", legend_out=False, height=2, aspect=2.5)
+g = sns.FacetGrid(behav, col="animal", legend_out=False, height=2, aspect=1.5)
 g.map_dataframe(plot_behav, fm="time")
+fig = g.figure
 g.add_legend(
-    loc="lower center", bbox_to_anchor=(0, 1.15, 1, 0.2), mode="expand", ncol=3
+    loc="lower center",
+    bbox_to_anchor=(0.2, 1, 0.6, 0.2),
+    mode="expand",
+    ncol=3,
+    bbox_transform=fig.transFigure,
 )
 g.set_xlabels("Time (s)", style="italic")
 g.set_ylabels("Linearized Position", style="italic")
 g.set_titles(row_template="Animal: {row_name}")
-fig = g.figure
 fig.savefig(os.path.join(FIG_PATH, "example.svg"), dpi=500, bbox_inches="tight")
 plt.close(fig)

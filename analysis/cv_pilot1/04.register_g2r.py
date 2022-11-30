@@ -15,13 +15,13 @@ from minian.cross_registration import (
     group_by_session,
 )
 from minian.visualization import centroid
-from tqdm.auto import tqdm
-
+from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+from plotly.express.colors import qualitative
 from routine.alignment import apply_affine, est_affine
 from routine.plotting import plot_overlap
-from routine.utilities import df_set_metadata
-
-from plotly.express.colors import qualitative
+from routine.utilities import df_set_metadata, norm
+from scipy.stats import zscore
+from tqdm.auto import tqdm
 
 IN_GREEN_PATH = "./intermediate/processed/green"
 IN_RED_PATH = "./intermediate/processed/red"
@@ -30,6 +30,7 @@ IN_RED_MAP = "./intermediate/cross_reg/red/mappings_meta_fill.pkl"
 IN_GREEN_MAP = "./intermediate/cross_reg/green/mappings_meta_fill.pkl"
 PARAM_DIST_THRES = 8
 PARAM_SUB_SS = ["rec{}".format(s) for s in range(3, 12)]
+PARAM_SUB_ANM = ["m12", "m15", "m16"]
 PARAM_PLT_RC = {
     "axes.titlesize": 11,
     "axes.labelsize": 10,
@@ -210,23 +211,29 @@ def plot_cells(x, gain=1.8, **kwargs):
     ax.set_axis_off()
 
 
+ss_dict = {
+    "rec3": "Day 1",
+    "rec5": "Day 5",
+    "rec7": "Day 9",
+    "rec9": "Day 13",
+    "rec11": "Day 17",
+}
 fig_cells_path = os.path.join(FIG_PATH, "cells")
 os.makedirs(fig_cells_path, exist_ok=True)
 cells_im = pd.read_pickle(os.path.join(OUT_PATH, "cells_im.pkl"))
-cells_im["session"] = cells_im["session"].map(
-    {
-        "rec1": "Session 1",
-        "rec3": "Session 2",
-        "rec4": "Session 3",
-        "rec5": "Session 4",
-        "rec6": "Session 5",
-    }
-)
+cells_im["session"] = cells_im["session"].map(ss_dict)
 cells_im["kind"] = cells_im["kind"].map(
     {"red": "tdTomato", "green": "GCaMP", "ovly": "Overlay"}
 )
 for anm, anm_df in cells_im.groupby("animal"):
-    g = sns.FacetGrid(anm_df, row="kind", col="session", margin_titles=True, height=2)
+    g = sns.FacetGrid(
+        anm_df,
+        row="kind",
+        col="session",
+        col_order=list(ss_dict.values()),
+        margin_titles=True,
+        height=2,
+    )
     g.map(plot_cells, "im")
     g.set_titles(row_template="{row_name}", col_template="{col_name}")
     fig = g.fig
@@ -367,6 +374,13 @@ green_agg = (
     .reset_index()
     .rename(columns={("meta", "animal"): "animal"})
 )
+reg_agg = (
+    map_green_reg[map_green_reg["variable", "npresent"] == 9]
+    .groupby(("meta", "animal"))
+    .apply(agg_per_ss)
+    .reset_index()
+    .rename(columns={("meta", "animal"): "animal"})
+)
 map_green_reg["variable", "pactive"] = (
     map_green_reg["variable", "nactive"] / map_green_reg["variable", "npresent"]
 )
@@ -374,72 +388,184 @@ map_green_reg.columns = map_green_reg.columns.droplevel(0)
 map_green_reg = map_green_reg[
     (map_green_reg["npresent"] > 1) & (map_green_reg["nactive"] > 0)
 ].copy()
+map_green_reg.to_csv(os.path.join(OUT_PATH, "green_reg_pactive.csv"), index=False)
 green_reg_agg = map_green_reg.groupby("animal").apply(agg_pactive).reset_index()
 red_agg["method"] = "tdTomato"
 green_agg["method"] = "GCaMP"
-green_reg_agg["method"] = "GCaMP cells registered\nwith tdTomato"
+reg_agg["method"] = "GCaMP cells registered\nwith tdTomato"
+green_reg_agg["method"] = "GCaMP cells pactive"
 cmap = {
     "tdTomato": qualitative.Plotly[1],
     "GCaMP": qualitative.Plotly[2],
     "GCaMP cells registered\nwith tdTomato": qualitative.Plotly[4],
+    "GCaMP cells pactive": qualitative.Plotly[4],
 }
-agg_df = pd.concat([red_agg, green_agg, green_reg_agg], ignore_index=True)
-agg_df = agg_df[agg_df["animal"] != "m09"]
-g = sns.FacetGrid(
-    agg_df,
-    row="method",
-    col="animal",
-    margin_titles=True,
-    sharex="row",
-    sharey=True,
-    height=2.5,
-    aspect=0.8,
+agg_df = pd.concat([red_agg, green_agg, reg_agg, green_reg_agg], ignore_index=True)
+sum_agg_df = pd.concat([red_agg, green_agg, reg_agg], ignore_index=True)
+sum_agg_df = (
+    sum_agg_df[sum_agg_df["animal"].isin(PARAM_SUB_ANM)]
+    .groupby(["method", "animal", "nactive"])["density"]
+    .mean()
+    .reset_index()
 )
-g.set_xlabels(clear_inner=False)
-g.map_dataframe(
-    bar_wrap,
-    x="nactive",
-    y="density",
-    errorbar="se",
-    saturation=0.8,
-    errwidth=1.5,
-    capsize=0.3,
-    hue="method",
-    palette=cmap,
+df_dict = {"summary": agg_df, "summary_agg": sum_agg_df}
+for plt_type, cur_data in df_dict.items():
+    if plt_type == "summary":
+        plt_args = {"row": "method", "col": "animal", "sharex": "row", "aspect": 0.8}
+    elif plt_type == "summary_agg":
+        plt_args = {
+            "col": "method",
+            "sharex": False,
+            "aspect": 1,
+            "col_order": list(cmap.keys())[:3],
+        }
+    g = sns.FacetGrid(cur_data, margin_titles=True, sharey=True, height=2.5, **plt_args)
+    g.set_xlabels(clear_inner=False)
+    g.map_dataframe(
+        bar_wrap,
+        x="nactive",
+        y="density",
+        errorbar="se",
+        saturation=0.8,
+        errwidth=1.5,
+        capsize=0.3,
+        hue="method",
+        palette=cmap,
+    )
+    g.map_dataframe(
+        swarm_wrap,
+        x="nactive",
+        y="density",
+        hue="method",
+        palette=cmap,
+        edgecolor="gray",
+        linewidth=0.8,
+        size=2,
+        warn_thresh=0.8,
+    )
+    if plt_type == "summary":
+        g.map_dataframe(
+            hist_wrap,
+            x="pactive",
+            weights="density",
+            stat="probability",
+            bins=9,
+            binrange=(0, 1),
+            hue="method",
+            palette=cmap,
+            alpha=0.9,
+        )
+        g.set_titles(row_template="{row_name}", col_template="Animal: {col_name}")
+        for ax in g.axes[0, :]:
+            ax.set_xlabel("# of sessions active", style="italic")
+        for ax in g.axes[1, :]:
+            ax.set_xlabel("# of sessions active", style="italic")
+        for ax in g.axes[2, :]:
+            ax.set_xlabel("Probability of active", style="italic")
+            if ax.texts:
+                for tx in ax.texts:
+                    x, y = tx.get_unitless_position()
+                    tx.set(horizontalalignment="center", x=x + 0.08)
+    elif plt_type == "summary_agg":
+        g.set_titles(col_template="{col_name}")
+        g.set_xlabels("# of sessions active", style="italic")
+    g.set_ylabels("Proportion of cells", style="italic")
+    g.fig.savefig(
+        os.path.join(FIG_PATH, "{}.svg".format(plt_type)), dpi=500, bbox_inches="tight"
+    )
+    plt.close(g.fig)
+
+
+#%% plot example traces
+# nsmp = 10
+Awnd = 15
+Twnd = 10000
+sub_idx = [1396, 3080, 3165, 2894, 1223]
+brt_offset = 0.1
+trace_offset = 5
+lw = 1
+nsmp = len(sub_idx)
+cmap = {"red": qualitative.Plotly[1], "green": qualitative.Plotly[2]}
+map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"))
+# map_g2r = map_g2r[map_g2r["animal"].isin(PARAM_SUB_ANM)]
+# map_smp = map_g2r.sample(nsmp, replace=False).reset_index()
+map_smp = map_g2r.loc[sub_idx].reset_index(drop=True)
+fig, axs = plt.subplots(nsmp, 2, figsize=(8, 5), gridspec_kw={"width_ratios": [1, 9]})
+for ir, row in map_smp.iterrows():
+    anm, ss, uid_red, uid_gn = (
+        row["animal"],
+        row["session"],
+        row["uid_red"],
+        row["uid_green"],
+    )
+    Ared = (
+        xr.open_dataarray(os.path.join(OUT_PATH, "Ared", "{}-{}.nc".format(anm, ss)))
+        .sel(unit_id=uid_red)
+        .compute()
+    )
+    Tred = (
+        xr.open_dataset(os.path.join(IN_RED_PATH, "{}-{}.nc".format(anm, ss)))["C_init"]
+        .sel(unit_id=uid_red)
+        .squeeze()
+        .compute()
+    )
+    Agn = (
+        xr.open_dataarray(
+            os.path.join(OUT_PATH, "Agn_trans", "{}-{}.nc".format(anm, ss))
+        )
+        .sel(unit_id=uid_gn)
+        .compute()
+    )
+    Tgn = (
+        xr.open_dataset(os.path.join(IN_GREEN_PATH, "{}-{}.nc".format(anm, ss)))["YrA"]
+        .sel(unit_id=uid_gn)
+        .squeeze()
+        .compute()
+    )
+    ct = centroid(Ared.expand_dims("unit_id"))
+    ct2 = centroid(Agn.expand_dims("unit_id"))
+    h, w = ct["height"].values.item(), ct["width"].values.item()
+    hs = slice(h - Awnd, h + Awnd)
+    ws = slice(w - Awnd, w + Awnd)
+    Ared, Agn = Ared.sel(height=hs, width=ws), Agn.sel(height=hs, width=ws)
+    Tred, Tgn = Tred.isel(frame=slice(5, Twnd)), Tgn.isel(frame=slice(5, Twnd))
+    im = plot_overlap(norm(np.array(Agn)), norm(np.array(Ared)), brt_offset=0.1)
+    ax_A, ax_tr = axs[ir, 0], axs[ir, 1]
+    ax_A.imshow(im)
+    ax_tr.plot(
+        zscore(Tred),
+        label="tdTomato Channel" if ir == 0 else "",
+        color=cmap["red"],
+        lw=lw,
+    )
+    ax_tr.plot(
+        zscore(Tgn) + trace_offset,
+        label="GCaMP Channel" if ir == 0 else "",
+        color=cmap["green"],
+        lw=lw,
+    )
+    ax_A.set_axis_off()
+    ax_tr.set_axis_off()
+    ax_tr.set_xlim(0, Twnd)
+fig.legend(
+    title=None,
+    loc="lower center",
+    bbox_to_anchor=(0.25, 1, 0.5, 0.05),
+    mode="expand",
+    ncol=2,
 )
-g.map_dataframe(
-    hist_wrap,
-    x="pactive",
-    weights="density",
-    stat="probability",
-    bins=9,
-    binrange=(0, 1),
-    hue="method",
-    palette=cmap,
-    alpha=0.9,
+fig.tight_layout()
+bar = AnchoredSizeBar(
+    ax_tr.transData,
+    600,
+    "10 sec",
+    loc="upper right",
+    bbox_to_anchor=(0.97, 0),
+    bbox_transform=ax_tr.transAxes,
+    frameon=False,
+    pad=0.1,
+    sep=4,
+    size_vertical=0.5,
 )
-g.map_dataframe(
-    swarm_wrap,
-    x="nactive",
-    y="density",
-    hue="method",
-    palette=cmap,
-    edgecolor="gray",
-    linewidth=0.8,
-    size=2,
-    warn_thresh=0.8,
-)
-g.set_titles(row_template="{row_name}", col_template="Animal: {col_name}")
-for ax in g.axes[0, :]:
-    ax.set_xlabel("# of sessions active", style="italic")
-for ax in g.axes[1, :]:
-    ax.set_xlabel("# of sessions active", style="italic")
-for ax in g.axes[2, :]:
-    ax.set_xlabel("Probability of active", style="italic")
-    if ax.texts:
-        for tx in ax.texts:
-            x, y = tx.get_unitless_position()
-            tx.set(horizontalalignment="center", x=x + 0.08)
-g.set_ylabels("Proportion of cells", style="italic")
-g.fig.savefig(os.path.join(FIG_PATH, "summary.svg"), dpi=500, bbox_inches="tight")
-plt.close(g.fig)
+ax_tr.add_artist(bar)
+fig.savefig(os.path.join(FIG_PATH, "traces.svg"), bbox_inches="tight")
