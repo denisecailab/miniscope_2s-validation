@@ -1,11 +1,14 @@
 import itertools as itt
 import os
 import re
+from uuid import uuid4
 
 import numpy as np
 import xarray as xr
+from lxml import etree
 from scipy.interpolate import interp1d
 from sklearn.mixture import GaussianMixture
+from svgutils.compose import SVG, Panel, Text
 
 
 def norm(a):
@@ -148,3 +151,39 @@ def thres_gmm(a: np.ndarray, com=-1, pos_thres=0.5) -> np.ndarray:
     if s.sum() / len(s) < pos_thres:
         ret = np.where(s, a, 0)
     return ret
+
+
+def make_svg_panel(label, im_path, param_text, im_scale=1, fix_mpl=True, sh=None):
+    im = SVG(im_path, fix_mpl=fix_mpl)
+    if im_scale != 1:
+        im = im.scale(im_scale)
+    lab = Text(label, **param_text)
+    tsize = param_text["size"]
+    if sh is None:
+        x_sh, y_sh = 0.6 * tsize, 1 * tsize
+    else:
+        x_sh, y_sh = sh
+    pan = Panel(im.move(x=x_sh, y=y_sh), lab.move(x=0, y=tsize))
+    pan.height = im.height * im_scale + y_sh
+    pan.width = im.width * im_scale + x_sh
+    return pan
+
+
+def svg_unique_id(fname, out_name=None):
+    doc = etree.parse(fname)
+    rt = doc.getroot()
+    nmap = rt.nsmap
+    id_eles = doc.findall("//path[@id]", nmap)
+    ids = list(set([e.attrib["id"] for e in id_eles]))
+    id_dict = {i: str(uuid4())[:8] for i in ids}
+    attr_name = "{{{}}}href".format(nmap["xlink"])
+    for ele in id_eles:
+        ele.attrib["id"] = id_dict[ele.attrib["id"]]
+    for ele in doc.findall("//use[@xlink:href]", nmap):
+        try:
+            ele.attrib[attr_name] = "#" + id_dict[ele.attrib[attr_name][1:]]
+        except KeyError:
+            pass
+    if out_name is None:
+        out_name = fname
+    doc.write(out_name, pretty_print=True)
