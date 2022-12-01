@@ -272,7 +272,7 @@ for by, cur_corr in corr_dict.items():
     fig.update_xaxes(title="Days apart")
     fig.update_yaxes(range=(0, 1), title="PV correlation")
     fig.write_html(os.path.join(FIG_PATH, "pv_corr-{}.html".format(by)))
-    fig, ax = plt.subplots(figsize=(6, 4))
+    fig, ax = plt.subplots(figsize=(4.7, 3.5))
     ax = sns.lineplot(
         cur_corr,
         x="tdist",
@@ -340,7 +340,7 @@ for metric in ["actMean", "ovlp"]:
     fig.update_xaxes(title="Days apart")
     fig.update_yaxes(range=(0, 1), title="Overlap")
     fig.write_html(os.path.join(FIG_PATH, "overlap-{}.html".format(metric)))
-    fig, ax = plt.subplots(figsize=(6, 4))
+    fig, ax = plt.subplots(figsize=(4.7, 3.5))
     ax = sns.swarmplot(
         ovlp,
         x="tdist",
@@ -400,6 +400,7 @@ def plot_fr(x, **kwargs):
     ax.imshow(x.values[0], cmap="plasma", aspect="auto", interpolation="none")
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
+    ax.spines[:].set_visible(False)
 
 
 map_gn = pd.read_pickle(IN_RAW_MAP)
@@ -477,7 +478,7 @@ g = sns.FacetGrid(
     sharey="row",
     sharex=True,
     height=2,
-    aspect=0.5,
+    aspect=0.58,
 )
 g.map(plot_fr, "fr_mat")
 g.set_titles(row_template="{row_name}", col_template="{col_name}")
@@ -487,7 +488,7 @@ for ax in g.axes[:, -1]:
             x, y = tx.get_unitless_position()
             tx.set(
                 horizontalalignment="center",
-                x=x + 0.3,
+                x=x + 0.25,
                 text=tx.get_text().partition(" x ")[0],
             )
 for crd in [(0, 0), (1, -1), (2, 0), (3, -1)]:
@@ -495,9 +496,9 @@ for crd in [(0, 0), (1, -1), (2, 0), (3, -1)]:
     ax.spines[:].set_visible(True)
     ax.spines[:].set_linewidth(3)
     ax.spines[:].set_linestyle(":")
-    ax.spines[:].set_color("dimgray")
+    ax.spines[:].set_color("black")
     ax.spines[:].set_position(("outward", 1.6))
 fig = g.fig
 fig.tight_layout()
-plt.subplots_adjust(wspace=0.12, hspace=0.08)
+plt.subplots_adjust(wspace=0.1, hspace=0.05)
 fig.savefig(os.path.join(FIG_PATH, "drifting_cells.svg"), dpi=500, bbox_inches="tight")

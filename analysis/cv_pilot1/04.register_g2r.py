@@ -232,12 +232,13 @@ for anm, anm_df in cells_im.groupby("animal"):
         col="session",
         col_order=list(ss_dict.values()),
         margin_titles=True,
-        height=2,
+        height=1.5,
     )
     g.map(plot_cells, "im")
     g.set_titles(row_template="{row_name}", col_template="{col_name}")
     fig = g.fig
     fig.tight_layout()
+    plt.subplots_adjust(wspace=0.004, hspace=0.04)
     fig.savefig(
         os.path.join(fig_cells_path, "{}.svg".format(anm)), dpi=500, bbox_inches="tight"
     )
@@ -392,12 +393,12 @@ map_green_reg.to_csv(os.path.join(OUT_PATH, "green_reg_pactive.csv"), index=Fals
 green_reg_agg = map_green_reg.groupby("animal").apply(agg_pactive).reset_index()
 red_agg["method"] = "tdTomato"
 green_agg["method"] = "GCaMP"
-reg_agg["method"] = "GCaMP cells registered\nwith tdTomato"
+reg_agg["method"] = "GCaMP cells\nregistered with tdTomato"
 green_reg_agg["method"] = "GCaMP cells pactive"
 cmap = {
     "tdTomato": qualitative.Plotly[1],
     "GCaMP": qualitative.Plotly[2],
-    "GCaMP cells registered\nwith tdTomato": qualitative.Plotly[4],
+    "GCaMP cells\nregistered with tdTomato": qualitative.Plotly[4],
     "GCaMP cells pactive": qualitative.Plotly[4],
 }
 agg_df = pd.concat([red_agg, green_agg, reg_agg, green_reg_agg], ignore_index=True)
@@ -419,7 +420,7 @@ for plt_type, cur_data in df_dict.items():
             "aspect": 1,
             "col_order": list(cmap.keys())[:3],
         }
-    g = sns.FacetGrid(cur_data, margin_titles=True, sharey=True, height=2.5, **plt_args)
+    g = sns.FacetGrid(cur_data, margin_titles=True, sharey=True, height=3, **plt_args)
     g.set_xlabels(clear_inner=False)
     g.map_dataframe(
         bar_wrap,
@@ -475,11 +476,10 @@ for plt_type, cur_data in df_dict.items():
     )
     plt.close(g.fig)
 
-
 #%% plot example traces
 # nsmp = 10
 Awnd = 15
-Twnd = 10000
+Twnd = 14000
 sub_idx = [1396, 3080, 3165, 2894, 1223]
 brt_offset = 0.1
 trace_offset = 5
@@ -490,7 +490,7 @@ map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"))
 # map_g2r = map_g2r[map_g2r["animal"].isin(PARAM_SUB_ANM)]
 # map_smp = map_g2r.sample(nsmp, replace=False).reset_index()
 map_smp = map_g2r.loc[sub_idx].reset_index(drop=True)
-fig, axs = plt.subplots(nsmp, 2, figsize=(8, 5), gridspec_kw={"width_ratios": [1, 9]})
+fig, axs = plt.subplots(nsmp, 2, figsize=(10, 4), gridspec_kw={"width_ratios": [1, 12]})
 for ir, row in map_smp.iterrows():
     anm, ss, uid_red, uid_gn = (
         row["animal"],
@@ -550,7 +550,8 @@ for ir, row in map_smp.iterrows():
 fig.legend(
     title=None,
     loc="lower center",
-    bbox_to_anchor=(0.25, 1, 0.5, 0.05),
+    bbox_to_anchor=(0.3, 1, 0.4, 0.001),
+    bbox_transform=fig.transFigure,
     mode="expand",
     ncol=2,
 )
@@ -568,4 +569,5 @@ bar = AnchoredSizeBar(
     size_vertical=0.5,
 )
 ax_tr.add_artist(bar)
+plt.subplots_adjust(top=1, hspace=0.08)
 fig.savefig(os.path.join(FIG_PATH, "traces.svg"), bbox_inches="tight")
