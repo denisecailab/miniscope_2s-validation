@@ -4,8 +4,6 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from tqdm.auto import tqdm
-
 from routine.behavior import (
     agg_behav,
     code_direction,
@@ -16,6 +14,7 @@ from routine.behavior import (
 )
 from routine.plotting import plot_behav
 from routine.utilities import df_set_metadata, norm
+from tqdm.auto import tqdm
 
 IN_DPATH = "./data"
 IN_SSMAP = "./log/sessions.csv"
@@ -89,16 +88,16 @@ for anm, anm_df in behav.groupby("animal"):
 #%% plot specific animals
 behav = pd.read_feather(os.path.join(OUT_FM_LABEL, "behav.feat"))
 behav = behav[
-    (behav["session"] == "rec6") & (behav["animal"].isin(["m09", "m11", "m12"]))
+    (behav["session"] == "rec6") & (behav["animal"].isin(["m09", "m12"]))
 ].copy()
 behav["time"] = behav["frame"] / 30
-behav = behav[behav["time"] <= 500].copy()
-g = sns.FacetGrid(behav, col="animal", legend_out=False, height=2, aspect=1.2)
-g.map_dataframe(plot_behav, fm="time")
+behav = behav[behav["time"] <= 600].copy()
+g = sns.FacetGrid(behav, row="animal", legend_out=False, height=1.8, aspect=2.5)
+g.map_dataframe(plot_behav, fm="time", lw=1.2, lw_dash=0.8)
 fig = g.figure
 g.add_legend(
     loc="lower center",
-    bbox_to_anchor=(0.1, 1, 0.8, 0.1),
+    bbox_to_anchor=(0.1, 0.96, 0.8, 0.1),
     mode="expand",
     ncol=3,
     bbox_transform=fig.transFigure,

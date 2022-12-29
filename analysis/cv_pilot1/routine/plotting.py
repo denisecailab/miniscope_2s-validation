@@ -394,6 +394,8 @@ def plot_behav(
     pos_sgn="linpos_sign",
     trial="trial",
     ax=None,
+    lw_dash=0.5,
+    lw=0.5,
     **kwargs,
 ):
     data = data.copy()
@@ -402,7 +404,7 @@ def plot_behav(
     # plot trial
     tidx = np.diff(data[trial], prepend=0) > 0
     for f in data[fm][tidx]:
-        ax.axvline(f, linestyle=":", color="black", linewidth=0.5)
+        ax.axvline(f, linestyle=":", color="black", linewidth=lw_dash)
     # plot position
     seg_cmap = kwargs.get(
         "seg_cmap",
@@ -416,5 +418,5 @@ def plot_behav(
     for _, seg in data.groupby("pos_seg"):
         s = seg["seg_sign"].unique().item()
         sns.lineplot(
-            seg, x=fm, y=pos, color=seg_cmap[s], label=seg_lmap[s], ax=ax, linewidth=0.5
+            seg, x=fm, y=pos, color=seg_cmap[s], label=seg_lmap[s], ax=ax, linewidth=lw
         )
