@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-from scipy.stats import gaussian_kde
 from scipy.ndimage import center_of_mass
+from scipy.stats import gaussian_kde
 from sklearn.neighbors import KernelDensity
 
 from .utilities import nan_corr
@@ -101,7 +101,96 @@ def compute_si(df, fr_name="fr", occp_name="occp") -> float:
 
 
 def find_peak_field(df, fr_name="fr_norm", space_name="smp_space", method="com"):
-    if method == "com":
-        return center_of_mass(df[fr_name])[0]
-    elif method == "max":
-        return df[space_name].iloc[df[fr_name].argmax()]
+    fr = df[fr_name].fillna(0)
+    if fr.sum() > 0:
+        if method == "com":
+            return center_of_mass(fr)[0]
+        elif method == "max":
+            return df[space_name].iloc[fr.argmax()]
+    else:
+        return np.nan
+
+
+def aggregate_fr(S_df, occp, bw, smp_space):
+    fr = (
+        S_df.groupby(["animal", "session", "trial", "unit_id"])
+        .apply(
+            kde_est,
+            var_name="linpos",
+            bandwidth=bw,
+            smp_space=smp_space,
+            weight_name="S",
+        )
+        .rename(columns={"linpos": "fr"})
+        .reset_index()
+    )
+    fr_df = fr.merge(occp, how="left", on=["animal", "session", "trial", "smp_space"])[
+        ["animal", "session", "trial", "unit_id", "smp_space", "fr", "occp"]
+    ]
+    fr_df = fr_df[fr_df["occp"].notnull()]
+    fr_df["fr"] = fr_df["fr"].fillna(0)
+    fr_df["fr_norm"] = np.nan_to_num(fr_df["fr"] / fr_df["occp"], posinf=0)
+    return fr_df
+
+
+def compute_metrics(fr_df):
+    fr_agg = (
+        fr_df.groupby(["animal", "session", "unit_id", "smp_space"])
+        .agg({"fr_norm": "mean", "occp": "mean", "fr": "mean"})
+        .reset_index()
+    )
+    stb_df = (
+        fr_df.groupby(["animal", "session", "unit_id"])
+        .apply(compute_stb)
+        .rename("stb")
+        .reset_index()
+    )
+    pos_df = (
+        fr_agg.groupby(["animal", "session", "unit_id"])
+        .apply(find_peak_field)
+        .rename("peak")
+        .reset_index()
+    )
+    si_df = (
+        fr_agg.groupby(["animal", "session", "unit_id"])
+        .apply(compute_si)
+        .rename("si")
+        .reset_index()
+    )
+    metric_df = stb_df.merge(
+        pos_df, on=["animal", "session", "unit_id"], validate="one_to_one"
+    ).merge(si_df, on=["animal", "session", "unit_id"], validate="one_to_one")
+    return metric_df
+
+
+def rollS(df):
+    S = np.array(df["S"])
+    df["S"] = np.roll(S, np.random.randint(len(S)))
+    return df
+
+
+def shuffleS(df, grp_by=["animal", "session", "unit_id", "trial"]):
+    return df.groupby(
+        ["animal", "session", "unit_id", "trial"], group_keys=False
+    ).apply(rollS)
+
+
+def classify_cell(df, stb_thres, si_thres):
+    met_org = df[df["ishuf"] == -1].squeeze()
+    met_shuf = df[df["ishuf"] >= 0]
+    stb_org, si_org, peak_org = met_org["stb"], met_org["si"], met_org["peak"]
+    stb_q = np.mean(stb_org > met_shuf["stb"].dropna())
+    si_q = np.mean(si_org > met_shuf["si"].dropna())
+    stb_sig, si_sig = stb_q >= stb_thres, si_q >= si_thres
+    return pd.Series(
+        {
+            "stb": stb_org,
+            "si": si_org,
+            "peak": peak_org,
+            "stb_q": stb_q,
+            "si_q": si_q,
+            "stb_sig": stb_sig,
+            "si_sig": si_sig,
+            "sig": stb_sig and si_sig,
+        }
+    )
