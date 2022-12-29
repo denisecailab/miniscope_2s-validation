@@ -335,9 +335,9 @@ cmap = {
 }
 smap = {
     "green/raw-shared": "",
-    "green/raw-zero_padded": (1, 1),
+    "green/raw-zero_padded": (3, 1),
     "red/registered-shared": "",
-    "red/registered-zero_padded": (1, 1),
+    "red/registered-zero_padded": (3, 1),
 }
 lmap = {
     "green/raw-shared": "All active GCaMP cells",
@@ -355,7 +355,7 @@ pv_corr["cat"] = pv_corr["cat"].map(lmap)
 corr_dict = {"master": pv_corr}
 for by, cur_corr in corr_dict.items():
     for inclusion, corr_sub in cur_corr.groupby("inclusion"):
-        fig, ax = plt.subplots(figsize=(5.4, 3.5))
+        fig, ax = plt.subplots(figsize=(5.4, 3.2))
         ax = sns.lineplot(
             corr_sub,
             x="tdist",
@@ -427,7 +427,7 @@ for metric in ["actMean", "ovlp"]:
     fig.update_xaxes(title="Days apart")
     fig.update_yaxes(range=(0, 1), title="Overlap")
     fig.write_html(os.path.join(FIG_PATH, "overlap-{}.html".format(metric)))
-    fig, ax = plt.subplots(figsize=(4.7, 3.5))
+    fig, ax = plt.subplots(figsize=(5.4, 3))
     ax = sns.swarmplot(
         ovlp,
         x="tdist",

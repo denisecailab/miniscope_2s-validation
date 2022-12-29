@@ -38,41 +38,23 @@ fig = Figure(
 )
 fig.save(os.path.join(OUT_PATH, "2s_experiment.svg"))
 
-#%% make fig3
-h_gap = 0
-w_gap = 20
+#%% make drift figure
+h_gap = 1
 sh_left = (0, 0)
 svgs = {
-    "A": "./figs/register_g2r/summary_agg.svg",
-    "B": "./figs/drift/drifting_cells.svg",
-    "C": "./figs/drift/overlap-actMean.svg",
-    "D": "./figs/drift/pv_corr-by_cell_med.svg",
+    "A": "./figs/drift/overlap-actMean.svg",
+    "B": "./figs/drift/pv_corr-place_cells.svg",
 }
 for fn in svgs.values():
     svg_unique_id(fn)
 
 panA = make_svg_panel("A", svgs["A"], PARAMT_TEXT, sh=sh_left)
 panB = make_svg_panel("B", svgs["B"], PARAMT_TEXT, sh=sh_left)
-panC = make_svg_panel("C", svgs["C"], PARAMT_TEXT, sh=sh_left)
-panD = make_svg_panel("D", svgs["D"], PARAMT_TEXT, sh=sh_left)
 
-h_row1 = panA.height
-h_row2 = panB.height
-h_row3 = max(panC.height, panD.height)
-w_col1 = panC.width
-w_col2 = panD.width
-h_fig = h_row1 + h_row2 + h_row3 + 2 * h_gap
-w_fig = max(w_col1 + w_col2 + w_gap, panA.width, panB.width)
-pad_row3 = (w_fig - w_col1 - w_gap - w_col2) / 2
-fig = Figure(
-    w_fig,
-    h_fig,
-    panA.move(x=(w_fig - panA.width) / 2, y=0),
-    panB.move(x=(w_fig - panB.width) / 2, y=h_row1 + h_gap),
-    panC.move(x=pad_row3, y=h_row1 + h_row2 + 2 * h_gap),
-    panD.move(x=pad_row3 + w_col1 + w_gap, y=h_row1 + h_row2 + 2 * h_gap),
-)
-fig.save(os.path.join(OUT_PATH, "fig3.svg"))
+h_fig = panA.height + panB.height + h_gap
+w_fig = max(panA.width, panB.width)
+fig = Figure(w_fig, h_fig, panA, panB.move(x=0, y=panA.height + h_gap))
+fig.save(os.path.join(OUT_PATH, "drift.svg"))
 
 #%% make S1
 h_gap = 0
