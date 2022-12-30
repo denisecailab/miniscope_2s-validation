@@ -43,7 +43,7 @@ def calculate_speed(df, h=6, scale=1, fps=30):
     return pd.DataFrame({"frame": df["frame"], "speed": spd}).set_index("frame")
 
 
-#%% load data and calculate speeds
+#%% load data and calculate speeds and trials
 behav = pd.read_feather(IN_BEHAV)
 behav_pfd = pd.read_feather(IN_PFD_BEHAV).rename(
     columns={"X": "linpos", "fmCam1": "frame"}
@@ -71,12 +71,13 @@ spd["group"] = "2s"
 spd_pfd["group"] = "pfd"
 spd = pd.concat([spd, spd_pfd], ignore_index=True)
 spd_agg = spd.groupby(["group", "animal"])["speed"].quantile(0.75).reset_index()
+ntrials = behav.groupby(["animal", "session"])["trial"].max().reset_index()
 
 #%% plot speeds
-lmap = {"2s": "Dual-channel\nMiniscope", "pfd": "Normal\nMiniscope"}
+lmap = {"2s": "Dual-channel\nMiniscope", "pfd": "Single-channel\nMiniscope"}
 spd_agg_plt = spd_agg[spd_agg["animal"].isin(PARAM_SUB_ANM)].copy()
 spd_agg_plt["group"] = spd_agg_plt["group"].map(lmap)
-fig, ax = plt.subplots(figsize=(2.4, 2))
+fig, ax = plt.subplots(figsize=(2.6, 2))
 ax = sns.barplot(
     spd_agg_plt,
     x="group",
@@ -101,9 +102,17 @@ ax.set_xlabel("")
 ax.set_ylabel("Running Speed (cm/s)", style="italic")
 fig.tight_layout()
 fig.savefig(os.path.join(FIG_PATH, "comparison.svg"), bbox_inches="tight")
+
+#%% stats info
+spd_agg_sub = spd_agg[spd_agg["animal"].isin(PARAM_SUB_ANM)].copy()
+print("speed t-test")
 print(
     ttest_ind(
-        spd_agg[spd_agg["group"] == "2s"]["speed"],
-        spd_agg[spd_agg["group"] == "pfd"]["speed"],
+        spd_agg_sub[spd_agg_sub["group"] == "2s"]["speed"],
+        spd_agg_sub[spd_agg_sub["group"] == "pfd"]["speed"],
     )
 )
+print("speeds")
+print(spd_agg_sub.groupby("group")["speed"].agg(["mean", "sem"]).reset_index())
+print("trials")
+print(ntrials["trial"].agg(["mean", "sem"]))

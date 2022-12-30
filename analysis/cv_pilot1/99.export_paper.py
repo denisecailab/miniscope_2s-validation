@@ -21,7 +21,7 @@ svgs = {
 for fn in svgs.values():
     svg_unique_id(fn)
 
-panA = make_svg_panel("A", svgs["A"], PARAMT_TEXT, im_scale=0.36, sh=sh_top)
+panA = make_svg_panel("A", svgs["A"], PARAMT_TEXT, im_scale=0.37, sh=sh_top)
 panB = make_svg_panel("B", svgs["B"], PARAMT_TEXT, sh=sh_left)
 panC = make_svg_panel("C", svgs["C"], PARAMT_TEXT, sh=sh_top)
 
