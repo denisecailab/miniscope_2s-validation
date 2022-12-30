@@ -467,10 +467,14 @@ for metric in ["actMean", "ovlp"]:
     plt.close(fig)
 
 #%% run stats on pv corr
-df = pd.read_csv(os.path.join(OUT_PATH, "pv_corr.csv"))
-df = df[(df["animal"].isin(PARAM_SUB_ANM)) & (df["uidA"] == "mat")].copy()
-lm = ols("corr ~ C(map_method)*tdist", data=df).fit(cov_type="HC1")
+df = pd.read_csv(os.path.join(OUT_PATH, "pv_corr_agg.csv"))
+df = df[(df["animal"].isin(PARAM_SUB_ANM)) & (df["inclusion"] == "place_cells")].copy()
+df["cat"] = df["map_method"] + "-" + df["cell_map"]
+lm = ols("corr ~ C(cat)*tdist", data=df).fit(cov_type="HC1")
 anova = sm.stats.anova_lm(lm, typ=3)
+df_alt = df[df['cat']!='green/raw-zero_padded']
+lm_alt = ols("corr ~ C(cat)*tdist", data=df_alt).fit(cov_type="HC1")
+anova_alt = sm.stats.anova_lm(lm_alt, typ=3)
 
 #%% run stats on overlap
 df = pd.read_csv(os.path.join(OUT_PATH, "ovlp.csv"))
