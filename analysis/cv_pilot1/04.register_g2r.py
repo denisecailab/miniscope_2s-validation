@@ -232,7 +232,7 @@ for anm, anm_df in cells_im.groupby("animal"):
         col="session",
         col_order=list(ss_dict.values()),
         margin_titles=True,
-        height=1.5,
+        height=1.8,
     )
     g.map(plot_cells, "im")
     g.set_titles(row_template="{row_name}", col_template="{col_name}")
@@ -490,7 +490,9 @@ map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"))
 # map_g2r = map_g2r[map_g2r["animal"].isin(PARAM_SUB_ANM)]
 # map_smp = map_g2r.sample(nsmp, replace=False).reset_index()
 map_smp = map_g2r.loc[sub_idx].reset_index(drop=True)
-fig, axs = plt.subplots(nsmp, 2, figsize=(10, 4), gridspec_kw={"width_ratios": [1, 12]})
+fig, axs = plt.subplots(
+    nsmp, 2, figsize=(6.4, 3.5), gridspec_kw={"width_ratios": [1, 8]}
+)
 for ir, row in map_smp.iterrows():
     anm, ss, uid_red, uid_gn = (
         row["animal"],
@@ -550,7 +552,7 @@ for ir, row in map_smp.iterrows():
 fig.legend(
     title=None,
     loc="lower center",
-    bbox_to_anchor=(0.3, 1, 0.4, 0.001),
+    bbox_to_anchor=(0.2, 1, 0.6, 0.001),
     bbox_transform=fig.transFigure,
     mode="expand",
     ncol=2,
