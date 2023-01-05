@@ -467,13 +467,38 @@ for metric in ["actMean", "ovlp"]:
     plt.close(fig)
 
 #%% run stats on pv corr
+from patsy.contrasts import ContrastMatrix
+
+
+def _name_levels(prefix, levels):
+    return ["[%s%s]" % (prefix, level) for level in levels]
+
+
+class Simple(object):
+    def _simple_contrast(self, levels):
+        nlevels = len(levels)
+        contr = -1.0 / nlevels * np.ones((nlevels, nlevels - 1))
+        contr[1:][np.diag_indices(nlevels - 1)] = (nlevels - 1.0) / nlevels
+        return contr
+
+    def code_with_intercept(self, levels):
+        contrast = np.column_stack(
+            (np.ones(len(levels)), self._simple_contrast(levels))
+        )
+        return ContrastMatrix(contrast, _name_levels("Simp.", levels))
+
+    def code_without_intercept(self, levels):
+        contrast = self._simple_contrast(levels)
+        return ContrastMatrix(contrast, _name_levels("Simp.", levels[:-1]))
+
+
 df = pd.read_csv(os.path.join(OUT_PATH, "pv_corr_agg.csv"))
 df = df[(df["animal"].isin(PARAM_SUB_ANM)) & (df["inclusion"] == "place_cells")].copy()
 df["cat"] = df["map_method"] + "-" + df["cell_map"]
-lm = ols("corr ~ C(cat)*tdist", data=df).fit(cov_type="HC1")
+lm = ols("corr ~ C(cat, Simple)*tdist", data=df).fit(cov_type="HC1")
 anova = sm.stats.anova_lm(lm, typ=3)
-df_alt = df[df['cat']!='green/raw-zero_padded']
-lm_alt = ols("corr ~ C(cat)*tdist", data=df_alt).fit(cov_type="HC1")
+df_alt = df[df["cat"] != "green/raw-zero_padded"]
+lm_alt = ols("corr ~ C(cat, Simple)*tdist", data=df_alt).fit(cov_type="HC1")
 anova_alt = sm.stats.anova_lm(lm_alt, typ=3)
 
 #%% run stats on overlap
