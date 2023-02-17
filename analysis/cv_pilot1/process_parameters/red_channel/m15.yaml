@@ -1,0 +1,3 @@
+constructA:
+  min_size: 64
+  me_thres: 0.6
