@@ -66,7 +66,11 @@ class LinearTrack(QMainWindow):
         self._msconfig = None
         self._started = False
         self._displaying = True
-        self._sdevice = (None, self._config.get("sound_device"))
+        sd = self._config.get("sound_device")
+        if sd is not None:
+            self._sdevice = (None, sd)
+        else:
+            self._sdevice = None
         self._mouse = None
         # gui stuff
         cstream = ConsoleStream()
