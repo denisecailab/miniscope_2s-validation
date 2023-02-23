@@ -11,9 +11,27 @@ date,type,animal,session,data,comment,reward,analyze
 20230215,baseplating,m30,base0,m30/2023_02_15/15_08_01,,,False
 20230215,baseplating,m32,base0,m32/2023_02_15/15_46_54,,,False
 20230215,baseplating,m33,base0,m33/2023_02_15/16_08_39,,,False
-20230220,habituation,m20,hab0,m20/2023_02_20/11_52_26,,3,
-20230220,habituation,m21,hab0,m21/2023_02_20/12_19_31,,5,
-20230220,habituation,m22,hab0,m22/2023_02_20/12_42_32,,3,
-20230220,habituation,m23,hab0,m23/2023_02_20/13_07_00,,4,
-20230220,habituation,m24,hab0,m24/2023_02_20/13_33_06,,2,
-20230220,habituation,m25,hab0,m25/2023_02_20/13_56_21,"baseplate cap was found off in homecage, found and put back on",2,
+20230220,habituation,m20,hab0,m20/2023_02_20/11_52_26,,3,False
+20230220,habituation,m21,hab0,m21/2023_02_20/12_19_31,,5,False
+20230220,habituation,m22,hab0,m22/2023_02_20/12_42_32,,3,False
+20230220,habituation,m23,hab0,m23/2023_02_20/13_07_00,,4,False
+20230220,habituation,m24,hab0,m24/2023_02_20/13_33_06,,2,False
+20230220,habituation,m25,hab0,m25/2023_02_20/13_56_21,"baseplate cap was found off in homecage, found and put back on",2,False
+20230221,habituation,m26,hab0,m26/2023_02_21/14_14_43,,3,False
+20230221,habituation,m27,hab0,m27/2023_02_21/14_40_29,,3,False
+20230221,habituation,m29,hab0,m29/2023_02_21/15_04_31,,5,False
+20230221,habituation,m30,hab0,m30/2023_02_21/15_27_30,,9,False
+20230221,habituation,m32,hab0,m32/2023_02_21/15_51_17,,3,False
+20230221,habituation,m33,hab0,m33/2023_02_21/16_14_15,,10,False
+20230222,habituation,m20,hab1,m20/2023_02_22/13_52_08,,1,False
+20230222,habituation,m21,hab1,m21/2023_02_22/14_18_11,,9,False
+20230222,habituation,m22,hab1,m22/2023_02_22/14_40_58,,13,False
+20230222,habituation,m23,hab1,m23/2023_02_22/15_04_19,,4,False
+20230222,habituation,m24,hab1,m24/2023_02_22/15_27_26,,6,False
+20230222,habituation,m25,hab1,m25/2023_02_22/15_50_02,,8,False
+20230223,habituation,m26,hab1,m26/2023_02_23/12_08_02,lots of fighting between m26 and m27,5,False
+20230223,habituation,m27,hab1,m27/2023_02_23/12_32_11,lots of fighting between m26 and m27,1,False
+20230223,habituation,m29,hab1,m29/2023_02_23/12_58_45,,7,False
+20230223,habituation,m30,hab1,m30/2023_02_23/13_22_49,,9,False
+20230223,habituation,m32,hab1,m32/2023_02_23/13_48_03,low location tracking quality,1,False
+20230223,habituation,m33,hab1,m33/2023_02_23/14_12_58,,20,False
