@@ -205,7 +205,7 @@ class Maze:
         self._datafile = os.path.join(self._dpath, self._config["DATA_FILE"])
         self._data = pd.DataFrame(columns=self._config["DATA_HEADER"])
         self._data.to_csv(self._datafile, index=False)
-        self.logger.info("writing data to {}".format(self._dpath))
+        self.logger.info("writing data to {}".format(self._dpath.replace(os.sep, '/')))
 
 
 def null_callback(maze, sig, ts):
