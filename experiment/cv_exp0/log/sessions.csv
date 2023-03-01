@@ -35,21 +35,26 @@ date,type,animal,session,data,comment,reward,analyze
 20230223,habituation,m30,hab1,m30/2023_02_23/13_22_49,,9,False
 20230223,habituation,m32,hab1,m32/2023_02_23/13_48_03,low location tracking quality,1,False
 20230223,habituation,m33,hab1,m33/2023_02_23/14_12_58,,20,False
-20230224,habituation,m20,hab2,m20/2023_02_24/14_23_52,,3,
-20230224,habituation,m21,hab2,m21/2023_02_24/14_48_57,,7,
-20230224,habituation,m22,hab2,m22/2023_02_24/15_16_33,,7,
-20230224,habituation,m23,hab2,m23/2023_02_24/15_40_31,,6,
-20230224,habituation,m24,hab2,m24/2023_02_24/16_03_14,,13,
-20230224,habituation,m25,hab2,m25/2023_02_24/16_25_25,,16,
-20230227,habituation,m26,hab2,m26/2023_02_27/12_58_31,,5,
-20230227,habituation,m27,hab2,m27/2023_02_27/13_22_37,,1,
-20230227,habituation,m29,hab2,m29/2023_02_27/13_46_33,Mouse climbed out of maze at 97% finished.,7,
-20230227,habituation,m30,hab2,m30/2023_02_27/14_09_30,,7,
-20230227,habituation,m32,hab2,NA,Mouse died.,NA,
-20230227,habituation,m33,hab2,m33/2023_02_27/14_33_09,,15,
-20230228,habituation,m20,hab3,m20/2023_02_28/11_31_34,,3,
-20230228,habituation,m21,hab3,m21/2023_02_28/11_54_27,,11,
-20230228,habituation,m22,hab3,m22/2023_02_28/12_17_38,,9,
-20230228,habituation,m23,hab3,m23/2023_02_28/12_40_35,,5,
-20230228,habituation,m24,hab3,m24/2023_02_28/13_03_16,,11,
-20230228,habituation,m25,hab3,m25/2023_02_28/13_26_08,,33,
+20230224,habituation,m20,hab2,m20/2023_02_24/14_23_52,,3,False
+20230224,habituation,m21,hab2,m21/2023_02_24/14_48_57,,7,False
+20230224,habituation,m22,hab2,m22/2023_02_24/15_16_33,,7,False
+20230224,habituation,m23,hab2,m23/2023_02_24/15_40_31,,6,False
+20230224,habituation,m24,hab2,m24/2023_02_24/16_03_14,,13,False
+20230224,habituation,m25,hab2,m25/2023_02_24/16_25_25,,16,False
+20230227,habituation,m26,hab2,m26/2023_02_27/12_58_31,,5,False
+20230227,habituation,m27,hab2,m27/2023_02_27/13_22_37,,1,False
+20230227,habituation,m29,hab2,m29/2023_02_27/13_46_33,Mouse climbed out of maze at 97% finished.,7,False
+20230227,habituation,m30,hab2,m30/2023_02_27/14_09_30,,7,False
+20230227,habituation,m32,hab2,,"mouse found deceased with no apparent wound or health issue, might be due to a seizure.",,False
+20230227,habituation,m33,hab2,m33/2023_02_27/14_33_09,,15,False
+20230228,habituation,m20,hab3,m20/2023_02_28/11_31_34,,3,False
+20230228,habituation,m21,hab3,m21/2023_02_28/11_54_27,,11,False
+20230228,habituation,m22,hab3,m22/2023_02_28/12_17_38,,9,False
+20230228,habituation,m23,hab3,m23/2023_02_28/12_40_35,,5,False
+20230228,habituation,m24,hab3,m24/2023_02_28/13_03_16,,11,False
+20230228,habituation,m25,hab3,m25/2023_02_28/13_26_08,,33,False
+20230301,habituation,m26,hab3,m26/2023_03_01/11_14_43,,11,False
+20230301,habituation,m27,hab3,m27/2023_03_01/11_42_12,mouse tend to climb out,3,False
+20230301,habituation,m29,hab3,m29/2023_03_01/12_09_00,,6,False
+20230301,habituation,m30,hab3,m30/2023_03_01/12_34_16,,3,False
+20230301,habituation,m33,hab3,m33/2023_03_01/12_58_16,,26,False
