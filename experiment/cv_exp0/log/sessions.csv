@@ -58,3 +58,9 @@ date,type,animal,session,data,comment,reward,analyze
 20230301,habituation,m29,hab3,m29/2023_03_01/12_09_00,,6,False
 20230301,habituation,m30,hab3,m30/2023_03_01/12_34_16,,3,False
 20230301,habituation,m33,hab3,m33/2023_03_01/12_58_16,,26,False
+20230302,habituation,m20,hab4,m20/2023_03_02/10_35_47,,10,
+20230302,habituation,m21,hab4,m21/2023_03_02/10_58_54,,7,
+20230302,habituation,m22,hab4,m22/2023_03_02/11_21_09,,7,
+20230302,habituation,m23,hab4,m23/2023_03_02/11_45_34,,6,
+20230302,habituation,m24,hab4,m24/2023_03_02/12_10_18,,27,
+20230302,habituation,m25,hab4,m24/2023_03_02/12_10_18,,43,
