@@ -37,8 +37,6 @@ jobs:
         shell: bash -el {0}
         working-directory: ./analysis/cv_exp0
         run: python ./00.plot_training.py
-      - name: TEST
-        run: ls -al ./analysis/cv_exp0/slides
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
