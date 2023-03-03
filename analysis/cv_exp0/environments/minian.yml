@@ -1,0 +1,16 @@
+channels:
+  - conda-forge
+dependencies:
+  - minian==1.2.1
+  - numpy
+  - pytorch
+  - scipy
+  - scikit-image
+  - opencv
+  - matplotlib
+  - tqdm
+  - jupyter
+  - black
+  - plotly
+  - pyarrow
+  - seaborn
