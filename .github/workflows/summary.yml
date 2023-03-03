@@ -23,9 +23,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -el {0}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -37,9 +34,9 @@ jobs:
           mamba-version: "*"
           environment-file: ./analysis/cv_exp0/environments/generic.yml
       - name: Update plots
-        run: |
-          cd ./analysis/cv_exp0
-          python ./00.plot_training.py
+        shell: bash -el {0}
+        working-directory: ./analysis/cv_exp0
+        run: python ./00.plot_training.py
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
