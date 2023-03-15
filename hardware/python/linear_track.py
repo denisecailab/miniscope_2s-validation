@@ -356,8 +356,12 @@ class LinearTrack(QMainWindow):
             maze.logger.info("rewarding port {}".format(port))
             maze.write_data({"timestamp": ts, "event": "REWARD", "data": port})
             sd.play(self._click_dat, self._click_fs, device=self._sdevice)
+            try:
+                rw_len = self._config['reward_length'][port]
+            except KeyError:
+                rw_len = self._config['reward_length']
             maze.digitalHigh(port)
-            time.sleep(self._config["reward_length"])
+            time.sleep(rw_len)
             maze.digitalLow(port)
             time.sleep(1)
             if (self._bk_dat is not None) and (self._bk_fs is not None):
@@ -389,10 +393,11 @@ class LinearTrack(QMainWindow):
         rw_ports = self._config["reward_port"][self._context]
         sd.play(self._click_dat, self._click_fs, device=self._sdevice)
         for port in rw_ports:
-            self._maze.digitalHigh(port)
-        time.sleep(self._config["reward_length"])
-        for port in rw_ports:
-            self._maze.digitalLow(port)
+            try:
+                rw_len = self._config['reward_length'][port]
+            except KeyError:
+                rw_len = self._config['reward_length']
+            self._maze.digitalHigh(port, hold=rw_len)
 
     def pixmap_fromarray(self, img):
         w, h = img.shape
