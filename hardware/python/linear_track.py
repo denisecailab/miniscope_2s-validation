@@ -219,7 +219,7 @@ class LinearTrack(QMainWindow):
         timer = QTimer(self)
         timer.timeout.connect(self.setProgress)
         timer.singleShot(int(self._config["session_length"] * 6e4), self.onFinish)
-        vpath = os.path.join(dpath, 'behavCam')
+        vpath = os.path.join(dpath, "behavCam")
         os.makedirs(vpath, exist_ok=True)
         self._vid.writer_init(dpath=vpath)
         self._tstart = time.time()
@@ -344,11 +344,21 @@ class LinearTrack(QMainWindow):
             return
         if not self._started:
             return
+        x_cond = self._config.get("reward_x")
+        if x_cond is not None:
+            x_cond = x_cond.get(port)
+        yx = self._vid.track_yx
+        if x_cond is not None and yx is not None:
+            y, x = np.array(yx).astype(int)
+            correctLoc = eval("x" + x_cond)
+        else:
+            correctLoc = True
         if (
             (port in self._rw_ports)
             and (port not in maze.states["rewarded"])
             and (port != maze.states["lastReward"])
             and (maze.states["nLick"] >= self._config["lick_threshold"])
+            and correctLoc
         ):
             maze.states["rewarded"].append(port)
             maze.states["lastReward"] = port
@@ -357,9 +367,9 @@ class LinearTrack(QMainWindow):
             maze.write_data({"timestamp": ts, "event": "REWARD", "data": port})
             sd.play(self._click_dat, self._click_fs, device=self._sdevice)
             try:
-                rw_len = self._config['reward_length'][port]
+                rw_len = self._config["reward_length"][port]
             except KeyError:
-                rw_len = self._config['reward_length']
+                rw_len = self._config["reward_length"]
             maze.digitalHigh(port)
             time.sleep(rw_len)
             maze.digitalLow(port)
@@ -394,9 +404,9 @@ class LinearTrack(QMainWindow):
         sd.play(self._click_dat, self._click_fs, device=self._sdevice)
         for port in rw_ports:
             try:
-                rw_len = self._config['reward_length'][port]
+                rw_len = self._config["reward_length"][port]
             except KeyError:
-                rw_len = self._config['reward_length']
+                rw_len = self._config["reward_length"]
             self._maze.digitalHigh(port, hold=rw_len)
 
     def pixmap_fromarray(self, img):

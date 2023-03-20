@@ -30,6 +30,9 @@ lick_threshold: 0 # number of licks before rewarding
 reward_length: # reward port open time in seconds
   reward1: 0.08
   reward2: 0.15
+reward_x:
+  reward1: "<150"
+  reward2: ">500"
 nport: 2
 reward_port: # by context, 0 correspond to north, counting clockwise
   A:
