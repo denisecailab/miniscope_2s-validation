@@ -149,3 +149,7 @@ date,type,animal,session,data,comment,reward,analyze
 20230322,recording,m23,prelim1,m23/2023_03_22/13_18_29,field-of-view unstable while the animals at the different locations,42,
 20230322,recording,m24,prelim1,m24/2023_03_22/13_55_24,"field-of-view unstable while the animals at the different locations, took the mouse out two times to untagle the wires, FOV set to 24 ",74,
 20230322,recording,m25,prelim1,m25/2023_03_22/14_24_19,"field-of-view unstable while the animals at the different locations, FOV set to -14",146,
+20230323,recording,m26,prelim1,m26/2023_03_23/12_59_12,"minor FOV z-shift around half-way, wire got pretty tangled towards the end, ewl changed to -11",103,
+20230323,recording,m27,prelim1,m27/2023_03_23/13_34_53,"field-of-view unstable while the animals at the different locations, FOV set to -23",130,
+20230323,recording,m29,prelim1,m29/2023_03_23/14_25_47,"waited ~20min for scope to cool down, all gain set to medium, minor FOV z-shift around half-way, FOV set to -30",108,
+20230323,recording,m30,prelim1,m30/2023_03_23/15_01_36,"waited ~10min for scope to cool down, all gain set to medium, mouse seemed tired towards the end of session",72,
