@@ -171,3 +171,7 @@ date,type,animal,session,data,comment,reward,analyze
 20230326,recording,m23,prelim3,m23/2023_03_26/21_40_48,signature z-shift.,78,
 20230326,recording,m24,prelim3,m24/2023_03_26/23_36_11,signature z-shift. flipped top sensor. mouse don't like reward1,68,
 20230326,recording,m25,prelim3,m25/2023_03_27/00_11_27,signature z-shift. flipped top sensor.,91,
+20230327,recording,m26,prelim3,m26/2023_03_27/17_07_35,z-shift. flipped top sensor.,64,
+20230327,recording,m29,prelim3,m29/2023_03_27/19_59_06,z-shift. took out cover slip in the middle for testing.,86,
+20230327,recording,m30,prelim3,m30/2023_03_27/21_11_58,signature running z-shift. ran using Joe's old DAQ,82,
+20230327,recording,m27,prelim3,m27/2023_03_27/21_51_11,running z-shift. mouse tried to climb out,98,
