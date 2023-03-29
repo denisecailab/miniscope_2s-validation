@@ -181,3 +181,7 @@ date,type,animal,session,data,comment,reward,analyze
 20230328,recording,m23,prelim4,m23/2023_03_28/13_12_03,,82,
 20230328,recording,m24,prelim4,m24/2023_03_28/15_54_54,test run with refurbished mk.2. no z-shift! mouse dislike reward1. no recording snapshot,87,
 20230328,recording,m25,prelim4,m25/2023_03_28/16_32_00,test run with refurbished mk.2. no z-shift! no recording snapshot. had to reach in and untangle the wires,80,
+20230329,recording,m26,prelim4,m26/2023_03_29/12_33_02,"refurbished mk.2 with new bottom, z-shift. had to reach in 2x to untable the wires",69,
+20230329,recording,m27,prelim4,m27/2023_03_29/13_48_51,"refurbished mk.2 with new bottom and ring, z-shift.",102,
+20230329,recording,m29,prelim4,m29/2023_03_29/15_01_29,"refurbished mk.2 with original parts, z-shift prominent in red channel",62,
+20230329,recording,m30,prelim4,m30/2023_03_29/15_45_41,Mouse did not run,9,
