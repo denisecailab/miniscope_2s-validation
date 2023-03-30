@@ -185,3 +185,4 @@ date,type,animal,session,data,comment,reward,analyze
 20230329,recording,m27,prelim4,m27/2023_03_29/13_48_51,"refurbished mk.2 with new bottom and ring, z-shift.",102,
 20230329,recording,m29,prelim4,m29/2023_03_29/15_01_29,"refurbished mk.2 with original parts, z-shift prominent in red channel",62,
 20230329,recording,m30,prelim4,m30/2023_03_29/15_45_41,Mouse did not run,9,
+20230329,recording,m29,test2,m29/2023_03_29/20_42_36,"test session with refurbished mk.2 with original parts, and loose wire, z-shift prominent in red channel",,
