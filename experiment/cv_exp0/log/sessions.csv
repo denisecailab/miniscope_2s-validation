@@ -192,3 +192,8 @@ date,type,animal,session,data,comment,reward,analyze
 20230330,recording,m23,prelim5,m23/2023_03_30/12_01_32,z-shift appeared,44,
 20230330,recording,m24,prelim5,m24/2023_03_30/16_02_01,"refurbished mk.2 with original v4.3 PCB and new bottom, no z-shift.",36,
 20230330,recording,m25,prelim5,m25/2023_03_30/16_34_48,"refurbished mk.2 with original v4.3 PCB and new bottom, no z-shift. wires consantly get caught, mouse don't like reward1",78,
+20230331,recording,m26,prelim5,m26/2023_03_31/12_30_00,"refurbished mk.2 with original v4.3 PCB and new bottom and new wire, z-shift.",81,
+20230331,recording,m27,prelim5,m27/2023_03_31/13_44_33,"refurbished mk.2 with original v4.3 PCB and new bottom (same as m25 prelim5), z-shift.",123,
+20230331,recording,m27,test3,m27/2023_03_31/14_09_45,"test session immediately following last session, no z-shift.",41,
+20230331,recording,m29,prelim5,m29/2023_03_31/15_08_56,refurbished mk.2 with all orignal piece. no z-shift,50,
+20230331,recording,m30,prelim5,m30/2023_03_31/15_38_15,refurbished mk.2 with all orignal piece. no z-shift,36,
