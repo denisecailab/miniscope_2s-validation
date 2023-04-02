@@ -203,3 +203,7 @@ date,type,animal,session,data,comment,reward,analyze
 20230401,recording,m23,prelim6,m23/2023_04_01/14_59_08,refurbished mk.2 with all orignal piece. no z-shift,69,
 20230401,recording,m24,prelim6,m24/2023_04_01/15_30_20,refurbished mk.2 with all orignal piece. no z-shift,95,
 20230401,recording,m25,prelim6,m25/2023_04_01/16_00_19,refurbished mk.2 with all orignal piece. no z-shift,102,
+20230402,recording,m26,prelim6,m26/2023_04_02/15_26_39,"refurbished mk.2 with all orignal piece. no z-shift, behav software turned off with ~8% session left, ran well at least 75 rewards ",,
+20230402,recording,m27,prelim6,m27/2023_04_02/16_02_56,"refurbished mk.2 with all orignal piece. big z-shift after 50%, then harddrive ran out of space",,
+20230402,recording,m29,prelim6,m29/2023_04_02/16_47_07,"refurbished mk.2 with all orignal piece. z-shift after 20%, writing to ""C:/phild""",71,
+20230402,recording,m30,prelim6,m30/2023_04_02/17_15_54,"refurbished mk.2 with all orignal piece. z-shift after 10%, writing to ""C:/phild""",38,
