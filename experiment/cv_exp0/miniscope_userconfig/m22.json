@@ -30,7 +30,7 @@
                     "COMMENT_plotTrace": "Add or remove 'roll' 'pitch' and/or 'yaw' to define which get plotted in the time trace display.",
                     "plotTrace": []
                 },
-                "deviceID": 0,
+                "deviceID": 1,
                 "showSaturation": true,
                 "compression": "GREY",
                 "framesPerFile": 1000,
@@ -50,7 +50,7 @@
                     "COMMENT_plotTrace": "Add or remove 'roll' 'pitch' and/or 'yaw' to define which get plotted in the time trace display.",
                     "plotTrace": []
                 },
-                "deviceID": 1,
+                "deviceID": 0,
                 "showSaturation": true,
                 "compression": "GREY",
                 "framesPerFile": 1000,
@@ -58,7 +58,7 @@
                 "windowX": 800,
                 "windowY": 100,
                 "gain": "High", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
-                "ewl": 21,
+                "ewl": 0,
                 "led0": 5,
                 "frameRate": "30FPS"
             }

@@ -25,12 +25,12 @@
             "miniscope_top": {
                 "deviceType": "Miniscope_V4_BNO",
 				"headOrientation": {
-					"enabled": true,
+					"enabled": false,
                     "filterBadData": true,
                     "COMMENT_plotTrace": "Add or remove 'roll' 'pitch' and/or 'yaw' to define which get plotted in the time trace display.",
                     "plotTrace": ["roll", "pitch", "yaw"]
                 },
-                "deviceID": 0,
+                "deviceID": 1,
                 "showSaturation": true,
                 "compression": "GREY",
                 "framesPerFile": 1000,
@@ -45,12 +45,12 @@
             "miniscope_side": {
                 "deviceType": "Miniscope_V4_BNO",
 				"headOrientation": {
-					"enabled": true,
+					"enabled": false,
                     "filterBadData": true,
                     "COMMENT_plotTrace": "Add or remove 'roll' 'pitch' and/or 'yaw' to define which get plotted in the time trace display.",
                     "plotTrace": []
                 },
-                "deviceID": 1,
+                "deviceID": 0,
                 "showSaturation": true,
                 "compression": "GREY",
                 "framesPerFile": 1000,
@@ -58,8 +58,8 @@
                 "windowX": 800,
                 "windowY": 100,
                 "gain": "High", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
-                "ewl": 25,
-                "led0": 5,
+                "ewl": 11,
+                "led0": 10,
                 "frameRate": "30FPS"
             }
         },
