@@ -314,3 +314,7 @@ date,type,animal,session,data,comment,reward,analyze
 20230425,recording,m23,rec3,m23/2023_04_25/10_10_43,hand pipette 15ul,98,
 20230425,recording,m24,rec3,m24/2023_04_25/10_33_56,"hand pipette 15ul. z-shift starts 40% rec in. Add anti static spray, 45%-65% becomes better. but then get back again. not every time he reaches right side, but a handful of times. to be safe, use first 40% of data",96,
 20230425,recording,m25,rec3,m25/2023_04_25/11_00_06,hand pipette 15ul. mild z-shift started 65% rec in. can see 1 cell from 1 cell ref cluster start fading away,104,
+20230426,recording,m26,rec3,m26/2023_04_26/09_38_38,hand pipette 15ul,84,
+20230426,recording,m27,rec3,m27/2023_04_26/10_04_32,hand pipette 15ul,109,
+20230426,recording,m29,rec3,m29/2023_04_26/10_30_49,hand pipette 15ul,64,
+20230426,recording,m30,rec3,m30/2023_04_26/10_53_08,hand pipette 15ul,50,
