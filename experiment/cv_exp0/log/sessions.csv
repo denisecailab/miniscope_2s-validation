@@ -324,3 +324,7 @@ date,type,animal,session,data,comment,reward,analyze
 20230427,recording,m23,rec4,m23/2023_04_27/10_05_53,"hand pipette 15ul. in one cell cluster, 2 out of 3 cells fade",94,
 20230427,recording,m24,rec4,m24/2023_04_27/10_35_02,hand pipette 15ul; can see cells changing/fading,106,
 20230427,recording,m25,rec4,m25/2023_04_27/11_00_33,hand pipette 15ul; can see cells at the right plane emerged (they weren't there on ref pic),121,
+20230428,recording,m26,rec4,m26/2023_04_28/09_36_52,hand pipette 15ul; can see cells changing/fading in clusters 0 and 2 especially,80,
+20230428,recording,m27,rec4,m27/2023_04_28/10_06_00,hand pipette 15ul; some cells in clusters 1 and 2 seemed to change,102,
+20230428,recording,m29,rec4,m29/2023_04_28/10_43_25,hand pipette 15ul,65,
+20230428,recording,m30,rec4,m30/2023_04_28/11_07_22,hand pipette 15ul,80,
