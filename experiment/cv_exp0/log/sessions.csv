@@ -334,3 +334,7 @@ date,type,animal,session,data,comment,reward,analyze
 20230429,recording,m23,rec5,m23/2023_04_29/10_52_27,hand pipette 15ul,104,
 20230429,recording,m24,rec5,m24/2023_04_29/11_39_42,"hand pipette 15ul, same dirt as yesterday",99,
 20230429,recording,m25,rec5,m25/2023_04_29/11_17_09,hand pipette 15ul; some ref cells dimmer/fading,105,
+20230430,recording,m26,rec5,m26/2023_04_30/10_00_51,hand pipette 15ul; image looked dimmer overall than ref so increased LED slightly,92,
+20230430,recording,m27,rec5,m27/2023_04_30/10_28_45,hand pipette 15ul,86,
+20230430,recording,m29,rec5,m29/2023_04_30/10_53_39,hand pipette 15ul,70,
+20230430,recording,m30,rec5,m30/2023_04_30/11_17_53,hand pipette 15ul,52,
