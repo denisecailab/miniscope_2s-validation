@@ -344,3 +344,7 @@ date,type,animal,session,data,comment,reward,analyze
 20230501,recording,m23,rec6,m23/2023_05_01/10_09_05,hand pipette 15ul,94,
 20230501,recording,m24,rec6,m24/2023_05_01/10_32_58,hand pipette 15ul; can barely register to og ref cluster anymore,98,
 20230501,recording,m25,rec6,m25/2023_05_01/10_55_01,hand pipette 15ul; realize cluster 3 i circled wrong cluster for past couple of days. But its also a fading away cluster,130,
+20230502,recording,m26,rec6,m26/2023_05_02/10_19_06,hand pipette 15ul; can barely distinguish cells in og clusters,112,
+20230502,recording,m27,rec6,m27/2023_05_02/10_43_53,hand pipette 15ul; hard to see og cells in a clusters 1 and 2,104,
+20230502,recording,m29,rec6,m29/2023_05_02/11_11_18,hand pipette 15ul; some cells in clusters look dimmer,87,
+20230502,recording,m30,rec6,m30/2023_05_02/11_35_03,hand pipette 15ul; can't identify og cluster 2,64,
