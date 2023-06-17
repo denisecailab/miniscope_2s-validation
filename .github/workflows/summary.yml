@@ -1,0 +1,48 @@
+name: Deploy summary slides to Pages
+
+on:
+  push:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  # Single deploy job since we're just deploying
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Set up conda environment
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          mamba-version: "*"
+          environment-file: ./analysis/cv_exp0/environments/generic.yml
+      - name: Update plots
+        shell: bash -el {0}
+        working-directory: ./analysis/cv_exp0
+        run: |
+          python ./00.plot_training.py
+          python ./00.plot_fov.py
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: "./analysis/cv_exp0/slides"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1

@@ -27,13 +27,18 @@ DATA_HEADER:
 contexts:
   - A
 lick_threshold: 0 # number of licks before rewarding
-reward_length: 0.07 # reward port open time in seconds
+reward_length: # reward port open time in seconds
+  reward1: 0.18
+  reward2: 0.12
+reward_x:
+  reward1: "<150"
+  reward2: ">500"
 nport: 2
 reward_port: # by context, 0 correspond to north, counting clockwise
   A:
    - reward1
    - reward2
-session_length: 20 # in minutes
+session_length: 15 # in minutes
 touch_pin: # definition for touch sensor
   0: reward1
   1: reward2
@@ -47,4 +52,3 @@ eztrack_mask:
   center:
     - 325 # width
     - 260 # height
-sound_device: 1

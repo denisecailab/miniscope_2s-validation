@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <title>reveal.js</title>
+
+    <link rel="stylesheet" href="dist/reset.css" />
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/white.css" />
+    <link rel="stylesheet" href="dist/custom.css" />
+    <link rel="stylesheet" href="plugin/highlight/monokai.css" />
+    <link rel="stylesheet" href="plugin/chalkboard/style.css" />
+    <link rel="stylesheet" href="plugin/customcontrols/style.css" />
+    <link rel="stylesheet" href="dist/fontawesome-6.2.0/css/all.css" />
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h1 style="display: none">Title</h1>
+          <h1 class="slide_title">
+            Miniscope2s Validation<br />
+            Summary Slides
+          </h1>
+        </section>
+        <section>
+          <h1 class="slide_heading">Weights</h1>
+          <div class="col" style="gap: 2%">
+            <object
+              data="figs/training/weight.html"
+              width="1500px"
+              height="500px"
+            ></object>
+            <object
+              data="figs/training/prop_weight.html"
+              width="1500px"
+              height="500px"
+            ></object>
+          </div>
+        </section>
+        <section>
+          <h1 class="slide_heading">Rewards</h1>
+          <div class="col" style="gap: 2%">
+            <object
+              data="figs/training/reward.html"
+              width="1500px"
+              height="500px"
+            ></object>
+            <object
+              data="figs/training/reward_z.html"
+              width="1500px"
+              height="500px"
+            ></object>
+          </div>
+        </section>
+        <section>
+          <h1 class="slide_heading">FOV-m20</h1>
+          <object
+            data="figs/fov/m20.html"
+            width="1900px"
+            height="1000px"
+          ></object>
+        </section>
+        <section>
+          <h1 class="slide_heading">FOV-m21</h1>
+          <object
+            data="figs/fov/m21.html"
+            width="1900px"
+            height="1000px"
+          ></object>
+        </section>
+        <section>
+          <h1 class="slide_heading">FOV-m22</h1>
+          <object
+            data="figs/fov/m22.html"
+            width="1900px"
+            height="1000px"
+          ></object>
+        </section>
+        <section>
+          <h1 class="slide_heading">FOV-m23</h1>
+          <object
+            data="figs/fov/m23.html"
+            width="1900px"
+            height="1000px"
+          ></object>
+        </section>
+        <section>
+          <h1 class="slide_heading">FOV-m24</h1>
+          <object
+            data="figs/fov/m24.html"
+            width="1900px"
+            height="1000px"
+          ></object>
+        </section>
+        <section>
+          <h1 class="slide_heading">FOV-m25</h1>
+          <object
+            data="figs/fov/m25.html"
+            width="1900px"
+            height="1000px"
+          ></object>
+        </section>
+        <section>
+          <h1 class="slide_heading">FOV-m26</h1>
+          <object
+            data="figs/fov/m26.html"
+            width="1900px"
+            height="1000px"
+          ></object>
+        </section>
+        <section>
+          <h1 class="slide_heading">FOV-m27</h1>
+          <object
+            data="figs/fov/m27.html"
+            width="1900px"
+            height="1000px"
+          ></object>
+        </section>
+        <section>
+          <h1 class="slide_heading">FOV-m29</h1>
+          <object
+            data="figs/fov/m29.html"
+            width="1900px"
+            height="1000px"
+          ></object>
+        </section>
+        <section>
+          <h1 class="slide_heading">FOV-m30</h1>
+          <object
+            data="figs/fov/m30.html"
+            width="1900px"
+            height="1000px"
+          ></object>
+        </section>
+      </div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script src="plugin/math/math.js"></script>
+    <script src="plugin/spotlight/spotlight.js"></script>
+    <script src="plugin/animate/plugin.js"></script>
+    <script src="plugin/animate/svg.min.js"></script>
+    <script src="plugin/chalkboard/plugin.js"></script>
+    <script src="plugin/customcontrols/plugin.js"></script>
+    <script src="plugin/menu/menu.js"></script>
+    <script src="plugin/appearance/appearance.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        width: 1920,
+        height: 1080,
+        slideNumber: "c/t",
+        autoPlayMedia: true,
+        plugins: [
+          Appearance,
+          RevealMarkdown,
+          RevealHighlight,
+          RevealNotes,
+          RevealMath,
+          RevealSpotlight,
+          RevealAnimate,
+          RevealCustomControls,
+          RevealChalkboard,
+          RevealMenu,
+        ],
+
+        spotlight: {
+          size: 120,
+          presentingCursor: "crosshair",
+          initialPresentationMode: false,
+        },
+        keyboard: {
+          // enter/leave spotlight presentation mode by pressing key 'z'
+          90: function () {
+            RevealSpotlight.togglePresentationMode();
+          },
+        },
+        customcontrols: {
+          controls: [
+            {
+              icon: '<i class="fa fa-pen-square"></i>',
+              title: "Toggle chalkboard (B)",
+              action: "RevealChalkboard.toggleChalkboard();",
+            },
+            {
+              icon: '<i class="fa fa-pen"></i>',
+              title: "Toggle notes canvas (C)",
+              action: "RevealChalkboard.toggleNotesCanvas();",
+            },
+          ],
+        },
+        chalkboard: {
+          boardmarkerWidth: 3,
+          chalkWidth: 7,
+          chalkEffect: 1.0,
+          storage: null,
+          src: null,
+          readOnly: undefined,
+          transition: 800,
+          theme: "chalkboard",
+          eraser: { src: path + "img/sponge.png", radius: 20 },
+          rememberColor: true,
+        },
+        menu: {
+          side: "left",
+          width: "normal",
+          numbers: false,
+          titleSelector: "h1, h2, h3, h4, h5, h6",
+          useTextContentForMissingTitles: false,
+          hideMissingTitles: false,
+          markers: true,
+          custom: false,
+          themes: false,
+          themesPath: "dist/theme/",
+          transitions: false,
+          openButton: true,
+          openSlideNumber: false,
+          keyboard: true,
+          sticky: false,
+          autoOpen: true,
+          delayInit: false,
+          openOnInit: false,
+          loadIcons: false,
+        },
+        appearance: {
+          hideagain: true,
+          delay: 200,
+          autoappear: true,
+          appearevent: "auto",
+          autoelements: {
+            ".appear_all>*": "animate__shrinkInBlur",
+            ".appear": "animate__shrinkInBlur",
+          },
+        },
+      });
+    </script>
+  </body>
+</html>

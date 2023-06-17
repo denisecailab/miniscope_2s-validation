@@ -1,0 +1,65 @@
+.row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+iframe.plot {
+  padding: 0;
+  margin: 0;
+  transform: scale(var(--tscale, 1));
+  transform-origin: center;
+  overflow: hidden;
+}
+h1.slide_title {
+  font-size: 2em;
+  text-transform: capitalize;
+}
+h1.slide_subtitle {
+  font-size: 1.5em;
+  color: #3c434a;
+  text-transform: capitalize;
+}
+h1.slide_author {
+  font-size: 1.3em;
+  text-align: right;
+  color: darkgray;
+  text-transform: capitalize;
+}
+h1.slide_heading {
+  font-size: 1.3em;
+  text-transform: capitalize;
+}
+img {
+  vertical-align: middle;
+  margin: auto;
+}
+video {
+  vertical-align: middle;
+  margin: auto;
+}
+.rfooter {
+  position: absolute;
+  bottom: 1em;
+  right: 1em;
+  font-size: 0.5em;
+}
+.lfooter {
+  position: absolute;
+  bottom: 1em;
+  left: 1em;
+  font-size: 0.5em;
+}
+.card {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+div[data-animate] svg {
+  width: 100%;
+  height: 100%;
+}
