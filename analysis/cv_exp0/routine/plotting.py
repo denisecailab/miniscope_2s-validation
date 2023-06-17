@@ -75,13 +75,14 @@ from .utilities import enumerated_product
 
 def facet_plotly(
     data: pd.DataFrame,
-    facet_row: str,
-    facet_col: str,
+    facet_row: str = None,
+    facet_col: str = None,
     title_dim: str = None,
     specs: dict = None,
     col_wrap: int = None,
     **kwargs,
 ):
+    data, facet_row, facet_col = handle_single_facet(data, facet_row, facet_col)
     row_crd = data[facet_row].unique()
     col_crd = data[facet_col].unique()
     layout_ls = []

@@ -18,3 +18,7 @@ dependencies:
   - statsmodels
   - netcdf4
   - isort
+  - xarray
+  - holoviews
+  - colorcet
+  - pillow

@@ -40,7 +40,7 @@
                 "gain": "High", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
                 "ewl": 0,
                 "led0": 0,
-                "frameRate": "20FPS"
+                "frameRate": "30FPS"
             },
             "miniscope_side": {
                 "deviceType": "Miniscope_V4_BNO",
@@ -58,9 +58,9 @@
                 "windowX": 800,
                 "windowY": 100,
                 "gain": "High", "COMMENT_gain": "Low, Medium, High are 1x, 2x, and 3.5x",
-                "ewl": -12,
-                "led0": 5,
-                "frameRate": "20FPS"
+                "ewl": -9,
+                "led0": 12,
+                "frameRate": "30FPS"
             }
         },
         "cameras": {}

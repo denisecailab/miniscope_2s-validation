@@ -36,7 +36,9 @@ jobs:
       - name: Update plots
         shell: bash -el {0}
         working-directory: ./analysis/cv_exp0
-        run: python ./00.plot_training.py
+        run: |
+          python ./00.plot_training.py
+          python ./00.plot_fov.py
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
