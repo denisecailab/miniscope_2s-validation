@@ -21,7 +21,6 @@ from bokeh.resources import CDN
 from distributed import Client, LocalCluster
 from minian.utilities import TaskAnnotation
 from routine.minian_pipeline import red_channel
-from routine.utilities import subset_sessions
 
 IN_DPATH = "./data"
 IN_MINIAN_INT_PATH = "~/var/miniscope2s-validation/minian_int"
