@@ -95,7 +95,11 @@ def compute_si(df, fr_name="fr", occp_name="occp") -> float:
     mfr = fr.mean()
     if mfr > 0:
         fr_norm = fr / mfr
-        return (occp * fr_norm * np.log2(fr_norm, where=fr_norm > 0)).sum()
+        return (
+            occp
+            * fr_norm
+            * np.log2(fr_norm, where=fr_norm > 0, out=np.zeros_like(fr_norm))
+        ).sum()
     else:
         return np.nan
 
