@@ -71,24 +71,7 @@ for anm, anm_df in tqdm(list(ss_df.groupby("animal"))):
             continue
         # alignment
         A_red = red_ds["A"].compute()
-        A_green = green_ds["A"]
-        # TODO take this out once green channel is fixed
-        A_green = xr.apply_ufunc(
-            darr.flip,
-            A_green,
-            input_core_dims=[["unit_id", "height", "width"]],
-            output_core_dims=[["unit_id", "height", "width"]],
-            kwargs={"axis": 1},
-            dask="allowed",
-        )
-        A_green = xr.apply_ufunc(
-            darr.flip,
-            A_green,
-            input_core_dims=[["unit_id", "height", "width"]],
-            output_core_dims=[["unit_id", "height", "width"]],
-            kwargs={"axis": 2},
-            dask="allowed",
-        ).compute()
+        A_green = green_ds["A"].compute()
         trans, _ = est_affine(A_green.max("unit_id"), A_red.max("unit_id"))
         A_green_trans = xr.apply_ufunc(
             apply_affine,
