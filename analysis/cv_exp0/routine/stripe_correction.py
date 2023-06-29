@@ -239,3 +239,22 @@ def shift_buffer(buf_org, buf_repl, sh):
     buf_new[range_repl] = buf_repl[range_repl - sh]
     mask[range_repl] = 1
     return buf_new, mask
+
+
+def notch_filt_fft(x, pos, wnd):
+    x_fft = np.fft.rfft(x)
+    x_fft[pos - wnd : pos + wnd + 1] = 0
+    return np.fft.irfft(x_fft)
+
+
+def ripple_correction(varr, dim="width", **kwargs):
+    return xr.apply_ufunc(
+        notch_filt_fft,
+        varr,
+        input_core_dims=[[dim]],
+        output_core_dims=[[dim]],
+        vectorize=True,
+        kwargs=kwargs,
+        dask="parallelized",
+        output_dtypes=varr.dtype,
+    )

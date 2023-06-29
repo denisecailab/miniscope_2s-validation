@@ -17,8 +17,8 @@ first_merge:
 first_spatial:
   dl_wnd: 10
   size_thres: !!python/tuple
-  - 20
-  - null
+    - 15
+    - null
   sparse_penal: 0.001
 first_temporal:
   add_lag: 100
@@ -29,8 +29,8 @@ first_temporal:
   sparse_penal: 2
 get_noise:
   noise_range: !!python/tuple
-  - 0.06
-  - 0.5
+    - 0.06
+    - 0.5
 init_merge:
   thres_corr: 0.8
 initialize:
@@ -38,16 +38,16 @@ initialize:
   thres_corr: 0.8
   wnd: 10
 load_videos:
-  dtype: !!python/name:numpy.uint8 ''
+  dtype: !!python/name:numpy.uint8 ""
   pattern: .*\.avi$
 pnr_refine:
   noise_freq: 0.06
-  thres: 1.5
+  thres: 1.2
 second_spatial:
   dl_wnd: 10
   size_thres: !!python/tuple
-  - 20
-  - null
+    - 15
+    - null
   sparse_penal: 0.001
 second_temporal:
   add_lag: 100
@@ -57,7 +57,7 @@ second_temporal:
   p: 1
   sparse_penal: 1
 seeds_init:
-  diff_thres: 6
+  diff_thres: 4
   max_wnd: 40
   method: rolling
   stp_size: 3000
@@ -67,3 +67,6 @@ seeds_merge:
   thres_corr: 0.6
   thres_dist: 15
 stripe_corr: null
+ripple_corr:
+  pos: 152
+  wnd: 1

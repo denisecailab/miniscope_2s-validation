@@ -6,20 +6,24 @@ import holoviews as hv
 import numpy as np
 import xarray as xr
 from holoviews import opts
-from minian.cnmf import (compute_trace, get_noise_fft, unit_merge,
-                         update_background, update_spatial, update_temporal)
-from minian.initialization import (initA, initC, pnr_refine, seeds_init,
-                                   seeds_merge)
+from minian.cnmf import (
+    compute_trace,
+    get_noise_fft,
+    unit_merge,
+    update_background,
+    update_spatial,
+    update_temporal,
+)
+from minian.initialization import initA, initC, pnr_refine, seeds_init, seeds_merge
 from minian.motion_correction import apply_transform, estimate_motion
 from minian.preprocessing import denoise, remove_background
 from minian.utilities import get_optimal_chk, load_videos, save_minian
-from minian.visualization import (generate_videos, visualize_motion,
-                                  visualize_seeds)
+from minian.visualization import generate_videos, visualize_motion, visualize_seeds
 
 from .alignment import apply_affine
 from .plotting import plotA_contour
 from .static_channel import constructA, find_seed, mergeA
-from .stripe_correction import label_good_frames
+from .stripe_correction import label_good_frames, ripple_correction
 from .utilities import resample_motion
 
 
@@ -65,7 +69,7 @@ def minian_process(
             varr,
             input_core_dims=[["frame", "height", "width"]],
             output_core_dims=[["frame", "height", "width"]],
-            kwargs={"axis": 1},
+            kwargs={"axis": 2},
             dask="allowed",
         )
     varr = save_minian(
@@ -76,6 +80,8 @@ def minian_process(
     if param["stripe_corr"] is not None:
         good_frame = label_good_frames(varr, **param["stripe_corr"])
         varr = varr.sel(frame=good_frame)
+    if param["ripple_corr"] is not None:
+        varr = ripple_correction(varr, **param["ripple_corr"])
     varr_ref = varr.sel(param.get("subset"))
     # preprocessing
     if param["glow_rm"] == "min":
