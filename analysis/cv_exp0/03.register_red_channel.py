@@ -26,7 +26,7 @@ hv.notebook_extension("bokeh")
 IN_DPATH = "./intermediate/processed/red"
 IN_SS_CSV = "./log/sessions.csv"
 IN_DPAT = r".*\.nc$"
-PARAM_DIST = 5
+PARAM_DIST = 10
 OUT_PATH = "./intermediate/cross_reg/red"
 FIG_PATH = "./figs/cross_reg/red"
 os.makedirs(OUT_PATH, exist_ok=True)
