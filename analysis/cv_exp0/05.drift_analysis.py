@@ -35,7 +35,7 @@ PARAM_NSHUF = 500
 PARAM_STB_QTHRES = 0.95
 PARAM_SI_QTHRES = 0.95
 PARAM_SMP_SPACE = np.linspace(-100, 100, 200)
-PARAM_MIN_NCELL = 3
+PARAM_MIN_NCELL = 5
 PARAM_SUB_ANM = None
 PARAM_SUB_TDIST = (0, 14)
 PARAM_PLT_RC = {
@@ -44,6 +44,7 @@ PARAM_PLT_RC = {
     "legend.fontsize": 10,
     "font.sans-serif": "Arial",
 }
+PARAM_AGG_ANM = True
 OUT_PATH = "./intermediate/drift"
 FIG_PATH = "./figs/drift"
 
@@ -362,6 +363,9 @@ if PARAM_SUB_TDIST is not None:
     pv_corr = pv_corr[pv_corr["tdist"].between(*PARAM_SUB_TDIST)].copy()
 pv_corr["cat"] = pv_corr["map_method"] + "-" + pv_corr["cell_map"]
 pv_corr["cat"] = pv_corr["cat"].map(lmap)
+if PARAM_AGG_ANM:
+    grp_dims = list(set(pv_corr.columns) - set(["ssA", "ssB", "corr"]))
+    pv_corr = pv_corr.groupby(grp_dims).agg({"corr": "median"}).reset_index()
 corr_dict = {"master": pv_corr}
 for by, cur_corr in corr_dict.items():
     for inclusion, corr_sub in cur_corr.groupby("inclusion"):
@@ -422,8 +426,20 @@ if PARAM_SUB_ANM is not None:
     ovlp = ovlp[ovlp["animal"].isin(PARAM_SUB_ANM)].copy()
 if PARAM_SUB_TDIST is not None:
     ovlp = ovlp[ovlp["tdist"].between(*PARAM_SUB_TDIST)].copy()
-ovlp["color"] = ovlp["map_method"].map(cmap).dropna()
-ovlp["map_method"] = ovlp["map_method"].map(lmap).dropna()
+ovlp["color"] = ovlp["map_method"].map(cmap)
+ovlp["map_method"] = ovlp["map_method"].map(lmap)
+ovlp = ovlp.dropna()
+if PARAM_AGG_ANM:
+    grp_dims = list(
+        set(ovlp.columns) - set(["ssA", "ssB", "actMean", "ovlp", "actA", "actB"])
+    )
+    ovlp = (
+        ovlp.groupby(grp_dims)
+        .agg(
+            {"actMean": "median", "ovlp": "median", "actA": "median", "actB": "median"}
+        )
+        .reset_index()
+    )
 for metric in ["actMean", "ovlp"]:
     fig = scatter_agg(
         ovlp,
@@ -508,10 +524,16 @@ df = df[df["inclusion"] == "place_cells"].copy()
 if PARAM_SUB_ANM is not None:
     df = df[df["animal"].isin(PARAM_SUB_ANM)].copy()
 df["cat"] = df["map_method"] + "-" + df["cell_map"]
-lm = ols("corr ~ C(cat, Simple)*tdist", data=df).fit(cov_type="HC1")
+if PARAM_AGG_ANM:
+    grp_dims = list(set(df.columns) - set(["ssA", "ssB", "corr"]))
+    df = df.groupby(grp_dims).agg({"corr": "median"}).reset_index()
+    cov_type = "nonrobust"
+else:
+    cov_type = "HC1"
+lm = ols("corr ~ C(cat, Simple)*tdist", data=df).fit(cov_type=cov_type)
 anova = sm.stats.anova_lm(lm, typ=3)
 df_alt = df[df["cat"] != "green/raw-zero_padded"]
-lm_alt = ols("corr ~ C(cat, Simple)*tdist", data=df_alt).fit(cov_type="HC1")
+lm_alt = ols("corr ~ C(cat, Simple)*tdist", data=df_alt).fit(cov_type=cov_type)
 anova_alt = sm.stats.anova_lm(lm_alt, typ=3)
 
 # %% run stats on overlap
@@ -519,11 +541,28 @@ df = pd.read_csv(os.path.join(OUT_PATH, "ovlp.csv"))
 df = df[df["map_method"] != "red/raw"].copy()
 if PARAM_SUB_ANM is not None:
     df = df[df["animal"].isin(PARAM_SUB_ANM)].copy()
-lm = ols("actMean ~ C(map_method)*tdist", data=df).fit(cov_type="HC1")
+if PARAM_AGG_ANM:
+    grp_dims = list(
+        set(df.columns) - set(["ssA", "ssB", "actMean", "ovlp", "actA", "actB"])
+    )
+    df = (
+        df.groupby(grp_dims)
+        .agg(
+            {"actMean": "median", "ovlp": "median", "actA": "median", "actB": "median"}
+        )
+        .reset_index()
+    )
+    cov_type = "nonrobust"
+else:
+    cov_type = "HC1"
+lm = ols("actMean ~ C(map_method)*tdist", data=df).fit(cov_type=cov_type)
 anova = sm.stats.anova_lm(lm, typ=3)
 lm_dict = dict()
+anova_dict = dict()
 for mmethod, mdf in df.groupby("map_method"):
-    lm_dict[mmethod] = ols("actMean ~ tdist", data=mdf).fit(cov_type="HC1")
+    cur_lm = ols("actMean ~ tdist", data=mdf).fit(cov_type=cov_type)
+    lm_dict[mmethod] = cur_lm
+    anova_dict[mmethod] = sm.stats.anova_lm(cur_lm, typ=3)
 
 
 # %% plot cells
