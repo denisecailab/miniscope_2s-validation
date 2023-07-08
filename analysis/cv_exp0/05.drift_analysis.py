@@ -580,6 +580,12 @@ anova = sm.stats.anova_lm(lm, typ=3)
 df_alt = df[df["cat"] != "green/raw-zero_padded"]
 lm_alt = ols("corr ~ C(cat, Simple)*tdist", data=df_alt).fit(cov_type=cov_type)
 anova_alt = sm.stats.anova_lm(lm_alt, typ=3)
+lm_dict = dict()
+anova_dict = dict()
+for ct, mdf in df.groupby("cat"):
+    cur_lm = ols("corr ~ tdist", data=mdf).fit(cov_type=cov_type)
+    lm_dict[ct] = cur_lm
+    anova_dict[ct] = sm.stats.anova_lm(cur_lm, typ=3)
 
 # %% run stats on overlap
 df = pd.read_csv(os.path.join(OUT_PATH, "ovlp.csv"))
