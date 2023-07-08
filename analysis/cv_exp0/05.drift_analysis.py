@@ -19,6 +19,7 @@ from routine.place_cell import (
 )
 from routine.plotting import scatter_agg
 from routine.utilities import df_set_metadata, norm, thres_gmm
+from scipy.stats import ttest_ind
 from sklearn.metrics import pairwise_distances
 from statsmodels.formula.api import ols
 from tqdm.auto import tqdm, trange
@@ -338,23 +339,24 @@ fig.savefig(os.path.join(FIG_PATH, "corr_mat.svg"))
 plt.close(fig)
 
 # %% plot pv corr
+show_sig = False
 cmap = {
     "green/raw-shared": qualitative.Plotly[2],
     "green/raw-zero_padded": qualitative.D3[2],
-    "red/registered-shared": qualitative.Plotly[4],
+    # "red/registered-shared": qualitative.Plotly[4],
     "red/registered-zero_padded": qualitative.D3[1],
 }
 smap = {
-    "green/raw-shared": "",
-    "green/raw-zero_padded": (3, 1),
-    "red/registered-shared": "",
-    "red/registered-zero_padded": (3, 1),
+    "green/raw-shared": (3, 1),
+    "green/raw-zero_padded": "",
+    # "red/registered-shared": (3, 1),
+    "red/registered-zero_padded": "",
 }
 lmap = {
-    "green/raw-shared": "All active GCaMP cells",
-    "green/raw-zero_padded": "All GCaMP cells\n(zero-padded)",
-    "red/registered-shared": "Active GCaMP cells\nregistered with tdTomato",
-    "red/registered-zero_padded": "Active GCaMP cells registered\nwith tdTomato (zero-padded)",
+    "green/raw-shared": "Always active GCaMP cells",
+    "green/raw-zero_padded": "All GCaMP cells",
+    # "red/registered-shared": "Active GCaMP cells\nregistered with tdTomato",
+    "red/registered-zero_padded": "GCaMP cells registered\nwith tdTomato",
 }
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr_agg.csv"))
 if PARAM_SUB_ANM is not None:
@@ -399,6 +401,29 @@ for by, cur_corr in corr_dict.items():
         # )
         ax.set_xlabel("Days apart", style="italic")
         ax.set_ylabel("PV correlation", style="italic")
+        if show_sig:
+            y_pos = ax.get_ylim()[1]
+            ax.set_ylim(top=y_pos * 1.1)
+            for t in corr_sub["tdist"].unique():
+                ttA, ttB = (
+                    corr_sub[
+                        (
+                            corr_sub["map_method"]
+                            == "Active GCaMP cells registered\nwith tdTomato (zero-padded)"
+                        )
+                        & (corr_sub["tdist"] == t)
+                    ]["corr"],
+                    corr_sub[
+                        (corr_sub["map_method"] == "All GCaMP cells\n(zero-padded)")
+                        & (corr_sub["tdist"] == t)
+                    ]["corr"],
+                )
+                stat, pval = ttest_ind(ttA, ttB)
+                if pval < 0.05:
+                    ttext = "*"
+                else:
+                    ttext = "ns"
+                ax.text(x=t, y=y_pos * 1.03, s=ttext)
         plt.legend(
             title=None,
             loc="lower center",
@@ -411,6 +436,7 @@ for by, cur_corr in corr_dict.items():
         plt.close(fig)
 
 # %% plot overlap
+show_sig = False
 cmap = {
     # "red/raw": qualitative.Plotly[1],
     "green/raw": qualitative.Plotly[2],
@@ -482,6 +508,25 @@ for metric in ["actMean", "ovlp"]:
     )
     ax.set_xlabel("Days apart", style="italic")
     ax.set_ylabel("Reactivation", style="italic")
+    if show_sig:
+        y_pos = ax.get_ylim()[1]
+        ax.set_ylim(top=y_pos * 1.2)
+        for t in ovlp["tdist"].unique():
+            ttA, ttB = (
+                ovlp[(ovlp["map_method"] == "All GCaMP cells") & (ovlp["tdist"] == t)][
+                    metric
+                ],
+                ovlp[
+                    (ovlp["map_method"] == "GCaMP cells\nregistered with tdTomato")
+                    & (ovlp["tdist"] == t)
+                ][metric],
+            )
+            stat, pval = ttest_ind(ttA, ttB)
+            if pval < 0.05:
+                ttext = "*"
+            else:
+                ttext = "ns"
+            ax.text(x=t, y=y_pos * 1.03, s=ttext)
     plt.legend(
         title=None,
         loc="lower center",
