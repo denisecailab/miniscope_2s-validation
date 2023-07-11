@@ -76,6 +76,10 @@ spd_pfd["group"] = "pfd"
 spd = pd.concat([spd, spd_pfd], ignore_index=True)
 spd_agg = spd.groupby(["group", "animal"])["speed"].quantile(0.4).reset_index()
 ntrials = behav.groupby(["animal", "session"])["trial"].max().reset_index()
+spd_prt = spd_agg[spd_agg["group"] == "2s"]["speed"]
+print("speed: {} +/- {}".format(spd_prt.mean(), spd_prt.sem()))
+trial_prt = ntrials.groupby("animal")["trial"].mean()
+print("trial: {} +/- {}".format(trial_prt.mean(), trial_prt.sem()))
 
 # %% plot speeds
 lmap = {"2s": "Dual-channel\nMiniscope", "pfd": "Single-channel\nMiniscope"}
