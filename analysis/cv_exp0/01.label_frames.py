@@ -87,24 +87,24 @@ for anm, anm_df in behav.groupby("animal"):
     plt.close(fig)
 
 # %% plot specific animals
-# behav = pd.read_feather(os.path.join(OUT_FM_LABEL, "behav.feat"))
-# behav = behav[
-#     (behav["session"] == "rec6") & (behav["animal"].isin(["m09", "m12"]))
-# ].copy()
-# behav["time"] = behav["frame"] / 30
-# behav = behav[behav["time"] <= 600].copy()
-# g = sns.FacetGrid(behav, row="animal", legend_out=False, height=1.8, aspect=2.5)
-# g.map_dataframe(plot_behav, fm="time", lw=1.2, lw_dash=0.8)
-# fig = g.figure
-# g.add_legend(
-#     loc="lower center",
-#     bbox_to_anchor=(0.1, 0.96, 0.8, 0.1),
-#     mode="expand",
-#     ncol=3,
-#     bbox_transform=fig.transFigure,
-# )
-# g.set_xlabels("Time (s)", style="italic")
-# g.set_ylabels("Linearized Position", style="italic")
-# g.set_titles(row_template="Animal: {row_name}")
-# fig.savefig(os.path.join(FIG_PATH, "example.svg"), dpi=500, bbox_inches="tight")
-# plt.close(fig)
+behav = pd.read_feather(os.path.join(OUT_FM_LABEL, "behav.feat"))
+behav = behav[
+    (behav["session"] == "rec5") & (behav["animal"].isin(["m20", "m21"]))
+].copy()
+behav["time"] = behav["frame"] / 30
+behav = behav[behav["time"] <= 600].copy()
+g = sns.FacetGrid(behav, row="animal", legend_out=False, height=1.8, aspect=2.5)
+g.map_dataframe(plot_behav, fm="time", lw=1.2, lw_dash=0.8)
+fig = g.figure
+g.add_legend(
+    loc="lower center",
+    bbox_to_anchor=(0.1, 0.96, 0.8, 0.1),
+    mode="expand",
+    ncol=3,
+    bbox_transform=fig.transFigure,
+)
+g.set_xlabels("Time (s)", style="italic")
+g.set_ylabels("Linearized Position", style="italic")
+g.set_titles(row_template="Animal: {row_name}")
+fig.savefig(os.path.join(FIG_PATH, "example.svg"), dpi=500, bbox_inches="tight")
+plt.close(fig)
