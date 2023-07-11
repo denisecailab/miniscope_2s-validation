@@ -507,7 +507,7 @@ for metric in ["actMean", "ovlp"]:
         zorder=5,
     )
     ax.set_xlabel("Days apart", style="italic")
-    ax.set_ylabel("Reactivation", style="italic")
+    ax.set_ylabel("Reactivation probability", style="italic")
     if show_sig:
         y_pos = ax.get_ylim()[1]
         ax.set_ylim(top=y_pos * 1.2)
@@ -577,7 +577,7 @@ else:
     cov_type = "HC1"
 lm = ols("corr ~ C(cat, Simple)*tdist", data=df).fit(cov_type=cov_type)
 anova = sm.stats.anova_lm(lm, typ=3)
-df_alt = df[df["cat"] != "green/raw-zero_padded"]
+df_alt = df[df["cat"] != "green/raw-shared"]
 lm_alt = ols("corr ~ C(cat, Simple)*tdist", data=df_alt).fit(cov_type=cov_type)
 anova_alt = sm.stats.anova_lm(lm_alt, typ=3)
 lm_dict = dict()
