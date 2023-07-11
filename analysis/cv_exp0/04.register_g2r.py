@@ -31,7 +31,8 @@ IN_RED_MAP = "./intermediate/cross_reg/red/mappings_meta_fill.pkl"
 IN_GREEN_MAP = "./intermediate/cross_reg/green/mappings_meta_fill.pkl"
 PARAM_DIST_THRES = 10
 PARAM_SUB_SS = None
-PARAM_SUB_ANM = None
+PARAM_SUB_ANM = ["m20", "m21", "m22", "m23", "m24", "m25", "m26", "m27", "m29"]
+PARAM_EXP_ANM = ["m20"]
 PARAM_PLT_RC = {
     "axes.titlesize": 11,
     "axes.labelsize": 10,
@@ -479,7 +480,7 @@ for plt_type, cur_data in df_dict.items():
     elif plt_type == "summary_agg":
         g.set_titles(col_template="{col_name}")
         g.set_xlabels("# of sessions active", style="italic")
-    g.set_ylabels("Proportion of cells", style="italic")
+    g.set_ylabels("Per-session probability", style="italic")
     g.fig.savefig(
         os.path.join(FIG_PATH, "{}.svg".format(plt_type)), dpi=500, bbox_inches="tight"
     )
@@ -489,18 +490,17 @@ for plt_type, cur_data in df_dict.items():
 nsmp = 5
 Awnd = 15
 Twnd = 14000
-sub_idx = [1396, 3080, 3165, 2894, 1223]
+sub_idx = [286, 509, 176, 530, 227]
 brt_offset = 0.1
 trace_offset = 5
 lw = 1
-nsmp = len(sub_idx)
 cmap = {"red": qualitative.Plotly[1], "green": qualitative.Plotly[2]}
 map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"))
-# map_g2r = map_g2r[map_g2r["animal"].isin(PARAM_SUB_ANM)]
-map_smp = map_g2r.sample(nsmp, replace=False).reset_index()
-# map_smp = map_g2r.loc[sub_idx].reset_index(drop=True)
+map_g2r = map_g2r[(map_g2r["animal"].isin(PARAM_EXP_ANM)) & (map_g2r["distance"] < 3)]
+# map_smp = map_g2r.sample(nsmp, replace=False).reset_index()
+map_smp = map_g2r.loc[sub_idx].reset_index(drop=True)
 fig, axs = plt.subplots(
-    nsmp, 2, figsize=(6.4, 3.5), gridspec_kw={"width_ratios": [1, 8]}
+    len(map_smp), 2, figsize=(6.4, 3.5), gridspec_kw={"width_ratios": [1, 8]}
 )
 for ir, row in map_smp.iterrows():
     anm, ss, uid_red, uid_gn = (
