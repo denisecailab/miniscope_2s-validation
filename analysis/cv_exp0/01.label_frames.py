@@ -63,7 +63,7 @@ for _, row in tqdm(list(ssmap.iterrows())):
     behav["linpos_sign"] = code_direction(
         behav["linpos"], smooth=PARAM_SMOOTH, diff_thres=PARAM_DIFF
     )
-    behav = determine_trial(behav).astype({"trial": int})
+    behav = determine_trial(behav, min_fm_st=60).astype({"trial": int})
     behav = df_set_metadata(
         behav[["ms_frame", "x", "y", "trial", "linpos", "linpos_sign"]].copy(),
         {"animal": anm, "session": ss},
