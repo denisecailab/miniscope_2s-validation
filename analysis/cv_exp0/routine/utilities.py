@@ -46,7 +46,7 @@ def walklevel(path, depth=1):
 
 def subset_sessions(r, anm_pat, ss_pat):
     anm_match = re.search(anm_pat, r["animal"])
-    ss_match = re.search(ss_pat, r["name"])
+    ss_match = re.search(ss_pat, r["session"])
     return bool(anm_match) and bool(ss_match)
 
 

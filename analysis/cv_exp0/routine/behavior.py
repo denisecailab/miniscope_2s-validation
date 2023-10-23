@@ -31,11 +31,15 @@ def code_direction(pos, smooth, diff_thres=None):
     return pos_sign
 
 
-def determine_trial(df):
-    rw_first = df[df["event"] == "REWARD"].iloc[0]
-    df["trial"] = 0
-    df.loc[(df["event"] == "REWARD") & (df["data"] == rw_first["data"]), "trial"] = 1
-    df["trial"] = df["trial"].cumsum()
+def determine_trial(df, trial_st_cutoff=30, min_fm_st=240):
+    stat_lab, nstat = label(df["linpos"] < trial_st_cutoff)
+    trial_lab = np.zeros_like(stat_lab)
+    for istat in np.arange(nstat) + 1:
+        cur_stat = stat_lab == istat
+        if np.sum(cur_stat) > min_fm_st:
+            idx = np.nanargmin(np.where(cur_stat, df["linpos"], np.nan))
+            trial_lab[idx] = 1
+    df["trial"] = np.cumsum(trial_lab)
     return df
 
 
@@ -65,15 +69,9 @@ def label_ts(behav, ms_ts):
 
 def agg_behav(df):
     if len(df) > 0:
-        return pd.Series(
-            {
-                "x": df["x"].median(),
-                "y": df["y"].median(),
-                "trial": df["trial"].mode().values[0],
-            }
-        )
+        return pd.Series({"x": df["x"].median(), "y": df["y"].median()})
     else:
         return pd.Series(
-            data=np.full(3, np.nan),
-            index=["x", "y", "trial"],
+            data=np.full(2, np.nan),
+            index=["x", "y"],
         )
