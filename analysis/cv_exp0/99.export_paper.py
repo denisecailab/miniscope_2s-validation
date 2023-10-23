@@ -1,4 +1,4 @@
-#%% imports and definition
+# %% imports and definition
 import os
 
 from routine.svgutils.compose import Figure
@@ -8,14 +8,14 @@ PARAMT_TEXT = {"size": 11, "weight": "bold"}
 OUT_PATH = "./figs/paper"
 os.makedirs(OUT_PATH, exist_ok=True)
 
-#%% make experiment figure
+# %% make experiment figure
 w_gap = 10
 h_gap = 25
 sh_left = (0, 0)
 sh_top = (0, 14)
 svgs = {
     "A": "./figs/external/linear_track.svg",
-    "B": "./figs/frame_label/example.svg",
+    "B": "./figs/behav_comparison/example.svg",
     "C": "./figs/behav_comparison/comparison.svg",
 }
 for fn in svgs.values():
@@ -38,7 +38,7 @@ fig = Figure(
 )
 fig.save(os.path.join(OUT_PATH, "2s_experiment.svg"))
 
-#%% make drift figure
+# %% make drift figure
 h_gap = 1
 sh_left = (0, 0)
 svgs = {
@@ -56,7 +56,7 @@ w_fig = max(panA.width, panB.width)
 fig = Figure(w_fig, h_fig, panA, panB.move(x=0, y=panA.height + h_gap))
 fig.save(os.path.join(OUT_PATH, "drift.svg"))
 
-#%% make S1
+# %% make S1
 h_gap = 0
 w_gap = 20
 svgs = {
