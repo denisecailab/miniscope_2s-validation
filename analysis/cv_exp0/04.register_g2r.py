@@ -651,7 +651,7 @@ ovlp_df_long = ovlp_df.melt(
 )
 ovlp_df_long["day"] = ovlp_df_long["session"].map(ss_dict)
 ovlp_df_long["Denominator"] = ovlp_df_long["denom"].map(lmap)
-fig, ax = plt.subplots(figsize=(9, 4.5))
+fig, ax = plt.subplots(figsize=(9, 3))
 sns.barplot(
     ovlp_df_long,
     x="day",
@@ -678,7 +678,15 @@ sns.swarmplot(
     dodge=True,
     legend=False,
 )
-sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1))
+sns.move_legend(ax, "center left", bbox_to_anchor=(1, 0.5))
+# plt.legend(
+#     title="Denominator",
+#     loc="lower center",
+#     bbox_to_anchor=(0, 1.02, 1, 0.2),
+#     mode="expand",
+#     ncol=3,
+# )
+sns.despine(fig)
 ax.set_xlabel("")
 ax.set_ylabel("Proportion of cells", style="italic")
 fig.tight_layout()

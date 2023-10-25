@@ -38,6 +38,25 @@ fig = Figure(
 )
 fig.save(os.path.join(OUT_PATH, "2s_experiment.svg"))
 
+# %% make overlap and registration figure
+h_gap = 10
+sh_left = (0, 0)
+svgs = {
+    "A": "./figs/register_g2r/overlap_prop.svg",
+    "B": "./figs/register_g2r/summary_agg.svg",
+}
+for fn in svgs.values():
+    svg_unique_id(fn)
+
+
+panA = make_svg_panel("A", svgs["A"], PARAMT_TEXT, sh=sh_left)
+panB = make_svg_panel("B", svgs["B"], PARAMT_TEXT, sh=sh_left)
+
+h_fig = panA.height + panB.height + h_gap
+w_fig = max(panA.width, panB.width)
+fig = Figure(w_fig, h_fig, panA, panB.move(x=0, y=panA.height + h_gap))
+fig.save(os.path.join(OUT_PATH, "register_g2r.svg"))
+
 # %% make drift figure
 h_gap = 1
 sh_left = (0, 0)
