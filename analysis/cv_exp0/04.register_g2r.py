@@ -1,4 +1,5 @@
 # %% imports and definitions
+import itertools as itt
 import os
 import warnings
 
@@ -582,3 +583,103 @@ bar = AnchoredSizeBar(
 ax_tr.add_artist(bar)
 plt.subplots_adjust(top=1, hspace=0.08)
 fig.savefig(os.path.join(FIG_PATH, "traces.svg"), bbox_inches="tight")
+
+# %% compute overlap over time
+map_red = pd.read_pickle(IN_RED_MAP).set_index(("meta", "animal"))
+map_green = pd.read_pickle(IN_GREEN_MAP).set_index(("meta", "animal"))
+map_green_reg = pd.read_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
+map_green_reg = map_green_reg[
+    map_green_reg["session"].notnull().sum(axis="columns") == 7
+].set_index(("meta", "animal"))
+map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv")).set_index(
+    ["animal", "session"]
+)
+if PARAM_SUB_SS is not None:
+    map_g2r = map_g2r.loc[map_g2r["session"].isin(PARAM_SUB_SS)].copy()
+all_anms = PARAM_SUB_ANM
+all_ss = map_red["session"].columns
+ovlp_df = []
+for anm, ss in itt.product(all_anms, all_ss):
+    nred = len(map_red.loc[anm, ("session", ss)].dropna())
+    ngreen = len(map_green.loc[anm, ("session", ss)].dropna())
+    nreg = len(map_g2r.loc[anm, ss])
+    cur_green_reg = map_green_reg.loc[anm, ("session", ss)].dropna()
+    prop_red = nreg / nred
+    prop_green = nreg / ngreen
+    prop_green_reg = (cur_green_reg >= 0).sum() / len(cur_green_reg)
+    ovlp_df.append(
+        pd.Series(
+            {
+                "animal": anm,
+                "session": ss,
+                "nred": nred,
+                "ngreen": ngreen,
+                "nreg": nreg,
+                "prop_red": prop_red,
+                "prop_green": prop_green,
+                "prop_green_reg": prop_green_reg,
+            }
+        )
+    )
+ovlp_df = pd.concat(ovlp_df, axis="columns").T
+
+# %% plot overlap over time
+cmap = {
+    "tdTomato": qualitative.Plotly[1],
+    "GCaMP": qualitative.Plotly[2],
+    "Stable tdTomato": qualitative.Plotly[4],
+}
+lmap = {
+    "prop_red": "tdTomato",
+    "prop_green": "GCaMP",
+    "prop_green_reg": "Stable tdTomato",
+}
+ss_dict = {
+    "rec0": "Day 1",
+    "rec1": "Day 3",
+    "rec2": "Day 5",
+    "rec3": "Day 7",
+    "rec4": "Day 9",
+    "rec5": "Day 11",
+    "rec6": "Day 13",
+}
+ovlp_df_long = ovlp_df.melt(
+    id_vars=["animal", "session"],
+    value_vars=["prop_red", "prop_green", "prop_green_reg"],
+    var_name="denom",
+    value_name="value",
+)
+ovlp_df_long["day"] = ovlp_df_long["session"].map(ss_dict)
+ovlp_df_long["Denominator"] = ovlp_df_long["denom"].map(lmap)
+fig, ax = plt.subplots(figsize=(9, 4.5))
+sns.barplot(
+    ovlp_df_long,
+    x="day",
+    y="value",
+    errorbar="se",
+    saturation=0.8,
+    errwidth=1.5,
+    capsize=0.15,
+    hue="Denominator",
+    palette=cmap,
+    ax=ax,
+)
+sns.swarmplot(
+    ovlp_df_long,
+    x="day",
+    y="value",
+    hue="Denominator",
+    palette=cmap,
+    edgecolor="gray",
+    linewidth=0.8,
+    size=2.5,
+    warn_thresh=0.8,
+    ax=ax,
+    dodge=True,
+    legend=False,
+)
+sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1))
+ax.set_xlabel("")
+ax.set_ylabel("Proportion of cells", style="italic")
+fig.tight_layout()
+fig.savefig(os.path.join(FIG_PATH, "overlap_prop.svg"), bbox_inches="tight")
