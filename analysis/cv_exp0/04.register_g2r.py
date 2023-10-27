@@ -106,23 +106,30 @@ for anm, anm_df in tqdm(list(ss_df.groupby("animal"))):
 mapping = pd.concat(map_ls, ignore_index=True)
 mapping.to_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"), index=False)
 
+
 # %% compute green mapping based on red
+def reg_map(reg_df, map_df):
+    map_reg = []
+    for _, row in reg_df.iterrows():
+        anm = row["meta", "animal"]
+        row_ss = row["session"]
+        row_new = row.copy()
+        idxs = [(anm, s, u) for s, u in zip(row_ss.index, row_ss.values)]
+        row_new.loc["session"] = map_df.reindex(idxs).fillna(-1).values
+        row_new.loc[row.isnull()] = np.nan
+        map_reg.append(row_new.to_frame().T)
+    return pd.concat(map_reg, ignore_index=True)
+
+
 map_red = pd.read_pickle(IN_RED_MAP)
 map_green = pd.read_pickle(IN_GREEN_MAP)
 map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv")).set_index(
     ["animal", "session", "uid_red"]
 )["uid_green"]
-map_green_reg = []
-for _, row in map_red.iterrows():
-    anm = row["meta", "animal"]
-    row_ss = row["session"]
-    row_new = row.copy()
-    idxs = [(anm, s, u) for s, u in zip(row_ss.index, row_ss.values)]
-    row_new.loc["session"] = map_g2r.reindex(idxs).fillna(-1).values
-    row_new.loc[row.isnull()] = np.nan
-    map_green_reg.append(row_new.to_frame().T)
-map_green_reg = pd.concat(map_green_reg, ignore_index=True)
+map_green_reg = reg_map(map_red, map_g2r)
+map_red_reg = reg_map(map_green, map_g2r)
 map_green_reg.to_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
+map_red_reg.to_pickle(os.path.join(OUT_PATH, "red_mapping_reg.pkl"))
 
 # %% plot cells
 im_opts = {"xaxis": None, "yaxis": None}
@@ -628,11 +635,25 @@ cmap = {
     "tdTomato": qualitative.Plotly[1],
     "GCaMP": qualitative.Plotly[2],
     "Stable tdTomato": qualitative.Plotly[4],
+    "Stable GCaMP": qualitative.Plotly[7],
 }
 lmap = {
-    "prop_red": "tdTomato",
-    "prop_green": "GCaMP",
-    "prop_green_reg": "Stable tdTomato",
+    "overlap_ncell": {
+        "nred": "tdTomato",
+        "ngreen": "GCaMP",
+        "ngreen_reg": "Stable tdTomato",
+        "nred_reg": "Stable GCaMP",
+    },
+    "overlap_prop": {
+        "prop_red": "tdTomato",
+        "prop_green": "GCaMP",
+        "prop_green_reg": "Stable tdTomato",
+        "prop_red_reg": "Stable GCaMP",
+    },
+}
+ylab = {
+    "overlap_ncell": "Number of cells",
+    "overlap_prop": "Proportion of registered cells",
 }
 ss_dict = {
     "rec0": "Day 1",
@@ -643,51 +664,46 @@ ss_dict = {
     "rec5": "Day 11",
     "rec6": "Day 13",
 }
-ovlp_df_long = ovlp_df.melt(
-    id_vars=["animal", "session"],
-    value_vars=["prop_red", "prop_green", "prop_green_reg"],
-    var_name="denom",
-    value_name="value",
-)
-ovlp_df_long["day"] = ovlp_df_long["session"].map(ss_dict)
-ovlp_df_long["Denominator"] = ovlp_df_long["denom"].map(lmap)
-fig, ax = plt.subplots(figsize=(9, 3))
-sns.barplot(
-    ovlp_df_long,
-    x="day",
-    y="value",
-    errorbar="se",
-    saturation=0.8,
-    errwidth=1.5,
-    capsize=0.15,
-    hue="Denominator",
-    palette=cmap,
-    ax=ax,
-)
-sns.swarmplot(
-    ovlp_df_long,
-    x="day",
-    y="value",
-    hue="Denominator",
-    palette=cmap,
-    edgecolor="gray",
-    linewidth=0.8,
-    size=2.5,
-    warn_thresh=0.8,
-    ax=ax,
-    dodge=True,
-    legend=False,
-)
-sns.move_legend(ax, "center left", bbox_to_anchor=(1, 0.5))
-# plt.legend(
-#     title="Denominator",
-#     loc="lower center",
-#     bbox_to_anchor=(0, 1.02, 1, 0.2),
-#     mode="expand",
-#     ncol=3,
-# )
-sns.despine(fig)
-ax.set_xlabel("")
-ax.set_ylabel("Proportion of cells", style="italic")
-fig.tight_layout()
-fig.savefig(os.path.join(FIG_PATH, "overlap_prop.svg"), bbox_inches="tight")
+for plt_type, cur_lmap in lmap.items():
+    ovlp_df_long = ovlp_df.melt(
+        id_vars=["animal", "session"],
+        value_vars=list(cur_lmap),
+        var_name="denom",
+        value_name="value",
+    )
+    ovlp_df_long["day"] = ovlp_df_long["session"].map(ss_dict)
+    ovlp_df_long["Denominator"] = ovlp_df_long["denom"].map(cur_lmap)
+    fig, ax = plt.subplots(figsize=(9, 3))
+    sns.barplot(
+        ovlp_df_long,
+        x="day",
+        y="value",
+        errorbar="se",
+        saturation=0.8,
+        errwidth=1.5,
+        capsize=0.1,
+        hue="Denominator",
+        palette=cmap,
+        ax=ax,
+    )
+    sns.swarmplot(
+        ovlp_df_long,
+        x="day",
+        y="value",
+        hue="Denominator",
+        palette=cmap,
+        edgecolor="gray",
+        linewidth=0.8,
+        size=2.5,
+        warn_thresh=0.8,
+        ax=ax,
+        dodge=True,
+        legend=False,
+    )
+    ax.get_legend().set_title(None)
+    sns.move_legend(ax, "center left", bbox_to_anchor=(1, 0.5))
+    sns.despine(fig)
+    ax.set_xlabel("")
+    ax.set_ylabel(ylab[plt_type], style="italic")
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG_PATH, "{}.svg".format(plt_type)), bbox_inches="tight")
