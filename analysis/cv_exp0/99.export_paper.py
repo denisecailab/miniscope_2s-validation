@@ -38,12 +38,12 @@ fig = Figure(
 )
 fig.save(os.path.join(OUT_PATH, "2s_experiment.svg"))
 
-# %% make overlap and registration figure
+# %% make overlap figure
 h_gap = 10
 sh_left = (0, 0)
 svgs = {
-    "A": "./figs/register_g2r/overlap_prop.svg",
-    "B": "./figs/register_g2r/summary_agg.svg",
+    "A": "./figs/register_g2r/overlap_ncell.svg",
+    "B": "./figs/register_g2r/overlap_prop.svg",
 }
 for fn in svgs.values():
     svg_unique_id(fn)
