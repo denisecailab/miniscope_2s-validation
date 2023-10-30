@@ -723,3 +723,43 @@ for plt_type, cur_lmap in lmap.items():
     ax.set_ylabel(ylab[plt_type], style="italic")
     fig.tight_layout()
     fig.savefig(os.path.join(FIG_PATH, "{}.svg".format(plt_type)), bbox_inches="tight")
+
+# %% plot missing cells
+map_red_reg = pd.read_pickle(os.path.join(OUT_PATH, "red_mapping_reg.pkl"))
+map_missing = map_red_reg[
+    (map_red_reg["session"].notnull().sum(axis="columns") == 7)
+    & (map_red_reg["session"] >= 0).any(axis="columns")
+    & (map_red_reg["session"] == -1).any(axis="columns")
+].set_index(("meta", "animal"))
+fig_path = os.path.join(FIG_PATH, "missing_cells")
+os.makedirs(fig_path, exist_ok=True)
+shiftds = xr.open_dataset(os.path.join(REG_PATH, "shiftds.nc"))
+A_sh = shiftds["A_sh"]
+projs = shiftds["temps_shifted"]
+im_opts = {"cmap": "gray", "frame_width": 400, "frame_height": 400}
+for anm, anm_df in tqdm(list(map_missing.groupby(("meta", "animal")))):
+    plt_dict = dict()
+    cmap = itt.cycle(Category20[20])
+    anm_df = anm_df.dropna(axis="columns", how="all").copy()
+    anm_df["variable", "color"] = [next(cmap) for _ in range(len(anm_df))]
+    for ss in tqdm(natsorted(anm_df["session"]), leave=False):
+        curA = A_sh.sel(animal=anm, session=ss).dropna("unit_id").compute()
+        cur_proj = projs.sel(animal=anm, session=ss)
+        uids_all = np.array(curA.coords["unit_id"])
+        idx_ma = anm_df["session", ss].dropna()
+        idx_ma = idx_ma[idx_ma >= 0]
+        idx_nm = np.array(list(set(uids_all) - set(np.array(idx_ma))))
+        im_ma = plotA_contour(
+            curA.sel(unit_id=np.array(idx_ma)),
+            cur_proj,
+            cmap=anm_df.loc[idx_ma.index]
+            .astype({("session", ss): int})
+            .set_index(("session", ss))[("variable", "color")]
+            .to_dict(),
+            im_opts=im_opts,
+        )
+        im_nm = plotA_contour(curA.sel(unit_id=idx_nm), cur_proj, im_opts=im_opts)
+        plt_dict[(ss, "match")] = im_ma
+        plt_dict[(ss, "mismatch")] = im_nm
+    cur_plt = hv.NdLayout(plt_dict, ["session", "ma"]).cols(4)
+    hv.save(cur_plt, os.path.join(fig_path, "{}.html".format(anm)))
