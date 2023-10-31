@@ -11,18 +11,20 @@ import pandas as pd
 import plotly.express as px
 import seaborn as sns
 import xarray as xr
-from minian.cross_registration import (
-    calculate_centroid_distance,
-    calculate_mapping,
-    group_by_session,
-)
+from bokeh.palettes import Category20
+from minian.cross_registration import (calculate_centroid_distance,
+                                       calculate_mapping, group_by_session)
 from minian.visualization import centroid
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+from natsort import natsorted
 from plotly.express.colors import qualitative
 from routine.alignment import apply_affine, est_affine
-from routine.plotting import plot_overlap
+from routine.g2r_mapping import calculate_mapping_linear_sum
+from routine.plotting import plot_overlap, plotA_contour
 from routine.utilities import df_set_metadata, norm
-from scipy.stats import zscore
+from scipy.ndimage import median_filter
+from scipy.spatial.distance import correlation, cosine
+from scipy.stats import ttest_ind, zscore
 from tqdm.auto import tqdm
 
 IN_GREEN_PATH = "./intermediate/processed/green"
@@ -30,7 +32,7 @@ IN_RED_PATH = "./intermediate/processed/red"
 IN_SS_FILE = "./log/sessions.csv"
 IN_RED_MAP = "./intermediate/cross_reg/red/mappings_meta_fill.pkl"
 IN_GREEN_MAP = "./intermediate/cross_reg/green/mappings_meta_fill.pkl"
-PARAM_DIST_THRES = 10
+PARAM_DIST_THRES = 20
 PARAM_SUB_SS = None
 PARAM_SUB_ANM = ["m20", "m21", "m22", "m23", "m24", "m25", "m26", "m27", "m29"]
 PARAM_EXP_ANM = ["m20"]
@@ -40,6 +42,7 @@ PARAM_PLT_RC = {
     "legend.fontsize": 10,
     "font.sans-serif": "Arial",
 }
+REG_PATH = "./intermediate/cross_reg/red"
 OUT_PATH = "./intermediate/register_g2r"
 FIG_PATH = "./figs/register_g2r/"
 
@@ -57,6 +60,7 @@ os.makedirs(gn_trans_path, exist_ok=True)
 ss_df = pd.read_csv(IN_SS_FILE)
 ss_df = ss_df[ss_df["analyze"]]
 map_ls = []
+map_lsm_ls = []
 for anm, anm_df in tqdm(list(ss_df.groupby("animal"))):
     plt_algn_dict = dict()
     for _, row in tqdm(list(anm_df.iterrows()), leave=False):
@@ -103,8 +107,17 @@ for anm, anm_df in tqdm(list(ss_df.groupby("animal"))):
             .drop(columns="group")
         )
         map_ls.append(mapping)
+        mapping_lsm = calculate_mapping_linear_sum(
+            cent_red, cent_green, thres=PARAM_DIST_THRES
+        )
+        mapping_lsm = df_set_metadata(
+            mapping_lsm, {"animal": anm, "session": ss}
+        ).rename(columns={"idxA": "uid_red", "idxB": "uid_green"})
+        map_lsm_ls.append(mapping_lsm)
 mapping = pd.concat(map_ls, ignore_index=True)
 mapping.to_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"), index=False)
+mapping_lsm = pd.concat(map_lsm_ls, ignore_index=True)
+mapping_lsm.to_csv(os.path.join(OUT_PATH, "g2r_mapping_lsm.csv"), index=False)
 
 
 # %% compute green mapping based on red
@@ -123,10 +136,10 @@ def reg_map(reg_df, map_df):
 
 map_red = pd.read_pickle(IN_RED_MAP)
 map_green = pd.read_pickle(IN_GREEN_MAP)
-map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv")).set_index(
+map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping_lsm.csv")).set_index(
     ["animal", "session", "uid_red"]
 )["uid_green"]
-map_r2g = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv")).set_index(
+map_r2g = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping_lsm.csv")).set_index(
     ["animal", "session", "uid_green"]
 )["uid_red"]
 map_green_reg = reg_map(map_red, map_g2r)
