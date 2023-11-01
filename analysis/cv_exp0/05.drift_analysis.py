@@ -123,8 +123,14 @@ ss_csv = (
 map_red = pd.read_pickle(IN_RED_MAP)
 map_green = pd.read_pickle(IN_RAW_MAP)
 map_reg = pd.read_pickle(IN_REG_MAP)
-map_red = map_red[map_red["session"].notnull().all(axis="columns")].copy()
-map_reg = map_reg[map_reg["session"].notnull().all(axis="columns")].copy()
+map_red = map_red[
+    map_red["session"].notnull().all(axis="columns")
+    & (map_red["session"] >= 0).any(axis="columns")
+].copy()
+map_reg = map_reg[
+    map_reg["session"].notnull().all(axis="columns")
+    & (map_red["session"] >= 0).any(axis="columns")
+].copy()
 mapping_dict = {"red/raw": map_red, "green/raw": map_green, "red/registered": map_reg}
 metric_df = pd.read_feather(os.path.join(OUT_PATH, "metric_agg.feat"))
 metric_df = metric_df.set_index(["animal", "session", "unit_id"])

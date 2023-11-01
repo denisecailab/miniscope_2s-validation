@@ -12,8 +12,11 @@ import plotly.express as px
 import seaborn as sns
 import xarray as xr
 from bokeh.palettes import Category20
-from minian.cross_registration import (calculate_centroid_distance,
-                                       calculate_mapping, group_by_session)
+from minian.cross_registration import (
+    calculate_centroid_distance,
+    calculate_mapping,
+    group_by_session,
+)
 from minian.visualization import centroid
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 from natsort import natsorted
@@ -32,7 +35,7 @@ IN_RED_PATH = "./intermediate/processed/red"
 IN_SS_FILE = "./log/sessions.csv"
 IN_RED_MAP = "./intermediate/cross_reg/red/mappings_meta_fill.pkl"
 IN_GREEN_MAP = "./intermediate/cross_reg/green/mappings_meta_fill.pkl"
-PARAM_DIST_THRES = 20
+PARAM_DIST_THRES = 15
 PARAM_SUB_SS = None
 PARAM_SUB_ANM = ["m20", "m21", "m22", "m23", "m24", "m25", "m26", "m27", "m29"]
 PARAM_EXP_ANM = ["m20"]
@@ -411,7 +414,10 @@ green_agg = (
     .rename(columns={("meta", "animal"): "animal"})
 )
 reg_agg = (
-    map_green_reg[map_green_reg["variable", "npresent"] == 7]
+    map_green_reg[
+        (map_green_reg["variable", "npresent"] == 7)
+        & (map_green_reg["session"] >= 0).any(axis="columns")
+    ]
     .groupby(("meta", "animal"))
     .apply(agg_per_ss)
     .reset_index()
