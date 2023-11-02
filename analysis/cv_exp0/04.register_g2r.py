@@ -242,6 +242,23 @@ def plot_cells(x, gain=1.8, **kwargs):
     ax.set_axis_off()
 
 
+def plot_animal(anm_df, col_order):
+    g = sns.FacetGrid(
+        anm_df,
+        row="kind",
+        col="session",
+        col_order=col_order,
+        margin_titles=True,
+        height=1.8,
+    )
+    g.map(plot_cells, "im")
+    g.set_titles(row_template="{row_name}", col_template="{col_name}")
+    fig = g.fig
+    fig.tight_layout()
+    plt.subplots_adjust(wspace=0.004, hspace=0.04)
+    return fig
+
+
 ss_dict = {
     "rec0": "Day 1",
     "rec1": "Day 3",
@@ -258,24 +275,22 @@ cells_im["session"] = cells_im["session"].map(ss_dict)
 cells_im["kind"] = cells_im["kind"].map(
     {"red": "tdTomato", "green": "GCaMP", "ovly": "Overlay"}
 )
+exp_anm = "m22"
+exp_sess = ["Day 1", "Day 5", "Day 9", "Day 13"]
 for anm, anm_df in cells_im.groupby("animal"):
-    g = sns.FacetGrid(
-        anm_df,
-        row="kind",
-        col="session",
-        col_order=list(ss_dict.values()),
-        margin_titles=True,
-        height=1.8,
-    )
-    g.map(plot_cells, "im")
-    g.set_titles(row_template="{row_name}", col_template="{col_name}")
-    fig = g.fig
-    fig.tight_layout()
-    plt.subplots_adjust(wspace=0.004, hspace=0.04)
+    fig = plot_animal(anm_df, col_order=list(ss_dict.values()))
     fig.savefig(
         os.path.join(fig_cells_path, "{}.svg".format(anm)), dpi=500, bbox_inches="tight"
     )
     plt.close(fig)
+    if anm == exp_anm:
+        fig = plot_animal(anm_df[anm_df["session"].isin(exp_sess)], col_order=exp_sess)
+        fig.savefig(
+            os.path.join(fig_cells_path, "{}_example.svg".format(anm)),
+            dpi=500,
+            bbox_inches="tight",
+        )
+        plt.close(fig)
 
 
 # %% plot results
