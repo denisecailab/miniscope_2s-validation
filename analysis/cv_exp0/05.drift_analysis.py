@@ -377,7 +377,7 @@ if PARAM_AGG_ANM:
 corr_dict = {"master": pv_corr}
 for by, cur_corr in corr_dict.items():
     for inclusion, corr_sub in cur_corr.groupby("inclusion"):
-        fig, ax = plt.subplots(figsize=(5.4, 3.2))
+        fig, ax = plt.subplots(figsize=(5, 3.2))
         ax = sns.lineplot(
             corr_sub,
             x="tdist",
@@ -486,7 +486,7 @@ for metric in ["actMean", "ovlp"]:
     fig.update_xaxes(title="Days apart")
     fig.update_yaxes(range=(0, 1), title="Overlap")
     fig.write_html(os.path.join(FIG_PATH, "overlap-{}.html".format(metric)))
-    fig, ax = plt.subplots(figsize=(5.4, 3))
+    fig, ax = plt.subplots(figsize=(5, 3))
     ax = sns.swarmplot(
         ovlp,
         x="tdist",
