@@ -28,6 +28,7 @@ from routine.utilities import df_set_metadata, norm
 from scipy.ndimage import median_filter
 from scipy.spatial.distance import correlation, cosine
 from scipy.stats import ttest_ind, zscore
+from sklearn.linear_model import LinearRegression
 from tqdm.auto import tqdm
 
 IN_GREEN_PATH = "./intermediate/processed/green"
@@ -35,6 +36,9 @@ IN_RED_PATH = "./intermediate/processed/red"
 IN_SS_FILE = "./log/sessions.csv"
 IN_RED_MAP = "./intermediate/cross_reg/red/mappings_meta_fill.pkl"
 IN_GREEN_MAP = "./intermediate/cross_reg/green/mappings_meta_fill.pkl"
+IN_WV_GFP = "./data/wavelength/fpbase_spectra_EGFP.csv"
+IN_WV_EMM_RED = "./data/wavelength/et600-50m.txt"
+IN_WV_EMM_GN = "./data/wavelength/et525-50m.txt"
 PARAM_DIST_THRES = 15
 PARAM_SUB_SS = None
 PARAM_SUB_ANM = ["m20", "m21", "m22", "m23", "m24", "m25", "m26", "m27", "m29"]
@@ -627,6 +631,165 @@ bar = AnchoredSizeBar(
 ax_tr.add_artist(bar)
 plt.subplots_adjust(top=1, hspace=0.08)
 fig.savefig(os.path.join(FIG_PATH, "traces.svg"), bbox_inches="tight")
+
+
+# %% compute trace correlations
+def med_baseline(a: np.ndarray, wnd: int) -> np.ndarray:
+    base = median_filter(a, size=wnd)
+    a -= base
+    return a
+
+
+def compute_pair_corr(row, med_wnd=500):
+    anm, ss, uid_red, uid_gn = (
+        row["animal"],
+        row["session"],
+        row["uid_red"],
+        row["uid_green"],
+    )
+    Tred = (
+        xr.open_dataset(os.path.join(IN_RED_PATH, "{}-{}.nc".format(anm, ss)))["C_init"]
+        .sel(unit_id=uid_red)
+        .squeeze()
+        .compute()
+    )
+    Tgn = (
+        xr.open_dataset(os.path.join(IN_GREEN_PATH, "{}-{}.nc".format(anm, ss)))["YrA"]
+        .sel(unit_id=uid_gn)
+        .squeeze()
+        .compute()
+    )
+    common_idx = sorted(
+        list(
+            set(Tred.coords["frame"].values.tolist()).intersection(
+                set(Tgn.coords["frame"].values.tolist())
+            )
+        )
+    )
+    Tred = Tred.sel(frame=common_idx)
+    Tgn = Tgn.sel(frame=common_idx)
+    if med_wnd is not None:
+        Tred = med_baseline(Tred, med_wnd) + Tred.mean()
+        Tgn = med_baseline(Tgn, med_wnd) + Tgn.mean()
+    sh = int(np.random.randint(-Tred.sizes["frame"], Tred.sizes["frame"]))
+    Tred_sh = np.roll(Tred, sh)
+    reg = LinearRegression().fit(np.array(Tgn).reshape((-1, 1)), np.array(Tred))
+    coef = reg.coef_[0]
+    reg_sh = LinearRegression().fit(np.array(Tgn).reshape((-1, 1)), np.array(Tred_sh))
+    coef_sh = reg_sh.coef_[0]
+    return pd.Series(
+        {
+            "corr_org": 1 - correlation(Tred, Tgn),
+            "corr_sh": 1 - correlation(Tred_sh, Tgn),
+            "cos_org": 1 - cosine(Tred, Tgn),
+            "cos_sh": 1 - cosine(Tred_sh, Tgn),
+            "coef_org": coef,
+            "coef_sh": coef_sh,
+            "sh": sh,
+        }
+    )
+
+
+def shuffle_mapping(df):
+    df['uid_green'] =
+    np.random.shuffle(df["uid_green"])
+    return df
+
+
+map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"))
+map_g2r_corr = pd.concat(
+    [map_g2r, map_g2r.apply(compute_pair_corr, axis="columns")], axis="columns"
+)
+map_g2r_corr.to_csv(os.path.join(OUT_PATH, "g2r_mapping_corr.csv"), index=False)
+
+
+# %% trace example
+def exp_trace(row, med_wnd=None):
+    anm, ss, uid_red, uid_gn = (
+        row["animal"],
+        row["session"],
+        row["uid_red"],
+        row["uid_green"],
+    )
+    Tred = (
+        xr.open_dataset(os.path.join(IN_RED_PATH, "{}-{}.nc".format(anm, ss)))["C_init"]
+        .sel(unit_id=uid_red)
+        .squeeze()
+        .compute()
+    )
+    Tgn = (
+        xr.open_dataset(os.path.join(IN_GREEN_PATH, "{}-{}.nc".format(anm, ss)))["YrA"]
+        .sel(unit_id=uid_gn)
+        .squeeze()
+        .compute()
+    )
+    Tgn_C = (
+        xr.open_dataset(os.path.join(IN_GREEN_PATH, "{}-{}.nc".format(anm, ss)))["C"]
+        .sel(unit_id=uid_gn)
+        .squeeze()
+        .compute()
+    )
+    if med_wnd is not None:
+        Tred = med_baseline(Tred, med_wnd)
+        Tgn = med_baseline(Tgn, med_wnd)
+    return Tred, Tgn, Tgn_C
+
+
+map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"))
+exp_row = map_g2r.sort_values("cos_org", ascending=False).iloc[0]
+Tred, Tgn, Tgn_C = exp_trace(exp_row)
+opts_cv = {"frame_width": 900}
+(
+    hv.Curve(Tred).opts(**opts_cv)
+    + hv.Curve(Tgn).opts(**opts_cv)
+    + hv.Curve(Tgn_C).opts(**opts_cv)
+).cols(1)
+
+
+# %% plot trace correlation distribution
+dat_gfp = pd.read_csv(IN_WV_GFP)
+dat_emm_gn = pd.read_csv(
+    IN_WV_EMM_GN,
+    sep="\t",
+    names=["wavelength", "trans_gn"],
+    dtype={"wavelength": int, "trans_gn": float},
+)
+dat_emm_red = pd.read_csv(
+    IN_WV_EMM_RED,
+    sep="\t",
+    names=["wavelength", "trans_red"],
+    dtype={"wavelength": int, "trans_red": float},
+)
+dat = dat_gfp.merge(dat_emm_red, on="wavelength", how="inner").merge(
+    dat_emm_gn, on="wavelength", how="inner"
+)
+gfp = dat["EGFP em"].fillna(0)
+emm_red = dat["trans_red"]
+emm_gn = dat["trans_gn"]
+prop = (gfp * emm_red).sum() / (gfp * emm_gn).sum()
+map_g2r_corr = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping_corr.csv"))
+g2r_df = map_g2r_corr.melt(
+    id_vars=["animal", "session", "uid_green", "uid_red"],
+    value_vars=["coef_org", "coef_sh"],
+    var_name="corr_type",
+    value_name="corr",
+)
+g2r_df['corr_type'] = g2r_df['corr_type'].map({'coef_org': 'Observed', 'coef_sh': 'Shuffled'})
+fig, ax = plt.subplots()
+ax.axvline(prop, color='grey', dashes=(3, 2), label='Expected crosstalk ratio')
+sns.histplot(
+    g2r_df,
+    x="corr",
+    hue="corr_type",
+    stat="probability",
+    bins=50,
+    binrange=(-0.5, 0.5),
+    ax=ax,
+)
+ax.get_legend().set_title('')
+ax.set_xlabel('Regression Coefficient', style='italic')
+ax.set_ylabel('Probability', style='italic')
+fig.savefig(os.path.join(FIG_PATH, 'crosstalk_distribution.svg'))
 
 # %% compute overlap over time
 map_red = pd.read_pickle(IN_RED_MAP).set_index(("meta", "animal"))
