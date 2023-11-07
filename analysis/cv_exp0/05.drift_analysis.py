@@ -10,16 +10,11 @@ import seaborn as sns
 import statsmodels.api as sm
 import xarray as xr
 from plotly.express.colors import qualitative
-from routine.place_cell import (
-    aggregate_fr,
-    classify_cell,
-    compute_metrics,
-    kde_est,
-    shuffleS,
-)
+from routine.place_cell import (aggregate_fr, classify_cell, compute_metrics,
+                                kde_est, shuffleS)
 from routine.plotting import scatter_agg
 from routine.utilities import df_set_metadata, norm, thres_gmm
-from scipy.stats import ttest_ind
+from scipy.stats import ttest_ind, zscore
 from sklearn.metrics import pairwise_distances
 from statsmodels.formula.api import ols
 from tqdm.auto import tqdm, trange
@@ -30,6 +25,7 @@ IN_FM_LABEL = "./intermediate/frame_label/fm_label.nc"
 IN_RAW_MAP = "./intermediate/cross_reg/green/mappings_meta_fill.pkl"
 IN_RED_MAP = "./intermediate/cross_reg/red/mappings_meta_fill.pkl"
 IN_REG_MAP = "./intermediate/register_g2r/green_mapping_reg.pkl"
+PARAM_CORR_ZSCORE = True
 PARAM_BW = 5
 PARAM_BW_OCCP = 5
 PARAM_NSHUF = 500
@@ -113,7 +109,16 @@ metric_df_agg = (
 )
 metric_df_agg.to_feather(os.path.join(OUT_PATH, "metric_agg.feat"))
 
+
 # %% compute pv corr and ovlp
+def zscore_active(a, thres=0):
+    az = zscore(a)
+    if np.isnan(az).any():
+        return az
+    else:
+        return np.where(az > thres, az, 0)
+
+
 ss_csv = pd.read_csv(IN_SS_CSV, parse_dates=["date"])
 ss_csv = (
     ss_csv[ss_csv["analyze"]]
@@ -133,6 +138,7 @@ map_reg = map_reg[
 ].copy()
 mapping_dict = {"red/raw": map_red, "green/raw": map_green, "red/registered": map_reg}
 metric_df = pd.read_feather(os.path.join(OUT_PATH, "metric_agg.feat"))
+metric_df["act"] = metric_df["peak"].notnull()
 metric_df = metric_df.set_index(["animal", "session", "unit_id"])
 fr_df = pd.read_feather(os.path.join(OUT_PATH, "fr.feat"))
 fr = (
@@ -140,6 +146,14 @@ fr = (
     .mean()
     .to_xarray()
 )
+if PARAM_CORR_ZSCORE:
+    fr = xr.apply_ufunc(
+        zscore_active,
+        fr,
+        input_core_dims=[["smp_space"]],
+        output_core_dims=[["smp_space"]],
+        vectorize=True,
+    )
 pv_corr_ls = []
 ovlp_ls = []
 for mmethod, mmap in mapping_dict.items():
@@ -161,34 +175,73 @@ for mmethod, mmap in mapping_dict.items():
                         ssA, ssB, anm
                     )
                 )
-            # compute overlap
             if mmethod == "red_registered":
                 mp = mp[mp[[ssA, ssB]].notnull().all(axis="columns")]
-            novlp = (mp[[ssA, ssB]] >= 0).all(axis="columns").sum()
-            nAll = (mp[[ssA, ssB]] >= 0).any(axis="columns").sum()
-            nA = (mp[ssA] >= 0).sum()
-            nB = (mp[ssB] >= 0).sum()
-            actA = novlp / nA
-            actB = novlp / nB
-            act = np.mean([actA, actB])
-            ovlp = novlp / nAll
-            ovlp_ls.append(
+            # compute overlap
+            me_all = (
                 pd.DataFrame(
-                    [
-                        {
-                            "map_method": mmethod,
-                            "animal": anm,
-                            "ssA": ssA,
-                            "ssB": ssB,
-                            "tdist": tdist,
-                            "actA": actA,
-                            "actB": actB,
-                            "actMean": act,
-                            "ovlp": ovlp,
-                        }
-                    ]
+                    {
+                        "animal": mp["animal"],
+                        "sessionA": ssA,
+                        "unit_idA": mp[ssA],
+                        "sessionB": ssB,
+                        "unit_idB": mp[ssB],
+                    }
+                )
+                .merge(
+                    metric_df[["stb", "si", "peak", "sig", "act"]],
+                    left_on=["animal", "sessionA", "unit_idA"],
+                    right_on=["animal", "session", "unit_id"],
+                    how="left",
+                )
+                .merge(
+                    metric_df[["stb", "si", "peak", "sig", "act"]],
+                    left_on=["animal", "sessionB", "unit_idB"],
+                    right_on=["animal", "session", "unit_id"],
+                    suffixes=("A", "B"),
+                    how="left",
                 )
             )
+            me_dict = {
+                "all_cells": me_all,
+                "place_cells": me_all[
+                    (me_all[["sigA", "sigB"]].fillna(0).any(axis="columns"))
+                    & (me_all[["actA", "actB"]].all(axis="columns"))
+                ],
+                "non-place_cells": me_all[
+                    (~me_all[["sigA", "sigB"]].fillna(0)).all(axis="columns")
+                    | (~me_all[["actA", "actB"]].any(axis="columns"))
+                ],
+            }
+            for subset_plc, cur_me in me_dict.items():
+                novlp = (
+                    (cur_me[["unit_idA", "unit_idB"]] >= 0).all(axis="columns").sum()
+                )
+                nAll = (cur_me[["unit_idA", "unit_idB"]] >= 0).any(axis="columns").sum()
+                nA = (cur_me["unit_idA"] >= 0).sum()
+                nB = (cur_me["unit_idB"] >= 0).sum()
+                actA = novlp / nA if nA > 0 else np.nan
+                actB = novlp / nB if nB > 0 else np.nan
+                act = np.mean([actA, actB])
+                ovlp = novlp / nAll
+                ovlp_ls.append(
+                    pd.DataFrame(
+                        [
+                            {
+                                "map_method": mmethod,
+                                "animal": anm,
+                                "ssA": ssA,
+                                "ssB": ssB,
+                                "tdist": tdist,
+                                "inclusion": subset_plc,
+                                "actA": actA,
+                                "actB": actB,
+                                "actMean": act,
+                                "ovlp": ovlp,
+                            }
+                        ]
+                    )
+                )
             if mmethod == "red/raw":
                 continue
             mp_dict = {
@@ -199,51 +252,63 @@ for mmethod, mmap in mapping_dict.items():
                 if len(cur_mp) == 0:
                     continue
                 # compute pv corr
-                me = pd.DataFrame(
-                    {
-                        "animal": cur_mp["animal"],
-                        "sessionA": ssA,
-                        "unit_idA": cur_mp[ssA],
-                        "sessionB": ssB,
-                        "unit_idB": cur_mp[ssB],
-                    }
+                me = (
+                    pd.DataFrame(
+                        {
+                            "animal": cur_mp["animal"],
+                            "sessionA": ssA,
+                            "unit_idA": cur_mp[ssA],
+                            "sessionB": ssB,
+                            "unit_idB": cur_mp[ssB],
+                        }
+                    )
+                    .merge(
+                        metric_df[["stb", "si", "peak", "sig", "act"]],
+                        left_on=["animal", "sessionA", "unit_idA"],
+                        right_on=["animal", "session", "unit_id"],
+                        how="left",
+                    )
+                    .merge(
+                        metric_df[["stb", "si", "peak", "sig", "act"]],
+                        left_on=["animal", "sessionB", "unit_idB"],
+                        right_on=["animal", "session", "unit_id"],
+                        suffixes=("A", "B"),
+                        how="left",
+                    )
                 )
-                for subset_plc in ["all_cells", "place_cells"]:
+                me_dict = {
+                    "all_cells": me,
+                    "place_cells": me[
+                        (me[["sigA", "sigB"]].fillna(0).any(axis="columns"))
+                        & (me[["actA", "actB"]].all(axis="columns"))
+                    ],
+                    "non-place_cells": me[
+                        (~me[["sigA", "sigB"]].fillna(0)).all(axis="columns")
+                        | (~me[["actA", "actB"]].any(axis="columns"))
+                    ],
+                }
+                for subset_plc, cur_me in me_dict.items():
+                    frA = fr.reindex(
+                        animal=cur_me["animal"].unique(),
+                        session=cur_me["sessionA"].unique(),
+                        unit_id=cur_me["unit_idA"],
+                        fill_value=0,
+                    ).squeeze()
+                    frB = fr.reindex(
+                        animal=cur_me["animal"].unique(),
+                        session=cur_me["sessionB"].unique(),
+                        unit_id=cur_me["unit_idB"],
+                        fill_value=0,
+                    ).squeeze()
+                    idx = np.logical_and(
+                        np.array(frA.notnull().all("smp_space")),
+                        np.array(frB.notnull().all("smp_space")),
+                    )
                     if subset_plc == "place_cells":
-                        me_plc = me.merge(
-                            metric_df[["stb", "si", "peak", "sig"]],
-                            left_on=["animal", "sessionA", "unit_idA"],
-                            right_on=["animal", "session", "unit_id"],
-                            how="left",
-                        ).merge(
-                            metric_df[["stb", "si", "peak", "sig"]],
-                            left_on=["animal", "sessionB", "unit_idB"],
-                            right_on=["animal", "session", "unit_id"],
-                            suffixes=("A", "B"),
-                            how="left",
-                        )
-                        me_plc = me_plc[me_plc[["sigA", "sigB"]].any(axis="columns")]
-                    else:
-                        me_plc = me
-                    if len(me_plc) > PARAM_MIN_NCELL:
-                        frA = (
-                            fr.reindex(
-                                animal=me_plc["animal"].unique(),
-                                session=me_plc["sessionA"].unique(),
-                                unit_id=me_plc["unit_idA"],
-                            )
-                            .fillna(0)
-                            .squeeze()
-                        )
-                        frB = (
-                            fr.reindex(
-                                animal=me_plc["animal"].unique(),
-                                session=me_plc["sessionB"].unique(),
-                                unit_id=me_plc["unit_idB"],
-                            )
-                            .fillna(0)
-                            .squeeze()
-                        )
+                        assert len(idx) == idx.sum()
+                    if idx.sum() > PARAM_MIN_NCELL:
+                        frA = frA.isel(unit_id=idx)
+                        frB = frB.isel(unit_id=idx)
                         corr = (
                             xr.DataArray(
                                 1
@@ -262,6 +327,7 @@ for mmethod, mmap in mapping_dict.items():
                             .to_series()
                             .reset_index()
                         )
+                        corr["diag"] = corr["smp_spaceA"] == corr["smp_spaceB"]
                         corr = df_set_metadata(
                             corr,
                             {
@@ -279,13 +345,12 @@ pv_corr = pd.concat(pv_corr_ls, ignore_index=True)
 ovlp = pd.concat(ovlp_ls, ignore_index=True)
 pv_corr.to_feather(os.path.join(OUT_PATH, "pv_corr.feat"))
 ovlp.to_csv(os.path.join(OUT_PATH, "ovlp.csv"), index=False)
-pv_corr["diag"] = pv_corr["smp_spaceA"] == pv_corr["smp_spaceB"]
 pv_corr_agg = (
     pv_corr[pv_corr["diag"]]
     .groupby(["map_method", "cell_map", "inclusion", "animal", "ssA", "ssB", "tdist"])[
         "corr"
     ]
-    .mean()
+    .median()
     .reset_index()
 )
 pv_corr_agg.to_csv(os.path.join(OUT_PATH, "pv_corr_agg.csv"), index=False)
@@ -349,19 +414,19 @@ show_sig = False
 cmap = {
     "green/raw-shared": qualitative.Plotly[2],
     "green/raw-zero_padded": qualitative.D3[2],
-    # "red/registered-shared": qualitative.Plotly[4],
+    "red/registered-shared": qualitative.Plotly[4],
     "red/registered-zero_padded": qualitative.D3[1],
 }
 smap = {
     "green/raw-shared": (3, 1),
     "green/raw-zero_padded": "",
-    # "red/registered-shared": (3, 1),
+    "red/registered-shared": (3, 1),
     "red/registered-zero_padded": "",
 }
 lmap = {
     "green/raw-shared": "Always active GCaMP cells",
     "green/raw-zero_padded": "All GCaMP cells",
-    # "red/registered-shared": "Active GCaMP cells\nregistered with tdTomato",
+    "red/registered-shared": "Active GCaMP cells\nregistered with tdTomato",
     "red/registered-zero_padded": "GCaMP cells registered\nwith tdTomato",
 }
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr_agg.csv"))
@@ -583,7 +648,7 @@ else:
     cov_type = "HC1"
 lm = ols("corr ~ C(cat, Simple)*tdist", data=df).fit(cov_type=cov_type)
 anova = sm.stats.anova_lm(lm, typ=3)
-df_alt = df[df["cat"] != "green/raw-shared"]
+df_alt = df[df["cat"].isin(["green/raw-zero_padded", "red/registered-zero_padded"])]
 lm_alt = ols("corr ~ C(cat, Simple)*tdist", data=df_alt).fit(cov_type=cov_type)
 anova_alt = sm.stats.anova_lm(lm_alt, typ=3)
 lm_dict = dict()
