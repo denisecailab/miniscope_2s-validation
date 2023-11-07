@@ -143,10 +143,10 @@ def reg_map(reg_df, map_df):
 
 map_red = pd.read_pickle(IN_RED_MAP)
 map_green = pd.read_pickle(IN_GREEN_MAP)
-map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping_lsm.csv")).set_index(
+map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv")).set_index(
     ["animal", "session", "uid_red"]
 )["uid_green"]
-map_r2g = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping_lsm.csv")).set_index(
+map_r2g = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv")).set_index(
     ["animal", "session", "uid_green"]
 )["uid_red"]
 map_green_reg = reg_map(map_red, map_g2r)
