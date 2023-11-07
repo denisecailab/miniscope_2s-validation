@@ -539,17 +539,20 @@ for plt_type, cur_data in df_dict.items():
 nsmp = 5
 Awnd = 15
 Twnd = 14000
-sub_idx = [286, 509, 176, 530, 227]
+sub_idx = [1, 9, 10, 15, 38]
 brt_offset = 0.1
 trace_offset = 5
 lw = 1
 cmap = {"red": qualitative.Plotly[1], "green": qualitative.Plotly[2]}
 map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"))
-map_g2r = map_g2r[(map_g2r["animal"].isin(PARAM_EXP_ANM)) & (map_g2r["distance"] < 3)]
-# map_smp = map_g2r.sample(nsmp, replace=False).reset_index()
+map_g2r = (
+    map_g2r[(map_g2r["animal"].isin(PARAM_EXP_ANM)) & (map_g2r["distance"] < 3)]
+    .sort_values("distance")
+    .reset_index(drop=True)
+)
 map_smp = map_g2r.loc[sub_idx].reset_index(drop=True)
 fig, axs = plt.subplots(
-    len(map_smp), 2, figsize=(6.4, 3.5), gridspec_kw={"width_ratios": [1, 8]}
+    len(map_smp), 2, figsize=(7, 3.8), gridspec_kw={"width_ratios": [1, 8]}
 )
 for ir, row in map_smp.iterrows():
     anm, ss, uid_red, uid_gn = (
