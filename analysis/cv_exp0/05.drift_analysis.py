@@ -10,8 +10,13 @@ import seaborn as sns
 import statsmodels.api as sm
 import xarray as xr
 from plotly.express.colors import qualitative
-from routine.place_cell import (aggregate_fr, classify_cell, compute_metrics,
-                                kde_est, shuffleS)
+from routine.place_cell import (
+    aggregate_fr,
+    classify_cell,
+    compute_metrics,
+    kde_est,
+    shuffleS,
+)
 from routine.plotting import scatter_agg
 from routine.utilities import df_set_metadata, norm, thres_gmm
 from scipy.stats import ttest_ind, zscore
@@ -32,7 +37,7 @@ PARAM_NSHUF = 500
 PARAM_STB_QTHRES = 0.95
 PARAM_SI_QTHRES = 0.95
 PARAM_SMP_SPACE = np.linspace(-100, 100, 200)
-PARAM_MIN_NCELL = 5
+PARAM_MIN_NCELL = 0
 PARAM_SUB_ANM = None
 PARAM_SUB_TDIST = (0, 14)
 PARAM_PLT_RC = {
