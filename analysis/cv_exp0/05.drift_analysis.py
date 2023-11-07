@@ -509,7 +509,11 @@ for by, cur_corr in corr_dict.items():
             ncol=2,
         )
         fig.tight_layout()
-        fig.savefig(os.path.join(FIG_PATH, "pv_corr-{}.svg".format(inclusion)), dpi=500)
+        fig.savefig(
+            os.path.join(FIG_PATH, "pv_corr-{}.svg".format(inclusion)),
+            dpi=500,
+            bbox_inches="tight",
+        )
         plt.close(fig)
 
 # %% plot overlap
@@ -623,6 +627,7 @@ for inclusion, cur_ovlp in ovlp.groupby("inclusion"):
         fig.savefig(
             os.path.join(FIG_PATH, "{}-{}.svg".format(metric, inclusion)),
             dpi=500,
+            bbox_inches="tight",
         )
         plt.close(fig)
 
