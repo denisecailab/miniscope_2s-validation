@@ -770,9 +770,8 @@ gfp = dat["EGFP em"]
 emm_red = dat["trans_red"]
 emm_gn = dat["trans_gn"]
 prop = (gfp * emm_red).sum() / (gfp * emm_gn).sum()
-fig, ax = plt.subplots(figsize=(4.8, 3.2))
-sns.lineplot(x=dat["wavelength"], y=np.zeros(len(dat)), color="grey", ax=ax)
-
+fig, ax = plt.subplots(figsize=(4.7, 2.7))
+sns.lineplot(x=dat["wavelength"], y=np.zeros(len(dat)), color="grey", ax=ax, lw=1)
 sns.lineplot(
     dat_red,
     x="wavelength",
@@ -808,7 +807,8 @@ ax.fill_between(
 )
 ax.set_xlabel("Wavelength (nm)", style="italic")
 ax.set_ylabel("Relative Transmission/Power (AU)", style="italic")
-fig.savefig(os.path.join(FIG_PATH, "crosstalk_wavelength.svg"))
+ax.set_xlim(260, 720)
+fig.savefig(os.path.join(FIG_PATH, "crosstalk_wavelength.svg"), bbox_inches="tight")
 # distribution
 map_g2r_corr = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping_corr.csv"))
 g2r_df = map_g2r_corr.melt(
@@ -820,12 +820,12 @@ g2r_df = map_g2r_corr.melt(
 g2r_df["corr_type"] = g2r_df["corr_type"].map(
     {"coef_org": "Observed", "coef_sh": "Shuffled"}
 )
-fig, ax = plt.subplots(figsize=(4.8, 3.2))
+fig, ax = plt.subplots(figsize=(4.7, 2.7))
 xlim = (-0.15, 0.25)
-ax.axvline(prop, color="dimgrey", dashes=(3, 2), label="Expected crosstalk ratio")
+ax.axvline(prop, color="dimgrey", dashes=(3, 2))
 ax.annotate(
     "Exptected\nCrosstalk\nRatio",
-    xy=(prop, 0.8),
+    xy=(prop, 0.7),
     xycoords=("data", "axes fraction"),
     xytext=(0.5, 0),
     textcoords="offset fontsize",
@@ -849,7 +849,7 @@ ax.get_legend().set_title("")
 sns.move_legend(ax, "upper left")
 ax.set_xlabel("Regression Coefficient", style="italic")
 ax.set_ylabel("Proportion", style="italic")
-fig.savefig(os.path.join(FIG_PATH, "crosstalk_distribution.svg"))
+fig.savefig(os.path.join(FIG_PATH, "crosstalk_distribution.svg"), bbox_inches="tight")
 
 # %% compute overlap over time
 map_red = pd.read_pickle(IN_RED_MAP).set_index(("meta", "animal"))
