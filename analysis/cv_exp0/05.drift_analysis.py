@@ -10,8 +10,13 @@ import seaborn as sns
 import statsmodels.api as sm
 import xarray as xr
 from plotly.express.colors import qualitative
-from routine.place_cell import (aggregate_fr, classify_cell, compute_metrics,
-                                kde_est, shuffleS)
+from routine.place_cell import (
+    aggregate_fr,
+    classify_cell,
+    compute_metrics,
+    kde_est,
+    shuffleS,
+)
 from routine.plotting import scatter_agg
 from routine.utilities import df_set_metadata, norm, thres_gmm
 from scipy.stats import ttest_ind, zscore
@@ -412,21 +417,21 @@ plt.close(fig)
 # %% plot pv corr
 show_sig = False
 cmap = {
-    "green/raw-shared": qualitative.Plotly[2],
-    "green/raw-zero_padded": qualitative.D3[2],
-    "red/registered-shared": qualitative.Plotly[4],
-    "red/registered-zero_padded": qualitative.D3[1],
+    # "green/raw-shared": qualitative.Plotly[2],
+    "green/raw-zero_padded": qualitative.Plotly[2],
+    # "red/registered-shared": qualitative.Plotly[4],
+    "red/registered-zero_padded": qualitative.Plotly[4],
 }
 smap = {
-    "green/raw-shared": (3, 1),
+    # "green/raw-shared": (3, 1),
     "green/raw-zero_padded": "",
-    "red/registered-shared": (3, 1),
+    # "red/registered-shared": (3, 1),
     "red/registered-zero_padded": "",
 }
 lmap = {
-    "green/raw-shared": "Always active GCaMP cells",
+    # "green/raw-shared": "Always active GCaMP cells",
     "green/raw-zero_padded": "All GCaMP cells",
-    "red/registered-shared": "Active GCaMP cells\nregistered with tdTomato",
+    # "red/registered-shared": "Active GCaMP cells\nregistered with tdTomato",
     "red/registered-zero_padded": "GCaMP cells registered\nwith tdTomato",
 }
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr_agg.csv"))
@@ -442,7 +447,7 @@ if PARAM_AGG_ANM:
 corr_dict = {"master": pv_corr}
 for by, cur_corr in corr_dict.items():
     for inclusion, corr_sub in cur_corr.groupby("inclusion"):
-        fig, ax = plt.subplots(figsize=(5, 3.2))
+        fig, ax = plt.subplots(figsize=(4.8, 3.6))
         ax = sns.lineplot(
             corr_sub,
             x="tdist",
@@ -455,23 +460,24 @@ for by, cur_corr in corr_dict.items():
             ax=ax,
             zorder=5,
         )
-        # ax = sns.swarmplot(
-        #     cur_corr,
-        #     x="tdist",
-        #     y="corr",
-        #     hue="cat",
-        #     palette={lmap[k]: v for k, v in cmap.items()},
-        #     edgecolor="gray",
-        #     dodge=True,
-        #     ax=ax,
-        #     legend=False,
-        #     native_scale=True,
-        #     size=3,
-        #     linewidth=1,
-        #     warn_thresh=0.8,
-        # )
+        ax = sns.swarmplot(
+            corr_sub,
+            x="tdist",
+            y="corr",
+            hue="cat",
+            palette={lmap[k]: v for k, v in cmap.items()},
+            edgecolor="gray",
+            dodge=False,
+            ax=ax,
+            legend=False,
+            native_scale=True,
+            size=3.5,
+            linewidth=0.8,
+            warn_thresh=0.8,
+        )
         ax.set_xlabel("Days apart", style="italic")
         ax.set_ylabel("PV correlation", style="italic")
+        ax.set_ylim(0, 1.05)
         if show_sig:
             y_pos = ax.get_ylim()[1]
             ax.set_ylim(top=y_pos * 1.1)
@@ -554,7 +560,7 @@ for inclusion, cur_ovlp in ovlp.groupby("inclusion"):
         fig.write_html(
             os.path.join(FIG_PATH, "overlap-{}-{}.html".format(inclusion, metric))
         )
-        fig, ax = plt.subplots(figsize=(5, 3))
+        fig, ax = plt.subplots(figsize=(4.8, 3.6))
         ax = sns.swarmplot(
             cur_ovlp,
             x="tdist",
@@ -566,8 +572,8 @@ for inclusion, cur_ovlp in ovlp.groupby("inclusion"):
             ax=ax,
             legend=False,
             native_scale=True,
-            size=3,
-            linewidth=1,
+            size=3.5,
+            linewidth=0.8,
             warn_thresh=0.8,
         )
         ax = sns.lineplot(
@@ -582,6 +588,7 @@ for inclusion, cur_ovlp in ovlp.groupby("inclusion"):
         )
         ax.set_xlabel("Days apart", style="italic")
         ax.set_ylabel("Reactivation probability", style="italic")
+        ax.set_ylim(0.2, 1.05)
         if show_sig:
             y_pos = ax.get_ylim()[1]
             ax.set_ylim(top=y_pos * 1.2)
