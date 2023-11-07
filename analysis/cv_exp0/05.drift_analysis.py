@@ -10,13 +10,8 @@ import seaborn as sns
 import statsmodels.api as sm
 import xarray as xr
 from plotly.express.colors import qualitative
-from routine.place_cell import (
-    aggregate_fr,
-    classify_cell,
-    compute_metrics,
-    kde_est,
-    shuffleS,
-)
+from routine.place_cell import (aggregate_fr, classify_cell, compute_metrics,
+                                kde_est, shuffleS)
 from routine.plotting import scatter_agg
 from routine.utilities import df_set_metadata, norm, thres_gmm
 from scipy.stats import ttest_ind, zscore
@@ -355,7 +350,7 @@ pv_corr_agg = (
     .groupby(["map_method", "cell_map", "inclusion", "animal", "ssA", "ssB", "tdist"])[
         "corr"
     ]
-    .median()
+    .mean()
     .reset_index()
 )
 pv_corr_agg.to_csv(os.path.join(OUT_PATH, "pv_corr_agg.csv"), index=False)
