@@ -432,7 +432,7 @@ lmap = {
     # "green/raw-shared": "Always active GCaMP cells",
     "green/raw-zero_padded": "All GCaMP cells",
     # "red/registered-shared": "Active GCaMP cells\nregistered with tdTomato",
-    "red/registered-zero_padded": "GCaMP cells registered\nwith tdTomato",
+    "red/registered-zero_padded": "GCaMP cells\nregistered with tdTomato",
 }
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr_agg.csv"))
 if PARAM_SUB_ANM is not None:

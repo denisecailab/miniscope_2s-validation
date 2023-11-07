@@ -806,7 +806,7 @@ ax.fill_between(
     alpha=0.4,
 )
 ax.set_xlabel("Wavelength (nm)", style="italic")
-ax.set_ylabel("Relative Transmission/Power (AU)", style="italic")
+ax.set_ylabel("Relative\nTransmission/Power (A.U.)", style="italic")
 ax.set_xlim(260, 720)
 fig.savefig(os.path.join(FIG_PATH, "crosstalk_wavelength.svg"), bbox_inches="tight")
 # distribution
