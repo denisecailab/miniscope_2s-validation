@@ -690,12 +690,6 @@ def compute_pair_corr(row, med_wnd=500):
     )
 
 
-def shuffle_mapping(df):
-    df['uid_green'] =
-    np.random.shuffle(df["uid_green"])
-    return df
-
-
 map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv"))
 map_g2r_corr = pd.concat(
     [map_g2r, map_g2r.apply(compute_pair_corr, axis="columns")], axis="columns"
@@ -747,6 +741,7 @@ opts_cv = {"frame_width": 900}
 
 
 # %% plot trace correlation distribution
+# theoretical calculation
 dat_gfp = pd.read_csv(IN_WV_GFP)
 dat_emm_gn = pd.read_csv(
     IN_WV_EMM_GN,
@@ -760,13 +755,58 @@ dat_emm_red = pd.read_csv(
     names=["wavelength", "trans_red"],
     dtype={"wavelength": int, "trans_red": float},
 )
-dat = dat_gfp.merge(dat_emm_red, on="wavelength", how="inner").merge(
-    dat_emm_gn, on="wavelength", how="inner"
+dat = (
+    dat_gfp.merge(dat_emm_red, on="wavelength", how="inner")
+    .merge(dat_emm_gn, on="wavelength", how="inner")
+    .fillna(0)
 )
-gfp = dat["EGFP em"].fillna(0)
+dat = dat[dat["wavelength"].between(300, 700)]
+dat_gn = dat.loc[dat["trans_gn"] > 5e-6]
+dat_red = dat.loc[dat["trans_red"] > 5e-6]
+gfp = dat["EGFP em"]
 emm_red = dat["trans_red"]
 emm_gn = dat["trans_gn"]
 prop = (gfp * emm_red).sum() / (gfp * emm_gn).sum()
+fig, ax = plt.subplots(figsize=(4.8, 3.2))
+sns.lineplot(x=dat["wavelength"], y=np.zeros(len(dat)), color="grey", ax=ax)
+
+sns.lineplot(
+    dat_red,
+    x="wavelength",
+    y="trans_red",
+    color=qualitative.Plotly[1],
+    label="tdTomato Channel\nEmission Filter",
+    ax=ax,
+)
+sns.lineplot(
+    dat_gn,
+    x="wavelength",
+    y="trans_gn",
+    color=qualitative.Plotly[2],
+    label="GCaMP Channel\nEmission Filter",
+    ax=ax,
+)
+sns.lineplot(
+    dat, x="wavelength", y="EGFP em", color="black", label="GCaMP Emission", ax=ax
+)
+ax.fill_between(
+    x=dat_red["wavelength"],
+    y1=np.zeros_like(dat_red["wavelength"]),
+    y2=dat_red[["EGFP em", "trans_red"]].min(axis="columns"),
+    color=qualitative.Plotly[1],
+    alpha=0.4,
+)
+ax.fill_between(
+    x=dat_gn["wavelength"],
+    y1=np.zeros_like(dat_gn["wavelength"]),
+    y2=dat_gn[["EGFP em", "trans_gn"]].min(axis="columns"),
+    color=qualitative.Plotly[2],
+    alpha=0.4,
+)
+ax.set_xlabel("Wavelength (nm)", style="italic")
+ax.set_ylabel("Relative Transmission/Power (AU)", style="italic")
+fig.savefig(os.path.join(FIG_PATH, "crosstalk_wavelength.svg"))
+# distribution
 map_g2r_corr = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping_corr.csv"))
 g2r_df = map_g2r_corr.melt(
     id_vars=["animal", "session", "uid_green", "uid_red"],
@@ -774,22 +814,39 @@ g2r_df = map_g2r_corr.melt(
     var_name="corr_type",
     value_name="corr",
 )
-g2r_df['corr_type'] = g2r_df['corr_type'].map({'coef_org': 'Observed', 'coef_sh': 'Shuffled'})
-fig, ax = plt.subplots()
-ax.axvline(prop, color='grey', dashes=(3, 2), label='Expected crosstalk ratio')
+g2r_df["corr_type"] = g2r_df["corr_type"].map(
+    {"coef_org": "Observed", "coef_sh": "Shuffled"}
+)
+fig, ax = plt.subplots(figsize=(4.8, 3.2))
+xlim = (-0.15, 0.25)
+ax.axvline(prop, color="dimgrey", dashes=(3, 2), label="Expected crosstalk ratio")
+ax.annotate(
+    "Exptected\nCrosstalk\nRatio",
+    xy=(prop, 0.8),
+    xycoords=("data", "axes fraction"),
+    xytext=(0.5, 0),
+    textcoords="offset fontsize",
+    color="dimgrey",
+)
 sns.histplot(
     g2r_df,
     x="corr",
     hue="corr_type",
-    stat="probability",
+    stat="proportion",
     bins=50,
-    binrange=(-0.5, 0.5),
+    binrange=xlim,
+    kde=True,
+    kde_kws={"clip": xlim},
+    palette={"Observed": qualitative.Plotly[5], "Shuffled": qualitative.Plotly[8]},
+    alpha=0.4,
+    line_kws={"lw": 2},
     ax=ax,
 )
-ax.get_legend().set_title('')
-ax.set_xlabel('Regression Coefficient', style='italic')
-ax.set_ylabel('Probability', style='italic')
-fig.savefig(os.path.join(FIG_PATH, 'crosstalk_distribution.svg'))
+ax.get_legend().set_title("")
+sns.move_legend(ax, "upper left")
+ax.set_xlabel("Regression Coefficient", style="italic")
+ax.set_ylabel("Proportion", style="italic")
+fig.savefig(os.path.join(FIG_PATH, "crosstalk_distribution.svg"))
 
 # %% compute overlap over time
 map_red = pd.read_pickle(IN_RED_MAP).set_index(("meta", "animal"))
