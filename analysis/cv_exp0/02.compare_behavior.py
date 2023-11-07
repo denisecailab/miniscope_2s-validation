@@ -37,8 +37,8 @@ PARAM_PLT_RC = {
     "font.sans-serif": "Arial",
 }
 PARAM_CMAP = {
-    "Dual-channel\nMiniscope": qualitative.Dark24[0],
-    "Single-channel\nMiniscope": qualitative.Dark24[1],
+    "Dual-channel\nMiniscope": qualitative.Plotly[5],
+    "Single-channel\nMiniscope": qualitative.Plotly[8],
 }
 FIG_PATH = "./figs/behav_comparison"
 
@@ -104,7 +104,8 @@ ax = sns.barplot(
     errorbar="se",
     err_kws={"linewidth": 3},
     capsize=0.2,
-    saturation=0.3,
+    saturation=0.9,
+    alpha=0.75,
     width=0.5,
     legend=False,
 )
@@ -117,7 +118,7 @@ ax = sns.swarmplot(
     linewidth=1.2,
     warn_thresh=0.8,
     edgecolor="gray",
-    alpha=0.8,
+    alpha=0.9,
     legend=False,
 )
 ax.set_xlabel("")
