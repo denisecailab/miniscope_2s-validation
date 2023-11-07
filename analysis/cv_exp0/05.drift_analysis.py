@@ -537,77 +537,87 @@ if PARAM_AGG_ANM:
         )
         .reset_index()
     )
-for metric in ["actMean", "ovlp"]:
-    fig = scatter_agg(
-        ovlp,
-        x="tdist",
-        y=metric,
-        facet_row=None,
-        facet_col="animal",
-        col_wrap=3,
-        legend_dim="map_method",
-        marker={"color": "color"},
-    )
-    fig.update_xaxes(title="Days apart")
-    fig.update_yaxes(range=(0, 1), title="Overlap")
-    fig.write_html(os.path.join(FIG_PATH, "overlap-{}.html".format(metric)))
-    fig, ax = plt.subplots(figsize=(5, 3))
-    ax = sns.swarmplot(
-        ovlp,
-        x="tdist",
-        y=metric,
-        hue="map_method",
-        palette={lmap[k]: v for k, v in cmap.items()},
-        edgecolor="gray",
-        dodge=False,
-        ax=ax,
-        legend=False,
-        native_scale=True,
-        size=3,
-        linewidth=1,
-        warn_thresh=0.8,
-    )
-    ax = sns.lineplot(
-        ovlp,
-        x="tdist",
-        y=metric,
-        hue="map_method",
-        palette={lmap[k]: v for k, v in cmap.items()},
-        errorbar="se",
-        ax=ax,
-        zorder=5,
-    )
-    ax.set_xlabel("Days apart", style="italic")
-    ax.set_ylabel("Reactivation probability", style="italic")
-    if show_sig:
-        y_pos = ax.get_ylim()[1]
-        ax.set_ylim(top=y_pos * 1.2)
-        for t in ovlp["tdist"].unique():
-            ttA, ttB = (
-                ovlp[(ovlp["map_method"] == "All GCaMP cells") & (ovlp["tdist"] == t)][
-                    metric
-                ],
-                ovlp[
-                    (ovlp["map_method"] == "GCaMP cells\nregistered with tdTomato")
-                    & (ovlp["tdist"] == t)
-                ][metric],
-            )
-            stat, pval = ttest_ind(ttA, ttB)
-            if pval < 0.05:
-                ttext = "*"
-            else:
-                ttext = "ns"
-            ax.text(x=t, y=y_pos * 1.03, s=ttext)
-    plt.legend(
-        title=None,
-        loc="lower center",
-        bbox_to_anchor=(0, 1.02, 1, 0.2),
-        mode="expand",
-        ncol=2,
-    )
-    fig.tight_layout()
-    fig.savefig(os.path.join(FIG_PATH, "overlap-{}.svg".format(metric)), dpi=500)
-    plt.close(fig)
+for inclusion, cur_ovlp in ovlp.groupby("inclusion"):
+    for metric in ["actMean", "ovlp"]:
+        fig = scatter_agg(
+            cur_ovlp,
+            x="tdist",
+            y=metric,
+            facet_row=None,
+            facet_col="animal",
+            col_wrap=3,
+            legend_dim="map_method",
+            marker={"color": "color"},
+        )
+        fig.update_xaxes(title="Days apart")
+        fig.update_yaxes(range=(0, 1), title="Overlap")
+        fig.write_html(
+            os.path.join(FIG_PATH, "overlap-{}-{}.html".format(inclusion, metric))
+        )
+        fig, ax = plt.subplots(figsize=(5, 3))
+        ax = sns.swarmplot(
+            cur_ovlp,
+            x="tdist",
+            y=metric,
+            hue="map_method",
+            palette={lmap[k]: v for k, v in cmap.items()},
+            edgecolor="gray",
+            dodge=False,
+            ax=ax,
+            legend=False,
+            native_scale=True,
+            size=3,
+            linewidth=1,
+            warn_thresh=0.8,
+        )
+        ax = sns.lineplot(
+            cur_ovlp,
+            x="tdist",
+            y=metric,
+            hue="map_method",
+            palette={lmap[k]: v for k, v in cmap.items()},
+            errorbar="se",
+            ax=ax,
+            zorder=5,
+        )
+        ax.set_xlabel("Days apart", style="italic")
+        ax.set_ylabel("Reactivation probability", style="italic")
+        if show_sig:
+            y_pos = ax.get_ylim()[1]
+            ax.set_ylim(top=y_pos * 1.2)
+            for t in cur_ovlp["tdist"].unique():
+                ttA, ttB = (
+                    cur_ovlp[
+                        (cur_ovlp["map_method"] == "All GCaMP cells")
+                        & (cur_ovlp["tdist"] == t)
+                    ][metric],
+                    cur_ovlp[
+                        (
+                            cur_ovlp["map_method"]
+                            == "GCaMP cells\nregistered with tdTomato"
+                        )
+                        & (cur_ovlp["tdist"] == t)
+                    ][metric],
+                )
+                stat, pval = ttest_ind(ttA, ttB)
+                if pval < 0.05:
+                    ttext = "*"
+                else:
+                    ttext = "ns"
+                ax.text(x=t, y=y_pos * 1.03, s=ttext)
+        plt.legend(
+            title=None,
+            loc="lower center",
+            bbox_to_anchor=(0, 1.02, 1, 0.2),
+            mode="expand",
+            ncol=2,
+        )
+        fig.tight_layout()
+        fig.savefig(
+            os.path.join(FIG_PATH, "{}-{}.svg".format(metric, inclusion)),
+            dpi=500,
+        )
+        plt.close(fig)
 
 # %% run stats on pv corr
 from patsy.contrasts import ContrastMatrix
