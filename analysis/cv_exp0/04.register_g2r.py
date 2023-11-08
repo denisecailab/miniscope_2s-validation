@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import seaborn as sns
+import statsmodels.api as sm
 import xarray as xr
 from bokeh.palettes import Category20
 from minian.cross_registration import (
@@ -29,6 +30,8 @@ from scipy.ndimage import median_filter
 from scipy.spatial.distance import correlation, cosine
 from scipy.stats import ttest_ind, zscore
 from sklearn.linear_model import LinearRegression
+from statsmodels.formula.api import ols
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
 from tqdm.auto import tqdm
 
 IN_GREEN_PATH = "./intermediate/processed/green"
@@ -479,7 +482,7 @@ for plt_type, cur_data in df_dict.items():
             "aspect": 1,
             "col_order": list(cmap.keys())[:3],
         }
-    g = sns.FacetGrid(cur_data, margin_titles=True, sharey=True, height=3, **plt_args)
+    g = sns.FacetGrid(cur_data, margin_titles=True, sharey=True, height=3.2, **plt_args)
     g.set_xlabels(clear_inner=False)
     g.map_dataframe(
         bar_wrap,
@@ -529,6 +532,48 @@ for plt_type, cur_data in df_dict.items():
     elif plt_type == "summary_agg":
         g.set_titles(col_template="{col_name}")
         g.set_xlabels("# of sessions active", style="italic")
+        g.set(ylim=(0, 0.65))
+        for mthd, grp_data in cur_data.groupby("method"):
+            lm = ols("density ~ C(nactive)", data=grp_data).fit()
+            anova = sm.stats.anova_lm(lm, typ=3)
+            print(mthd)
+            print(anova)
+            if anova.loc["C(nactive)", "PR(>F)"] < 0.05:
+                tk = pairwise_tukeyhsd(grp_data["density"], grp_data["nactive"])
+                tk_df = pd.DataFrame(
+                    tk.summary().data[1:], columns=tk.summary().data[0]
+                )
+                rej_count = pd.DataFrame(
+                    {
+                        "nactive": grp_data["nactive"].unique(),
+                        "rej_count": [
+                            tk_df.loc[
+                                (tk_df[["group1", "group2"]] == nact).any(
+                                    axis="columns"
+                                ),
+                                "reject",
+                            ].sum()
+                            for nact in grp_data["nactive"].unique()
+                        ],
+                    }
+                )
+                rej_count["rej_all"] = (
+                    rej_count["rej_count"] == grp_data["nactive"].nunique() - 1
+                )
+                cur_ax = g.axes_dict[mthd]
+                max_dat = grp_data.groupby("nactive")["density"].max()
+                for nact in rej_count.loc[rej_count["rej_all"], "nactive"]:
+                    cur_ax.annotate(
+                        "*",
+                        (str(nact), 0.85),
+                        xytext=(0, 0.2),
+                        xycoords=("data", "axes fraction"),
+                        textcoords="offset fontsize",
+                        fontsize=20,
+                        horizontalalignment="center",
+                    )
+                    cur_ax.relim()
+                    cur_ax.autoscale_view(tight=True)
     g.set_ylabels("Per-session probability", style="italic")
     g.fig.savefig(
         os.path.join(FIG_PATH, "{}.svg".format(plt_type)), dpi=500, bbox_inches="tight"
