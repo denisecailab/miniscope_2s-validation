@@ -682,7 +682,10 @@ for ct, mdf in df.groupby("cat"):
 
 # %% run stats on overlap
 df = pd.read_csv(os.path.join(OUT_PATH, "ovlp.csv"))
-df = df[df["map_method"] != "red/raw"].copy()
+df = df[
+    (df["map_method"].isin(["green/raw", "red/registered"]))
+    & (df["inclusion"] == "place_cells")
+].copy()
 if PARAM_SUB_ANM is not None:
     df = df[df["animal"].isin(PARAM_SUB_ANM)].copy()
 if PARAM_AGG_ANM:
