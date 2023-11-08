@@ -69,15 +69,15 @@ for _, row in tqdm(list(ss_csv.iterrows())):
     except FileNotFoundError:
         warnings.warn("missing data for {}-{}".format(anm, ss))
         continue
-    Sbin = xr.apply_ufunc(
-        thres_gmm,
-        ps_ds["S"].dropna("unit_id", how="all"),
-        input_core_dims=[["frame"]],
-        output_core_dims=[["frame"]],
-        kwargs={"pos_thres": 0.5},
-        vectorize=True,
-    ).compute()
-    S_df = Sbin.to_dataframe().dropna().reset_index()
+    # Sbin = xr.apply_ufunc(
+    #     thres_gmm,
+    #     ps_ds["S"].dropna("unit_id", how="all"),
+    #     input_core_dims=[["frame"]],
+    #     output_core_dims=[["frame"]],
+    #     kwargs={"pos_thres": 0.5},
+    #     vectorize=True,
+    # ).compute()
+    S_df = ps_ds["S"].dropna("unit_id", how="all").to_dataframe().dropna().reset_index()
     pos_df = S_df[["animal", "session", "frame", "linpos", "trial"]].drop_duplicates()
     occp = (
         pos_df.groupby(["animal", "session", "trial"])
