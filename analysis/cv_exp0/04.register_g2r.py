@@ -847,7 +847,7 @@ sns.histplot(
 )
 ax.get_legend().set_title("")
 sns.move_legend(ax, "upper left")
-ax.set_xlabel("Regression Coefficient", style="italic")
+ax.set_xlabel("Crosstalk Ratio", style="italic")
 ax.set_ylabel("Proportion", style="italic")
 fig.savefig(os.path.join(FIG_PATH, "crosstalk_distribution.svg"), bbox_inches="tight")
 
