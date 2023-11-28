@@ -61,7 +61,7 @@ fig.save(os.path.join(OUT_PATH, "register_g2r.svg"))
 h_gap = 1
 sh_left = (0, 0)
 svgs = {
-    "A": "./figs/drift/overlap-actMean.svg",
+    "A": "./figs/drift/actMean-place_cells.svg",
     "B": "./figs/drift/pv_corr-place_cells.svg",
 }
 for fn in svgs.values():

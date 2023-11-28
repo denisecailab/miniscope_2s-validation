@@ -417,22 +417,22 @@ plt.close(fig)
 # %% plot pv corr
 show_sig = False
 cmap = {
-    # "green/raw-shared": qualitative.Plotly[2],
+    "green/raw-shared": qualitative.Plotly[2],
     "green/raw-zero_padded": qualitative.Plotly[2],
     # "red/registered-shared": qualitative.Plotly[4],
     "red/registered-zero_padded": qualitative.Plotly[4],
 }
 smap = {
-    # "green/raw-shared": (3, 1),
+    "green/raw-shared": (3, 1),
     "green/raw-zero_padded": "",
     # "red/registered-shared": (3, 1),
     "red/registered-zero_padded": "",
 }
 lmap = {
-    # "green/raw-shared": "Always active GCaMP cells",
+    "green/raw-shared": "Always active GCaMP cells",
     "green/raw-zero_padded": "All GCaMP cells",
     # "red/registered-shared": "Active GCaMP cells\nregistered with tdTomato",
-    "red/registered-zero_padded": "GCaMP cells\nregistered with tdTomato",
+    "red/registered-zero_padded": "Stable GCaMP cells",
 }
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr_agg.csv"))
 if PARAM_SUB_ANM is not None:
@@ -447,7 +447,7 @@ if PARAM_AGG_ANM:
 corr_dict = {"master": pv_corr}
 for by, cur_corr in corr_dict.items():
     for inclusion, corr_sub in cur_corr.groupby("inclusion"):
-        fig, ax = plt.subplots(figsize=(4.8, 3.6))
+        fig, ax = plt.subplots(figsize=(4.8, 3))
         ax = sns.lineplot(
             corr_sub,
             x="tdist",
@@ -460,24 +460,24 @@ for by, cur_corr in corr_dict.items():
             ax=ax,
             zorder=5,
         )
-        ax = sns.swarmplot(
-            corr_sub,
-            x="tdist",
-            y="corr",
-            hue="cat",
-            palette={lmap[k]: v for k, v in cmap.items()},
-            edgecolor="gray",
-            dodge=False,
-            ax=ax,
-            legend=False,
-            native_scale=True,
-            size=3.5,
-            linewidth=0.8,
-            warn_thresh=0.8,
-        )
+        # ax = sns.swarmplot(
+        #     corr_sub,
+        #     x="tdist",
+        #     y="corr",
+        #     hue="cat",
+        #     palette={lmap[k]: v for k, v in cmap.items()},
+        #     edgecolor="gray",
+        #     dodge=False,
+        #     ax=ax,
+        #     legend=False,
+        #     native_scale=True,
+        #     size=3.5,
+        #     linewidth=0.8,
+        #     warn_thresh=0.8,
+        # )
         ax.set_xlabel("Days apart", style="italic")
         ax.set_ylabel("PV correlation", style="italic")
-        ax.set_ylim(0, 1.05)
+        ax.set_ylim(0.2, 1)
         if show_sig:
             y_pos = ax.get_ylim()[1]
             ax.set_ylim(top=y_pos * 1.1)
@@ -526,7 +526,7 @@ cmap = {
 lmap = {
     # "red/raw": "tdTomato cells",
     "green/raw": "All GCaMP cells",
-    "red/registered": "GCaMP cells\nregistered with tdTomato",
+    "red/registered": "Stable GCaMP cells",
 }
 ovlp = pd.read_csv(os.path.join(OUT_PATH, "ovlp.csv"))
 if PARAM_SUB_ANM is not None:
@@ -561,10 +561,8 @@ for inclusion, cur_ovlp in ovlp.groupby("inclusion"):
         )
         fig.update_xaxes(title="Days apart")
         fig.update_yaxes(range=(0, 1), title="Overlap")
-        fig.write_html(
-            os.path.join(FIG_PATH, "overlap-{}-{}.html".format(inclusion, metric))
-        )
-        fig, ax = plt.subplots(figsize=(4.8, 3.6))
+        fig.write_html(os.path.join(FIG_PATH, "{}-{}.html".format(metric, inclusion)))
+        fig, ax = plt.subplots(figsize=(4.8, 3))
         ax = sns.swarmplot(
             cur_ovlp,
             x="tdist",
@@ -592,7 +590,7 @@ for inclusion, cur_ovlp in ovlp.groupby("inclusion"):
         )
         ax.set_xlabel("Days apart", style="italic")
         ax.set_ylabel("Reactivation probability", style="italic")
-        ax.set_ylim(0.2, 1.05)
+        ax.set_ylim(0.2, 1)
         if show_sig:
             y_pos = ax.get_ylim()[1]
             ax.set_ylim(top=y_pos * 1.2)
