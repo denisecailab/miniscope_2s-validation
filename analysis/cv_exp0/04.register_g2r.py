@@ -454,14 +454,14 @@ map_green_reg = map_green_reg[
 ].copy()
 map_green_reg.to_csv(os.path.join(OUT_PATH, "green_reg_pactive.csv"), index=False)
 green_reg_agg = map_green_reg.groupby("animal").apply(agg_pactive).reset_index()
-red_agg["method"] = "tdTomato"
-green_agg["method"] = "GCaMP"
-reg_agg["method"] = "GCaMP cells\nregistered with tdTomato"
+red_agg["method"] = "tdTomato cells"
+green_agg["method"] = "GCaMP cells"
+reg_agg["method"] = "Stable GCaMP cells"
 green_reg_agg["method"] = "GCaMP cells pactive"
 cmap = {
-    "tdTomato": qualitative.Plotly[1],
-    "GCaMP": qualitative.Plotly[2],
-    "GCaMP cells\nregistered with tdTomato": qualitative.Plotly[4],
+    "tdTomato cells": qualitative.Plotly[1],
+    "GCaMP cells": qualitative.Plotly[2],
+    "Stable GCaMP cells": qualitative.Plotly[4],
     "GCaMP cells pactive": qualitative.Plotly[4],
 }
 agg_df = pd.concat([red_agg, green_agg, reg_agg, green_reg_agg], ignore_index=True)
