@@ -950,23 +950,23 @@ ovlp_df = pd.concat(ovlp_df, axis="columns").T
 
 # %% plot overlap over time
 cmap = {
-    "tdTomato": qualitative.Plotly[1],
-    "GCaMP": qualitative.Plotly[2],
-    "Stable tdTomato": qualitative.Plotly[4],
-    "Stable GCaMP": qualitative.Plotly[7],
+    "tdTomato cells": qualitative.Plotly[1],
+    "GCaMP cells": qualitative.Plotly[2],
+    # "Stable tdTomato": qualitative.Plotly[4],
+    # "Stable GCaMP": qualitative.Plotly[7],
 }
 lmap = {
     "overlap_ncell": {
-        "nred": "tdTomato",
-        "ngreen": "GCaMP",
-        "ngreen_reg": "Stable tdTomato",
-        "nred_reg": "Stable GCaMP",
+        "nred": "tdTomato cells",
+        "ngreen": "GCaMP cells",
+        # "ngreen_reg": "Stable tdTomato",
+        # "nred_reg": "Stable GCaMP",
     },
     "overlap_prop": {
-        "prop_red": "tdTomato",
-        "prop_green": "GCaMP",
-        "prop_green_reg": "Stable tdTomato",
-        "prop_red_reg": "Stable GCaMP",
+        "prop_red": "tdTomato cells",
+        "prop_green": "GCaMP cells",
+        # "prop_green_reg": "Stable tdTomato",
+        # "prop_red_reg": "Stable GCaMP",
     },
 }
 ylab = {
@@ -991,7 +991,7 @@ for plt_type, cur_lmap in lmap.items():
     )
     ovlp_df_long["day"] = ovlp_df_long["session"].map(ss_dict)
     ovlp_df_long["Denominator"] = ovlp_df_long["denom"].map(cur_lmap)
-    fig, ax = plt.subplots(figsize=(9, 3))
+    fig, ax = plt.subplots(figsize=(7, 3))
     sns.barplot(
         ovlp_df_long,
         x="day",
