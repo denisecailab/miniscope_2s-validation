@@ -28,7 +28,7 @@ from routine.plotting import plot_overlap, plotA_contour
 from routine.utilities import df_set_metadata, norm
 from scipy.ndimage import median_filter
 from scipy.spatial.distance import correlation, cosine
-from scipy.stats import ttest_ind, zscore
+from scipy.stats import ttest_1samp, ttest_ind, ttest_rel, zscore
 from sklearn.linear_model import LinearRegression
 from statsmodels.formula.api import ols
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
@@ -895,6 +895,13 @@ sns.move_legend(ax, "upper left")
 ax.set_xlabel("Crosstalk Ratio", style="italic")
 ax.set_ylabel("Proportion", style="italic")
 fig.savefig(os.path.join(FIG_PATH, "crosstalk_distribution.svg"), bbox_inches="tight")
+g2r_pvt = g2r_df.pivot(
+    index=["animal", "session", "uid_green", "uid_red"],
+    columns="corr_type",
+    values="corr",
+).reset_index()
+print(ttest_rel(g2r_pvt["Observed"], g2r_pvt["Shuffled"]))
+print(ttest_1samp(g2r_pvt["Observed"], prop))
 
 # %% compute overlap over time
 map_red = pd.read_pickle(IN_RED_MAP).set_index(("meta", "animal"))
