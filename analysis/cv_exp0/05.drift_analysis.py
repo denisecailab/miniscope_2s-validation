@@ -666,6 +666,7 @@ if PARAM_AGG_ANM:
     cov_type = "nonrobust"
 else:
     cov_type = "HC1"
+df = df[df["cat"] != "red/registered-shared"].copy()
 lm = ols("corr ~ C(cat, Simple)*tdist", data=df).fit(cov_type=cov_type)
 anova = sm.stats.anova_lm(lm, typ=3)
 df_alt = df[df["cat"].isin(["green/raw-zero_padded", "red/registered-zero_padded"])]
