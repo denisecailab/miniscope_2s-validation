@@ -482,6 +482,10 @@ for plt_type, cur_data in df_dict.items():
             "aspect": 1,
             "col_order": list(cmap.keys())[:3],
         }
+        for meth, meth_df in cur_data.groupby("method"):
+            print(meth)
+            meth_df = meth_df[meth_df["nactive"] == 7]
+            print(meth_df["density"].mean())
     g = sns.FacetGrid(cur_data, margin_titles=True, sharey=True, height=3.2, **plt_args)
     g.set_xlabels(clear_inner=False)
     g.map_dataframe(
