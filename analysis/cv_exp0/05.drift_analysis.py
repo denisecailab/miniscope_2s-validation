@@ -732,7 +732,7 @@ mapping_dict = {
 }
 lmap = {
     "green": "All GCaMP cells",
-    "red": "GCaMP cells\nregistered with tdTomato",
+    "red": "Stable GCaMP cells",
 }
 fr_df = pd.read_feather(os.path.join(OUT_PATH, "fr.feat"))
 metric_df = pd.read_feather(os.path.join(OUT_PATH, "metric_agg.feat"))
@@ -802,7 +802,7 @@ for ax in g.axes[:, -1]:
             x, y = tx.get_unitless_position()
             tx.set(
                 horizontalalignment="center",
-                x=x + 0.25,
+                x=x + 0.15,
                 text=tx.get_text().partition(" x ")[0],
             )
 for crd in [(0, 0), (1, -1), (2, 0), (3, -1)]:
