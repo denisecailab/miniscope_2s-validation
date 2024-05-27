@@ -713,12 +713,33 @@ for mmethod, mdf in df.groupby("map_method"):
 
 # %% plot cells
 def plot_fr(x, **kwargs):
+    fr_mat = x.values[0]
+    ncell, nbin = fr_mat.shape
     ax = plt.gca()
-    ax.imshow(x.values[0], cmap="plasma", aspect="auto", interpolation="none")
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
+    ax.imshow(fr_mat, cmap="plasma", aspect="auto", interpolation="none")
+    ax.set_xticks([0, nbin - 1])
+    ax.set_xticklabels([1, nbin])
+    ax.set_yticks([0, ncell - 1])
+    ax.set_yticklabels([1, ncell])
+    ax.tick_params(length=0)
     for _, spine in ax.spines.items():
         spine.set_visible(False)
+        spine.set_linewidth(3)
+        spine.set_linestyle(":")
+        spine.set_color("black")
+        spine.set_position(("outward", 1.6))
+
+
+def format_ticks(**kwargs):
+    ax = plt.gca()
+    xlabs = ax.xaxis.get_majorticklabels()
+    if xlabs:
+        xlabs[0].set_horizontalalignment("left")
+        xlabs[1].set_horizontalalignment("right")
+    ylabs = ax.yaxis.get_majorticklabels()
+    if ylabs:
+        ylabs[0].set_verticalalignment("top")
+        ylabs[1].set_verticalalignment("bottom")
 
 
 map_gn = pd.read_pickle(IN_RAW_MAP)
@@ -796,6 +817,8 @@ g = sns.FacetGrid(
 )
 g.map(plot_fr, "fr_mat")
 g.set_titles(row_template="{row_name}", col_template="{col_name}")
+g.set_xlabels("Spatial Bins", style="italic")
+g.set_ylabels("Cells", style="italic", labelpad=-10)
 for ax in g.axes[:, -1]:
     if ax.texts:
         for tx in ax.texts:
@@ -809,10 +832,7 @@ for crd in [(0, 0), (1, -1), (2, 0), (3, -1)]:
     ax = g.axes[crd]
     for _, spine in ax.spines.items():
         spine.set_visible(True)
-        spine.set_linewidth(3)
-        spine.set_linestyle(":")
-        spine.set_color("black")
-        spine.set_position(("outward", 1.6))
+g.map(format_ticks)
 fig = g.fig
 fig.tight_layout()
 plt.subplots_adjust(wspace=0.1, hspace=0.05)
