@@ -659,6 +659,7 @@ for ir, row in map_smp.iterrows():
     ax_A.set_axis_off()
     ax_tr.set_axis_off()
     ax_tr.set_xlim(0, Twnd)
+    ax_tr.set_ylim(-5, 18)
 fig.legend(
     title=None,
     loc="lower center",
@@ -668,19 +669,34 @@ fig.legend(
     ncol=2,
 )
 fig.tight_layout()
-bar = AnchoredSizeBar(
+datscale_y = (ax_tr.transData.transform([1, 0]) - ax_tr.transData.transform([0, 0]))[0]
+datscale_x = (ax_tr.transData.transform([0, 1]) - ax_tr.transData.transform([0, 0]))[1]
+bar_t = AnchoredSizeBar(
     ax_tr.transData,
-    600,
-    "10 sec",
-    loc="upper right",
-    bbox_to_anchor=(0.97, 0),
+    size=600,
+    size_vertical=10 * datscale_y,
+    label="10 sec",
+    loc="lower right",
+    bbox_to_anchor=(0.95, -0.25),
     bbox_transform=ax_tr.transAxes,
     frameon=False,
     pad=0.1,
     sep=4,
-    size_vertical=0.5,
 )
-ax_tr.add_artist(bar)
+bar_y = AnchoredSizeBar(
+    ax_tr.transData,
+    size=10 * datscale_x,
+    size_vertical=3,
+    label="3 std",
+    loc="lower right",
+    bbox_to_anchor=(1.039, -0.25),
+    bbox_transform=ax_tr.transAxes,
+    frameon=False,
+    pad=0.1,
+    sep=4,
+)
+ax_tr.add_artist(bar_t)
+ax_tr.add_artist(bar_y)
 plt.subplots_adjust(top=1, hspace=0.08)
 fig.savefig(os.path.join(FIG_PATH, "traces.svg"), bbox_inches="tight")
 
