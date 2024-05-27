@@ -185,16 +185,17 @@ g.map_dataframe(
     plot_exp, x="time", y="location", lw=1.5, hue="group", palette=PARAM_CMAP
 )
 fig = g.figure
+ax = fig.axes[0]
 g.add_legend(
     loc="lower center",
-    bbox_to_anchor=(0.1, 0.96, 0.8, 0.1),
+    bbox_to_anchor=(0.1, 1.2, 0.8, 0.15),
     mode="expand",
     ncol=2,
-    bbox_transform=fig.transFigure,
+    bbox_transform=ax.transAxes,
     title="",
 )
 g.set_xlabels("Time (s)", style="italic")
 g.set_ylabels("Position (cm)", style="italic")
 g.set_titles(row_template="Animal: {row_name}")
 fig.savefig(os.path.join(FIG_PATH, "example.svg"), dpi=500, bbox_inches="tight")
-plt.close(fig)
+# plt.close(fig)
