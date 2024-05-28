@@ -13,6 +13,7 @@ import seaborn as sns
 import statsmodels.api as sm
 import xarray as xr
 from bokeh.palettes import Category20
+from matplotlib_venn import venn2
 from minian.cross_registration import (
     calculate_centroid_distance,
     calculate_mapping,
@@ -20,6 +21,7 @@ from minian.cross_registration import (
 )
 from minian.visualization import centroid
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from natsort import natsorted
 from plotly.express.colors import qualitative
 from routine.alignment import apply_affine, est_affine
@@ -996,6 +998,10 @@ lmap = {
         # "prop_red_reg": "Stable GCaMP",
     },
 }
+legmap = {
+    "tdTomato cells": r"tdTomato$ = \frac{O}{A + O}$",
+    "GCaMP cells": r"GCaMP$ = \frac{O}{B + O}$",
+}
 ylab = {
     "overlap_ncell": "Number of cells",
     "overlap_prop": "Proportion of registered cells",
@@ -1045,12 +1051,37 @@ for plt_type, cur_lmap in lmap.items():
         dodge=True,
         legend=False,
     )
+    if plt_type == "overlap_prop":
+        legend_bb = (1, 0.3)
+    else:
+        legend_bb = (1, 0.5)
     ax.get_legend().set_title(None)
-    sns.move_legend(ax, "center left", bbox_to_anchor=(1, 0.5))
+    sns.move_legend(ax, "center left", bbox_to_anchor=legend_bb)
     sns.despine(fig)
     ax.set_xlabel("")
     ax.set_ylabel(ylab[plt_type], style="italic")
     fig.tight_layout()
+    if plt_type == "overlap_prop":
+        axins = inset_axes(
+            ax,
+            width="100%",
+            height="100%",
+            bbox_to_anchor=(1.055, 0.65, 0.3, 0.3),
+            bbox_transform=ax.transAxes,
+        )
+        v = venn2(
+            subsets=(1, 1, 1), set_labels=["tdTomato\ncells", "GCaMP\ncells"], ax=axins
+        )
+        v.get_label_by_id("01").set_text("B")
+        v.get_label_by_id("10").set_text("A")
+        v.get_label_by_id("11").set_text("O")
+        hands, labs = ax.get_legend_handles_labels()
+        ax.legend(
+            handles=hands,
+            labels=[legmap[l] for l in labs],
+            loc="center left",
+            bbox_to_anchor=legend_bb,
+        )
     fig.savefig(os.path.join(FIG_PATH, "{}.svg".format(plt_type)), bbox_inches="tight")
 
 # %% plot missing cells
