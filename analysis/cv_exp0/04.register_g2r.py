@@ -258,13 +258,13 @@ def plot_animal(anm_df, col_order):
         col="session",
         col_order=col_order,
         margin_titles=True,
-        height=1.8,
+        height=1.05,
     )
     g.map(plot_cells, "im")
     g.set_titles(row_template="{row_name}", col_template="{col_name}")
     fig = g.fig
     fig.tight_layout()
-    plt.subplots_adjust(wspace=0.004, hspace=0.04)
+    plt.subplots_adjust(wspace=2e-4, hspace=0.02)
     return fig
 
 
@@ -285,7 +285,7 @@ cells_im["kind"] = cells_im["kind"].map(
     {"red": "tdTomato", "green": "GCaMP", "ovly": "Overlay"}
 )
 exp_anm = "m22"
-exp_sess = ["Day 1", "Day 5", "Day 9", "Day 13"]
+exp_sess = ["Day 1", "Day 3", "Day 5", "Day 7", "Day 9", "Day 11", "Day 13"]
 for anm, anm_df in cells_im.groupby("animal"):
     fig = plot_animal(anm_df, col_order=list(ss_dict.values()))
     fig.savefig(
@@ -1024,7 +1024,7 @@ for plt_type, cur_lmap in lmap.items():
     )
     ovlp_df_long["day"] = ovlp_df_long["session"].map(ss_dict)
     ovlp_df_long["Denominator"] = ovlp_df_long["denom"].map(cur_lmap)
-    fig, ax = plt.subplots(figsize=(7, 3))
+    fig, ax = plt.subplots(figsize=(7, 2.6))
     sns.barplot(
         ovlp_df_long,
         x="day",
@@ -1052,7 +1052,7 @@ for plt_type, cur_lmap in lmap.items():
         legend=False,
     )
     if plt_type == "overlap_prop":
-        legend_bb = (1, 0.3)
+        legend_bb = (1, 0.2)
     else:
         legend_bb = (1, 0.5)
     ax.get_legend().set_title(None)

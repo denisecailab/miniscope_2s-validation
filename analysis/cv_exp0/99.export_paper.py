@@ -39,11 +39,12 @@ fig = Figure(
 fig.save(os.path.join(OUT_PATH, "2s_experiment.svg"))
 
 # %% make overlap figure
-h_gap = 10
+h_gap = 5
 sh_left = (0, 0)
 svgs = {
-    "A": "./figs/register_g2r/overlap_ncell.svg",
-    "B": "./figs/register_g2r/overlap_prop.svg",
+    "A": "./figs/register_g2r/cells/m22_example.svg",
+    "B": "./figs/register_g2r/overlap_ncell.svg",
+    "C": "./figs/register_g2r/overlap_prop.svg",
 }
 for fn in svgs.values():
     svg_unique_id(fn)
@@ -51,10 +52,17 @@ for fn in svgs.values():
 
 panA = make_svg_panel("A", svgs["A"], PARAMT_TEXT, sh=sh_left)
 panB = make_svg_panel("B", svgs["B"], PARAMT_TEXT, sh=sh_left)
+panC = make_svg_panel("C", svgs["C"], PARAMT_TEXT, sh=sh_left)
 
-h_fig = panA.height + panB.height + h_gap
-w_fig = max(panA.width, panB.width)
-fig = Figure(w_fig, h_fig, panA, panB.move(x=0, y=panA.height + h_gap))
+h_fig = panA.height + panB.height + panC.height + 2 * h_gap
+w_fig = max(panA.width, panB.width, panC.width)
+fig = Figure(
+    w_fig,
+    h_fig,
+    panA,
+    panB.move(x=0, y=panA.height + h_gap),
+    panC.move(x=0, y=panA.height + panB.height + 2 * h_gap),
+)
 fig.save(os.path.join(OUT_PATH, "register_g2r.svg"))
 
 # %% make drift figure
