@@ -1,4 +1,4 @@
-#%% imports and definition
+# %% imports and definition
 import os
 
 from routine.svgutils.compose import Figure
@@ -8,20 +8,20 @@ PARAMT_TEXT = {"size": 11, "weight": "bold"}
 OUT_PATH = "./figs/paper"
 os.makedirs(OUT_PATH, exist_ok=True)
 
-#%% make experiment figure
+# %% make experiment figure
 w_gap = 10
 h_gap = 25
 sh_left = (0, 0)
 sh_top = (0, 14)
 svgs = {
     "A": "./figs/external/linear_track.svg",
-    "B": "./figs/frame_label/example.svg",
+    "B": "./figs/behav_comparison/example.svg",
     "C": "./figs/behav_comparison/comparison.svg",
 }
 for fn in svgs.values():
     svg_unique_id(fn)
 
-panA = make_svg_panel("A", svgs["A"], PARAMT_TEXT, im_scale=0.37, sh=sh_top)
+panA = make_svg_panel("A", svgs["A"], PARAMT_TEXT, im_scale=0.065, sh=sh_top)
 panB = make_svg_panel("B", svgs["B"], PARAMT_TEXT, sh=sh_left)
 panC = make_svg_panel("C", svgs["C"], PARAMT_TEXT, sh=sh_top)
 
@@ -38,11 +38,38 @@ fig = Figure(
 )
 fig.save(os.path.join(OUT_PATH, "2s_experiment.svg"))
 
-#%% make drift figure
+# %% make overlap figure
+h_gap = 5
+sh_left = (0, 0)
+svgs = {
+    "A": "./figs/register_g2r/cells/m22_example.svg",
+    "B": "./figs/register_g2r/overlap_ncell.svg",
+    "C": "./figs/register_g2r/overlap_prop.svg",
+}
+for fn in svgs.values():
+    svg_unique_id(fn)
+
+
+panA = make_svg_panel("A", svgs["A"], PARAMT_TEXT, sh=sh_left)
+panB = make_svg_panel("B", svgs["B"], PARAMT_TEXT, sh=sh_left)
+panC = make_svg_panel("C", svgs["C"], PARAMT_TEXT, sh=sh_left)
+
+h_fig = panA.height + panB.height + panC.height + 2 * h_gap
+w_fig = max(panA.width, panB.width, panC.width)
+fig = Figure(
+    w_fig,
+    h_fig,
+    panA,
+    panB.move(x=0, y=panA.height + h_gap),
+    panC.move(x=0, y=panA.height + panB.height + 2 * h_gap),
+)
+fig.save(os.path.join(OUT_PATH, "register_g2r.svg"))
+
+# %% make drift figure
 h_gap = 1
 sh_left = (0, 0)
 svgs = {
-    "A": "./figs/drift/overlap-actMean.svg",
+    "A": "./figs/drift/actMean-place_cells.svg",
     "B": "./figs/drift/pv_corr-place_cells.svg",
 }
 for fn in svgs.values():
@@ -56,7 +83,25 @@ w_fig = max(panA.width, panB.width)
 fig = Figure(w_fig, h_fig, panA, panB.move(x=0, y=panA.height + h_gap))
 fig.save(os.path.join(OUT_PATH, "drift.svg"))
 
-#%% make S1
+# %% make crosstalk figure
+h_gap = 1
+sh_left = (0, 0)
+svgs = {
+    "A": "./figs/register_g2r/crosstalk_wavelength.svg",
+    "B": "./figs/register_g2r/crosstalk_distribution.svg",
+}
+for fn in svgs.values():
+    svg_unique_id(fn)
+
+panA = make_svg_panel("A", svgs["A"], PARAMT_TEXT, sh=sh_left)
+panB = make_svg_panel("B", svgs["B"], PARAMT_TEXT, sh=sh_left)
+
+h_fig = panA.height + panB.height + h_gap
+w_fig = max(panA.width, panB.width)
+fig = Figure(w_fig, h_fig, panA, panB.move(x=0, y=panA.height + h_gap))
+fig.save(os.path.join(OUT_PATH, "crosstalk.svg"))
+
+# %% make S1
 h_gap = 0
 w_gap = 20
 svgs = {

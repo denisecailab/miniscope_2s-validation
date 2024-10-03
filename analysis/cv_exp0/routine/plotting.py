@@ -9,6 +9,7 @@ import xarray as xr
 from matplotlib import cm
 from plotly import graph_objects as go
 from plotly.express.colors import qualitative
+from scipy.ndimage import center_of_mass
 
 from .utilities import unique_seg
 
@@ -33,6 +34,15 @@ def plotA_contour(A: xr.DataArray, im: xr.DataArray, cmap=None, im_opts=None):
             if cmap is not None:
                 pth = pth.opts(color=cmap[uid])
             im = im * pth
+            cm = center_of_mass(curA)
+            pt = hv.Points(
+                {"height": cm[0], "width": cm[1], "uid": int(uid)},
+                kdims=["width", "height"],
+                vdims="uid",
+            ).opts(size=10, alpha=0.2, default_tools=["hover"])
+            if cmap is not None:
+                pt = pt.opts(color=cmap[uid])
+            im = im * pt
     return im
 
 

@@ -19,7 +19,7 @@ from routine.place_cell import (
 )
 from routine.plotting import scatter_agg
 from routine.utilities import df_set_metadata, norm, thres_gmm
-from scipy.stats import ttest_ind
+from scipy.stats import ttest_ind, zscore
 from sklearn.metrics import pairwise_distances
 from statsmodels.formula.api import ols
 from tqdm.auto import tqdm, trange
@@ -30,13 +30,14 @@ IN_FM_LABEL = "./intermediate/frame_label/fm_label.nc"
 IN_RAW_MAP = "./intermediate/cross_reg/green/mappings_meta_fill.pkl"
 IN_RED_MAP = "./intermediate/cross_reg/red/mappings_meta_fill.pkl"
 IN_REG_MAP = "./intermediate/register_g2r/green_mapping_reg.pkl"
+PARAM_CORR_ZSCORE = True
 PARAM_BW = 5
 PARAM_BW_OCCP = 5
 PARAM_NSHUF = 500
 PARAM_STB_QTHRES = 0.95
 PARAM_SI_QTHRES = 0.95
 PARAM_SMP_SPACE = np.linspace(-100, 100, 200)
-PARAM_MIN_NCELL = 5
+PARAM_MIN_NCELL = 0
 PARAM_SUB_ANM = None
 PARAM_SUB_TDIST = (0, 14)
 PARAM_PLT_RC = {
@@ -68,15 +69,15 @@ for _, row in tqdm(list(ss_csv.iterrows())):
     except FileNotFoundError:
         warnings.warn("missing data for {}-{}".format(anm, ss))
         continue
-    Sbin = xr.apply_ufunc(
-        thres_gmm,
-        ps_ds["S"].dropna("unit_id", how="all"),
-        input_core_dims=[["frame"]],
-        output_core_dims=[["frame"]],
-        kwargs={"pos_thres": 0.5},
-        vectorize=True,
-    ).compute()
-    S_df = Sbin.to_dataframe().dropna().reset_index()
+    # Sbin = xr.apply_ufunc(
+    #     thres_gmm,
+    #     ps_ds["S"].dropna("unit_id", how="all"),
+    #     input_core_dims=[["frame"]],
+    #     output_core_dims=[["frame"]],
+    #     kwargs={"pos_thres": 0.5},
+    #     vectorize=True,
+    # ).compute()
+    S_df = ps_ds["S"].dropna("unit_id", how="all").to_dataframe().dropna().reset_index()
     pos_df = S_df[["animal", "session", "frame", "linpos", "trial"]].drop_duplicates()
     occp = (
         pos_df.groupby(["animal", "session", "trial"])
@@ -113,7 +114,16 @@ metric_df_agg = (
 )
 metric_df_agg.to_feather(os.path.join(OUT_PATH, "metric_agg.feat"))
 
+
 # %% compute pv corr and ovlp
+def zscore_active(a, thres=0):
+    az = zscore(a)
+    if np.isnan(az).any():
+        return az
+    else:
+        return np.where(az > thres, az, 0)
+
+
 ss_csv = pd.read_csv(IN_SS_CSV, parse_dates=["date"])
 ss_csv = (
     ss_csv[ss_csv["analyze"]]
@@ -123,10 +133,17 @@ ss_csv = (
 map_red = pd.read_pickle(IN_RED_MAP)
 map_green = pd.read_pickle(IN_RAW_MAP)
 map_reg = pd.read_pickle(IN_REG_MAP)
-map_red = map_red[map_red["session"].notnull().all(axis="columns")].copy()
-map_reg = map_reg[map_reg["session"].notnull().all(axis="columns")].copy()
+map_red = map_red[
+    map_red["session"].notnull().all(axis="columns")
+    & (map_red["session"] >= 0).any(axis="columns")
+].copy()
+map_reg = map_reg[
+    map_reg["session"].notnull().all(axis="columns")
+    & (map_red["session"] >= 0).any(axis="columns")
+].copy()
 mapping_dict = {"red/raw": map_red, "green/raw": map_green, "red/registered": map_reg}
 metric_df = pd.read_feather(os.path.join(OUT_PATH, "metric_agg.feat"))
+metric_df["act"] = metric_df["peak"].notnull()
 metric_df = metric_df.set_index(["animal", "session", "unit_id"])
 fr_df = pd.read_feather(os.path.join(OUT_PATH, "fr.feat"))
 fr = (
@@ -134,6 +151,14 @@ fr = (
     .mean()
     .to_xarray()
 )
+if PARAM_CORR_ZSCORE:
+    fr = xr.apply_ufunc(
+        zscore_active,
+        fr,
+        input_core_dims=[["smp_space"]],
+        output_core_dims=[["smp_space"]],
+        vectorize=True,
+    )
 pv_corr_ls = []
 ovlp_ls = []
 for mmethod, mmap in mapping_dict.items():
@@ -155,34 +180,73 @@ for mmethod, mmap in mapping_dict.items():
                         ssA, ssB, anm
                     )
                 )
-            # compute overlap
             if mmethod == "red_registered":
                 mp = mp[mp[[ssA, ssB]].notnull().all(axis="columns")]
-            novlp = (mp[[ssA, ssB]] >= 0).all(axis="columns").sum()
-            nAll = (mp[[ssA, ssB]] >= 0).any(axis="columns").sum()
-            nA = (mp[ssA] >= 0).sum()
-            nB = (mp[ssB] >= 0).sum()
-            actA = novlp / nA
-            actB = novlp / nB
-            act = np.mean([actA, actB])
-            ovlp = novlp / nAll
-            ovlp_ls.append(
+            # compute overlap
+            me_all = (
                 pd.DataFrame(
-                    [
-                        {
-                            "map_method": mmethod,
-                            "animal": anm,
-                            "ssA": ssA,
-                            "ssB": ssB,
-                            "tdist": tdist,
-                            "actA": actA,
-                            "actB": actB,
-                            "actMean": act,
-                            "ovlp": ovlp,
-                        }
-                    ]
+                    {
+                        "animal": mp["animal"],
+                        "sessionA": ssA,
+                        "unit_idA": mp[ssA],
+                        "sessionB": ssB,
+                        "unit_idB": mp[ssB],
+                    }
+                )
+                .merge(
+                    metric_df[["stb", "si", "peak", "sig", "act"]],
+                    left_on=["animal", "sessionA", "unit_idA"],
+                    right_on=["animal", "session", "unit_id"],
+                    how="left",
+                )
+                .merge(
+                    metric_df[["stb", "si", "peak", "sig", "act"]],
+                    left_on=["animal", "sessionB", "unit_idB"],
+                    right_on=["animal", "session", "unit_id"],
+                    suffixes=("A", "B"),
+                    how="left",
                 )
             )
+            me_dict = {
+                "all_cells": me_all,
+                "place_cells": me_all[
+                    (me_all[["sigA", "sigB"]].fillna(0).any(axis="columns"))
+                    & (me_all[["actA", "actB"]].all(axis="columns"))
+                ],
+                "non-place_cells": me_all[
+                    (~me_all[["sigA", "sigB"]].fillna(0)).all(axis="columns")
+                    | (~me_all[["actA", "actB"]].any(axis="columns"))
+                ],
+            }
+            for subset_plc, cur_me in me_dict.items():
+                novlp = (
+                    (cur_me[["unit_idA", "unit_idB"]] >= 0).all(axis="columns").sum()
+                )
+                nAll = (cur_me[["unit_idA", "unit_idB"]] >= 0).any(axis="columns").sum()
+                nA = (cur_me["unit_idA"] >= 0).sum()
+                nB = (cur_me["unit_idB"] >= 0).sum()
+                actA = novlp / nA if nA > 0 else np.nan
+                actB = novlp / nB if nB > 0 else np.nan
+                act = np.mean([actA, actB])
+                ovlp = novlp / nAll
+                ovlp_ls.append(
+                    pd.DataFrame(
+                        [
+                            {
+                                "map_method": mmethod,
+                                "animal": anm,
+                                "ssA": ssA,
+                                "ssB": ssB,
+                                "tdist": tdist,
+                                "inclusion": subset_plc,
+                                "actA": actA,
+                                "actB": actB,
+                                "actMean": act,
+                                "ovlp": ovlp,
+                            }
+                        ]
+                    )
+                )
             if mmethod == "red/raw":
                 continue
             mp_dict = {
@@ -193,51 +257,63 @@ for mmethod, mmap in mapping_dict.items():
                 if len(cur_mp) == 0:
                     continue
                 # compute pv corr
-                me = pd.DataFrame(
-                    {
-                        "animal": cur_mp["animal"],
-                        "sessionA": ssA,
-                        "unit_idA": cur_mp[ssA],
-                        "sessionB": ssB,
-                        "unit_idB": cur_mp[ssB],
-                    }
+                me = (
+                    pd.DataFrame(
+                        {
+                            "animal": cur_mp["animal"],
+                            "sessionA": ssA,
+                            "unit_idA": cur_mp[ssA],
+                            "sessionB": ssB,
+                            "unit_idB": cur_mp[ssB],
+                        }
+                    )
+                    .merge(
+                        metric_df[["stb", "si", "peak", "sig", "act"]],
+                        left_on=["animal", "sessionA", "unit_idA"],
+                        right_on=["animal", "session", "unit_id"],
+                        how="left",
+                    )
+                    .merge(
+                        metric_df[["stb", "si", "peak", "sig", "act"]],
+                        left_on=["animal", "sessionB", "unit_idB"],
+                        right_on=["animal", "session", "unit_id"],
+                        suffixes=("A", "B"),
+                        how="left",
+                    )
                 )
-                for subset_plc in ["all_cells", "place_cells"]:
+                me_dict = {
+                    "all_cells": me,
+                    "place_cells": me[
+                        (me[["sigA", "sigB"]].fillna(0).any(axis="columns"))
+                        & (me[["actA", "actB"]].all(axis="columns"))
+                    ],
+                    "non-place_cells": me[
+                        (~me[["sigA", "sigB"]].fillna(0)).all(axis="columns")
+                        | (~me[["actA", "actB"]].any(axis="columns"))
+                    ],
+                }
+                for subset_plc, cur_me in me_dict.items():
+                    frA = fr.reindex(
+                        animal=cur_me["animal"].unique(),
+                        session=cur_me["sessionA"].unique(),
+                        unit_id=cur_me["unit_idA"],
+                        fill_value=0,
+                    ).squeeze()
+                    frB = fr.reindex(
+                        animal=cur_me["animal"].unique(),
+                        session=cur_me["sessionB"].unique(),
+                        unit_id=cur_me["unit_idB"],
+                        fill_value=0,
+                    ).squeeze()
+                    idx = np.logical_and(
+                        np.array(frA.notnull().all("smp_space")),
+                        np.array(frB.notnull().all("smp_space")),
+                    )
                     if subset_plc == "place_cells":
-                        me_plc = me.merge(
-                            metric_df[["stb", "si", "peak", "sig"]],
-                            left_on=["animal", "sessionA", "unit_idA"],
-                            right_on=["animal", "session", "unit_id"],
-                            how="left",
-                        ).merge(
-                            metric_df[["stb", "si", "peak", "sig"]],
-                            left_on=["animal", "sessionB", "unit_idB"],
-                            right_on=["animal", "session", "unit_id"],
-                            suffixes=("A", "B"),
-                            how="left",
-                        )
-                        me_plc = me_plc[me_plc[["sigA", "sigB"]].any(axis="columns")]
-                    else:
-                        me_plc = me
-                    if len(me_plc) > PARAM_MIN_NCELL:
-                        frA = (
-                            fr.reindex(
-                                animal=me_plc["animal"].unique(),
-                                session=me_plc["sessionA"].unique(),
-                                unit_id=me_plc["unit_idA"],
-                            )
-                            .fillna(0)
-                            .squeeze()
-                        )
-                        frB = (
-                            fr.reindex(
-                                animal=me_plc["animal"].unique(),
-                                session=me_plc["sessionB"].unique(),
-                                unit_id=me_plc["unit_idB"],
-                            )
-                            .fillna(0)
-                            .squeeze()
-                        )
+                        assert len(idx) == idx.sum()
+                    if idx.sum() > PARAM_MIN_NCELL:
+                        frA = frA.isel(unit_id=idx)
+                        frB = frB.isel(unit_id=idx)
                         corr = (
                             xr.DataArray(
                                 1
@@ -256,6 +332,7 @@ for mmethod, mmap in mapping_dict.items():
                             .to_series()
                             .reset_index()
                         )
+                        corr["diag"] = corr["smp_spaceA"] == corr["smp_spaceB"]
                         corr = df_set_metadata(
                             corr,
                             {
@@ -273,7 +350,6 @@ pv_corr = pd.concat(pv_corr_ls, ignore_index=True)
 ovlp = pd.concat(ovlp_ls, ignore_index=True)
 pv_corr.to_feather(os.path.join(OUT_PATH, "pv_corr.feat"))
 ovlp.to_csv(os.path.join(OUT_PATH, "ovlp.csv"), index=False)
-pv_corr["diag"] = pv_corr["smp_spaceA"] == pv_corr["smp_spaceB"]
 pv_corr_agg = (
     pv_corr[pv_corr["diag"]]
     .groupby(["map_method", "cell_map", "inclusion", "animal", "ssA", "ssB", "tdist"])[
@@ -342,9 +418,9 @@ plt.close(fig)
 show_sig = False
 cmap = {
     "green/raw-shared": qualitative.Plotly[2],
-    "green/raw-zero_padded": qualitative.D3[2],
+    "green/raw-zero_padded": qualitative.Plotly[2],
     # "red/registered-shared": qualitative.Plotly[4],
-    "red/registered-zero_padded": qualitative.D3[1],
+    "red/registered-zero_padded": qualitative.Plotly[4],
 }
 smap = {
     "green/raw-shared": (3, 1),
@@ -356,7 +432,7 @@ lmap = {
     "green/raw-shared": "Always active GCaMP cells",
     "green/raw-zero_padded": "All GCaMP cells",
     # "red/registered-shared": "Active GCaMP cells\nregistered with tdTomato",
-    "red/registered-zero_padded": "GCaMP cells registered\nwith tdTomato",
+    "red/registered-zero_padded": "Stable GCaMP cells",
 }
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr_agg.csv"))
 if PARAM_SUB_ANM is not None:
@@ -371,7 +447,7 @@ if PARAM_AGG_ANM:
 corr_dict = {"master": pv_corr}
 for by, cur_corr in corr_dict.items():
     for inclusion, corr_sub in cur_corr.groupby("inclusion"):
-        fig, ax = plt.subplots(figsize=(5.4, 3.2))
+        fig, ax = plt.subplots(figsize=(4.8, 3))
         ax = sns.lineplot(
             corr_sub,
             x="tdist",
@@ -385,22 +461,23 @@ for by, cur_corr in corr_dict.items():
             zorder=5,
         )
         # ax = sns.swarmplot(
-        #     cur_corr,
+        #     corr_sub,
         #     x="tdist",
         #     y="corr",
         #     hue="cat",
         #     palette={lmap[k]: v for k, v in cmap.items()},
         #     edgecolor="gray",
-        #     dodge=True,
+        #     dodge=False,
         #     ax=ax,
         #     legend=False,
         #     native_scale=True,
-        #     size=3,
-        #     linewidth=1,
+        #     size=3.5,
+        #     linewidth=0.8,
         #     warn_thresh=0.8,
         # )
         ax.set_xlabel("Days apart", style="italic")
         ax.set_ylabel("PV correlation", style="italic")
+        ax.set_ylim(0.2, 1)
         if show_sig:
             y_pos = ax.get_ylim()[1]
             ax.set_ylim(top=y_pos * 1.1)
@@ -432,7 +509,11 @@ for by, cur_corr in corr_dict.items():
             ncol=2,
         )
         fig.tight_layout()
-        fig.savefig(os.path.join(FIG_PATH, "pv_corr-{}.svg".format(inclusion)), dpi=500)
+        fig.savefig(
+            os.path.join(FIG_PATH, "pv_corr-{}.svg".format(inclusion)),
+            dpi=500,
+            bbox_inches="tight",
+        )
         plt.close(fig)
 
 # %% plot overlap
@@ -445,7 +526,7 @@ cmap = {
 lmap = {
     # "red/raw": "tdTomato cells",
     "green/raw": "All GCaMP cells",
-    "red/registered": "GCaMP cells\nregistered with tdTomato",
+    "red/registered": "Stable GCaMP cells",
 }
 ovlp = pd.read_csv(os.path.join(OUT_PATH, "ovlp.csv"))
 if PARAM_SUB_ANM is not None:
@@ -466,77 +547,87 @@ if PARAM_AGG_ANM:
         )
         .reset_index()
     )
-for metric in ["actMean", "ovlp"]:
-    fig = scatter_agg(
-        ovlp,
-        x="tdist",
-        y=metric,
-        facet_row=None,
-        facet_col="animal",
-        col_wrap=3,
-        legend_dim="map_method",
-        marker={"color": "color"},
-    )
-    fig.update_xaxes(title="Days apart")
-    fig.update_yaxes(range=(0, 1), title="Overlap")
-    fig.write_html(os.path.join(FIG_PATH, "overlap-{}.html".format(metric)))
-    fig, ax = plt.subplots(figsize=(5.4, 3))
-    ax = sns.swarmplot(
-        ovlp,
-        x="tdist",
-        y=metric,
-        hue="map_method",
-        palette={lmap[k]: v for k, v in cmap.items()},
-        edgecolor="gray",
-        dodge=False,
-        ax=ax,
-        legend=False,
-        native_scale=True,
-        size=3,
-        linewidth=1,
-        warn_thresh=0.8,
-    )
-    ax = sns.lineplot(
-        ovlp,
-        x="tdist",
-        y=metric,
-        hue="map_method",
-        palette={lmap[k]: v for k, v in cmap.items()},
-        errorbar="se",
-        ax=ax,
-        zorder=5,
-    )
-    ax.set_xlabel("Days apart", style="italic")
-    ax.set_ylabel("Reactivation probability", style="italic")
-    if show_sig:
-        y_pos = ax.get_ylim()[1]
-        ax.set_ylim(top=y_pos * 1.2)
-        for t in ovlp["tdist"].unique():
-            ttA, ttB = (
-                ovlp[(ovlp["map_method"] == "All GCaMP cells") & (ovlp["tdist"] == t)][
-                    metric
-                ],
-                ovlp[
-                    (ovlp["map_method"] == "GCaMP cells\nregistered with tdTomato")
-                    & (ovlp["tdist"] == t)
-                ][metric],
-            )
-            stat, pval = ttest_ind(ttA, ttB)
-            if pval < 0.05:
-                ttext = "*"
-            else:
-                ttext = "ns"
-            ax.text(x=t, y=y_pos * 1.03, s=ttext)
-    plt.legend(
-        title=None,
-        loc="lower center",
-        bbox_to_anchor=(0, 1.02, 1, 0.2),
-        mode="expand",
-        ncol=2,
-    )
-    fig.tight_layout()
-    fig.savefig(os.path.join(FIG_PATH, "overlap-{}.svg".format(metric)), dpi=500)
-    plt.close(fig)
+for inclusion, cur_ovlp in ovlp.groupby("inclusion"):
+    for metric in ["actMean", "ovlp"]:
+        fig = scatter_agg(
+            cur_ovlp,
+            x="tdist",
+            y=metric,
+            facet_row=None,
+            facet_col="animal",
+            col_wrap=3,
+            legend_dim="map_method",
+            marker={"color": "color"},
+        )
+        fig.update_xaxes(title="Days apart")
+        fig.update_yaxes(range=(0, 1), title="Overlap")
+        fig.write_html(os.path.join(FIG_PATH, "{}-{}.html".format(metric, inclusion)))
+        fig, ax = plt.subplots(figsize=(4.8, 3))
+        ax = sns.swarmplot(
+            cur_ovlp,
+            x="tdist",
+            y=metric,
+            hue="map_method",
+            palette={lmap[k]: v for k, v in cmap.items()},
+            edgecolor="gray",
+            dodge=False,
+            ax=ax,
+            legend=False,
+            native_scale=True,
+            size=3.5,
+            linewidth=0.8,
+            warn_thresh=0.8,
+        )
+        ax = sns.lineplot(
+            cur_ovlp,
+            x="tdist",
+            y=metric,
+            hue="map_method",
+            palette={lmap[k]: v for k, v in cmap.items()},
+            errorbar="se",
+            ax=ax,
+            zorder=5,
+        )
+        ax.set_xlabel("Days apart", style="italic")
+        ax.set_ylabel("Reactivation probability", style="italic")
+        ax.set_ylim(0.2, 1)
+        if show_sig:
+            y_pos = ax.get_ylim()[1]
+            ax.set_ylim(top=y_pos * 1.2)
+            for t in cur_ovlp["tdist"].unique():
+                ttA, ttB = (
+                    cur_ovlp[
+                        (cur_ovlp["map_method"] == "All GCaMP cells")
+                        & (cur_ovlp["tdist"] == t)
+                    ][metric],
+                    cur_ovlp[
+                        (
+                            cur_ovlp["map_method"]
+                            == "GCaMP cells\nregistered with tdTomato"
+                        )
+                        & (cur_ovlp["tdist"] == t)
+                    ][metric],
+                )
+                stat, pval = ttest_ind(ttA, ttB)
+                if pval < 0.05:
+                    ttext = "*"
+                else:
+                    ttext = "ns"
+                ax.text(x=t, y=y_pos * 1.03, s=ttext)
+        plt.legend(
+            title=None,
+            loc="lower center",
+            bbox_to_anchor=(0, 1.02, 1, 0.2),
+            mode="expand",
+            ncol=2,
+        )
+        fig.tight_layout()
+        fig.savefig(
+            os.path.join(FIG_PATH, "{}-{}.svg".format(metric, inclusion)),
+            dpi=500,
+            bbox_inches="tight",
+        )
+        plt.close(fig)
 
 # %% run stats on pv corr
 from patsy.contrasts import ContrastMatrix
@@ -575,9 +666,10 @@ if PARAM_AGG_ANM:
     cov_type = "nonrobust"
 else:
     cov_type = "HC1"
+df = df[df["cat"] != "red/registered-shared"].copy()
 lm = ols("corr ~ C(cat, Simple)*tdist", data=df).fit(cov_type=cov_type)
 anova = sm.stats.anova_lm(lm, typ=3)
-df_alt = df[df["cat"] != "green/raw-shared"]
+df_alt = df[df["cat"].isin(["green/raw-zero_padded", "red/registered-zero_padded"])]
 lm_alt = ols("corr ~ C(cat, Simple)*tdist", data=df_alt).fit(cov_type=cov_type)
 anova_alt = sm.stats.anova_lm(lm_alt, typ=3)
 lm_dict = dict()
@@ -589,7 +681,10 @@ for ct, mdf in df.groupby("cat"):
 
 # %% run stats on overlap
 df = pd.read_csv(os.path.join(OUT_PATH, "ovlp.csv"))
-df = df[df["map_method"] != "red/raw"].copy()
+df = df[
+    (df["map_method"].isin(["green/raw", "red/registered"]))
+    & (df["inclusion"] == "place_cells")
+].copy()
 if PARAM_SUB_ANM is not None:
     df = df[df["animal"].isin(PARAM_SUB_ANM)].copy()
 if PARAM_AGG_ANM:
@@ -618,12 +713,33 @@ for mmethod, mdf in df.groupby("map_method"):
 
 # %% plot cells
 def plot_fr(x, **kwargs):
+    fr_mat = x.values[0]
+    ncell, nbin = fr_mat.shape
     ax = plt.gca()
-    ax.imshow(x.values[0], cmap="plasma", aspect="auto", interpolation="none")
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
+    ax.imshow(fr_mat, cmap="plasma", aspect="auto", interpolation="none")
+    ax.set_xticks([0, nbin - 1])
+    ax.set_xticklabels([1, nbin])
+    ax.set_yticks([0, ncell - 1])
+    ax.set_yticklabels([1, ncell])
+    ax.tick_params(length=0)
     for _, spine in ax.spines.items():
         spine.set_visible(False)
+        spine.set_linewidth(3)
+        spine.set_linestyle(":")
+        spine.set_color("black")
+        spine.set_position(("outward", 1.6))
+
+
+def format_ticks(**kwargs):
+    ax = plt.gca()
+    xlabs = ax.xaxis.get_majorticklabels()
+    if xlabs:
+        xlabs[0].set_horizontalalignment("left")
+        xlabs[1].set_horizontalalignment("right")
+    ylabs = ax.yaxis.get_majorticklabels()
+    if ylabs:
+        ylabs[0].set_verticalalignment("top")
+        ylabs[1].set_verticalalignment("bottom")
 
 
 map_gn = pd.read_pickle(IN_RAW_MAP)
@@ -637,7 +753,7 @@ mapping_dict = {
 }
 lmap = {
     "green": "All GCaMP cells",
-    "red": "GCaMP cells\nregistered with tdTomato",
+    "red": "Stable GCaMP cells",
 }
 fr_df = pd.read_feather(os.path.join(OUT_PATH, "fr.feat"))
 metric_df = pd.read_feather(os.path.join(OUT_PATH, "metric_agg.feat"))
@@ -701,23 +817,22 @@ g = sns.FacetGrid(
 )
 g.map(plot_fr, "fr_mat")
 g.set_titles(row_template="{row_name}", col_template="{col_name}")
+g.set_xlabels("Spatial Bins", style="italic")
+g.set_ylabels("Cells", style="italic", labelpad=-10)
 for ax in g.axes[:, -1]:
     if ax.texts:
         for tx in ax.texts:
             x, y = tx.get_unitless_position()
             tx.set(
                 horizontalalignment="center",
-                x=x + 0.25,
+                x=x + 0.15,
                 text=tx.get_text().partition(" x ")[0],
             )
 for crd in [(0, 0), (1, -1), (2, 0), (3, -1)]:
     ax = g.axes[crd]
     for _, spine in ax.spines.items():
         spine.set_visible(True)
-        spine.set_linewidth(3)
-        spine.set_linestyle(":")
-        spine.set_color("black")
-        spine.set_position(("outward", 1.6))
+g.map(format_ticks)
 fig = g.fig
 fig.tight_layout()
 plt.subplots_adjust(wspace=0.1, hspace=0.05)
