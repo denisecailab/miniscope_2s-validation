@@ -10,15 +10,13 @@ from plotly.express.colors import qualitative
 from scipy.stats import ttest_ind
 
 IN_BEHAV = "./intermediate/frame_label/behav.feat"
-IN_PFD_BEHAV = "./data-szplace/behav.feather"
+IN_V4_BEHAV = "./intermediate/frame_label/behav_v4.feat"
 PARAM_SUB_ANM = [
-    "ts44-3",
-    "ts45-4",
-    "ts46-1",
-    "ts30-0",
-    "ts31-0",
-    "ts32-1",
-    "ts32-3",
+    "mc23",
+    "mc26",
+    "mc27",
+    "mc28",
+    "mc29",
     "m20",
     "m21",
     "m22",
@@ -47,42 +45,55 @@ plt.rcParams.update(**PARAM_PLT_RC)
 
 
 def calculate_speed(df, scale=1, fps=30):
-    df = df.sort_values("frame")
-    try:
-        spd = np.abs(np.gradient(df["linpos"])) * fps * scale
-    except ValueError:
-        spd = np.nan
-    return pd.DataFrame({"frame": df["frame"], "speed": spd}).set_index("frame")
+    if "frame" in df.columns:
+        df = df.sort_values("frame")
+        try:
+            spd = np.abs(np.gradient(df["linpos"])) * fps * scale
+        except ValueError:
+            spd = np.nan
+        return pd.DataFrame({"frame": df["frame"], "speed": spd}).set_index("frame")
+    elif "timestamp" in df.columns:
+        df = df.sort_values("timestamp")
+        spd = np.abs(df["linpos"].diff()) / df["timestamp"].diff() * scale
+        return pd.DataFrame({"timestamp": df["timestamp"], "speed": spd}).set_index(
+            "timestamp"
+        )
+
+
+def count_ss(ss):
+    ss_vals = ss.unique()
+    ss_vals.sort()
+    ss_map = {s: i for i, s in enumerate(ss_vals)}
+    print(ss_map)
+    return ss.map(ss_map)
 
 
 # %% load data and calculate speeds and trials
 behav = pd.read_feather(IN_BEHAV)
-behav_pfd = pd.read_feather(IN_PFD_BEHAV).rename(
-    columns={"X": "linpos", "fmCam1": "frame"}
+behav_v4 = pd.read_feather(IN_V4_BEHAV)
+behav_v4["linpos"] = behav_v4["linpos"].abs()
+# take only the last training day
+behav_v4["ss_ct"] = behav_v4.groupby("animal", group_keys=False)["session"].apply(
+    count_ss
 )
-behav_pfd["linpos"] = behav_pfd["linpos"].abs()
+behav_v4 = behav_v4[behav_v4["ss_ct"] == 4].copy()
 scale = 103 / (behav["linpos"].max() - behav["linpos"].min())  # LT length 103cm
-scale_pfd = 200 / (
-    behav_pfd["linpos"].max() - behav_pfd["linpos"].min()
-)  # szplace LT length 200cm
+scale_v4 = 103 / (
+    behav_v4["linpos"].max() - behav_v4["linpos"].min()
+)  # MultiCon LT length 103cm
 spd = (
-    behav[behav["linpos_sign"].notnull()]
-    .groupby(["animal", "session", "trial"], group_keys=True)
+    behav.groupby(["animal", "session", "trial"], group_keys=True)
     .apply(calculate_speed, scale=scale)
     .reset_index()
 )
-spd_pfd = (
-    behav_pfd[
-        (behav_pfd["state"].isin(["run_left", "run_right"]))
-        & (behav_pfd["linpos"].notnull())
-    ]
-    .groupby(["animal", "session", "trial"], group_keys=True)
-    .apply(calculate_speed, scale=scale_pfd)
+spd_v4 = (
+    behav_v4.groupby(["animal", "session", "trial"], group_keys=True)
+    .apply(calculate_speed, scale=scale_v4)
     .reset_index()
 )
 spd["group"] = "2s"
-spd_pfd["group"] = "pfd"
-spd = pd.concat([spd, spd_pfd], ignore_index=True)
+spd_v4["group"] = "v4"
+spd = pd.concat([spd, spd_v4], ignore_index=True)
 spd_agg = spd.groupby(["group", "animal"])["speed"].quantile(0.95).reset_index()
 ntrials = behav.groupby(["animal", "session"])["trial"].max().reset_index()
 spd_prt = spd_agg[spd_agg["group"] == "2s"]["speed"]
@@ -91,7 +102,7 @@ trial_prt = ntrials.groupby("animal")["trial"].mean()
 print("trial: {} +/- {}".format(trial_prt.mean(), trial_prt.sem()))
 
 # %% plot speeds
-lmap = {"2s": "Dual-channel\nMiniscope", "pfd": "Single-channel\nMiniscope"}
+lmap = {"2s": "Dual-channel\nMiniscope", "v4": "Single-channel\nMiniscope"}
 spd_agg_plt = spd_agg[spd_agg["animal"].isin(PARAM_SUB_ANM)].copy()
 spd_agg_plt["group"] = spd_agg_plt["group"].map(lmap)
 fig, ax = plt.subplots(figsize=(2.8, 2))
@@ -132,7 +143,7 @@ print("speed t-test")
 print(
     ttest_ind(
         spd_agg_sub[spd_agg_sub["group"] == "2s"]["speed"],
-        spd_agg_sub[spd_agg_sub["group"] == "pfd"]["speed"],
+        spd_agg_sub[spd_agg_sub["group"] == "v4"]["speed"],
     )
 )
 print("speeds")
@@ -151,28 +162,27 @@ def plot_exp(data, color=None, **kwargs):
 
 sns.set_theme(context="paper", style="darkgrid")
 behav = pd.read_feather(IN_BEHAV)
-behav_pfd = pd.read_feather(IN_PFD_BEHAV).rename(
-    columns={"X": "linpos", "fmCam1": "frame"}
-)
-behav_pfd["linpos"] = behav_pfd["linpos"].abs()
+behav_v4 = pd.read_feather(IN_V4_BEHAV)
+behav_v4["linpos"] = behav_v4["linpos"].abs()
 scale = 103 / (behav["linpos"].max() - behav["linpos"].min())  # LT length 103cm
-scale_pfd = 200 / (
-    behav_pfd["linpos"].max() - behav_pfd["linpos"].min()
-)  # szplace LT length 200cm
+scale_v4 = 103 / (
+    behav_v4["linpos"].max() - behav_v4["linpos"].min()
+)  # MultiCon LT length 103cm
 behav = behav.set_index(["animal", "session"]).loc[("m22", "rec5")].copy().reset_index()
-behav_pfd = (
-    behav_pfd.set_index(["animal", "session"])
-    .loc[("ts32-1", "s6")]
+behav_v4 = (
+    behav_v4.set_index(["animal", "session"])
+    .loc[("mc23", "2023_10_20")]
     .copy()
     .reset_index()
 )
 behav["location"] = behav["linpos"] * scale
-behav_pfd["location"] = behav_pfd["linpos"] * scale_pfd
+behav_v4["location"] = behav_v4["linpos"] * scale_v4
+behav["time"] = behav["frame"] / 30
+behav_v4["time"] = behav_v4["timestamp"] - behav_v4["timestamp"].min()
 behav["group"] = "Dual-channel\nMiniscope"
-behav_pfd["group"] = "Single-channel\nMiniscope"
-behav_all = pd.concat([behav, behav_pfd], ignore_index=True)
-behav_all["time"] = behav_all["frame"] / 30
-behav_all = behav_all[behav_all["time"].between(300, 400)].copy()
+behav_v4["group"] = "Single-channel\nMiniscope"
+behav_all = pd.concat([behav, behav_v4], ignore_index=True)
+behav_all = behav_all[behav_all["time"].between(450, 650)].copy()
 behav_all["time"] = behav_all["time"] - behav_all["time"].min()
 g = sns.FacetGrid(
     behav_all,

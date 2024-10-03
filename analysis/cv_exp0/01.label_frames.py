@@ -28,6 +28,7 @@ PARAM_PLT_RC = {
 }
 FIG_PATH = "./figs/frame_label/"
 OUT_FM_LABEL = "./intermediate/frame_label"
+IN_V4_PATH = "./data-multicon"
 
 os.makedirs(OUT_FM_LABEL, exist_ok=True)
 os.makedirs(FIG_PATH, exist_ok=True)
@@ -108,3 +109,33 @@ g.set_ylabels("Linearized Position", style="italic")
 g.set_titles(row_template="Animal: {row_name}")
 fig.savefig(os.path.join(FIG_PATH, "example.svg"), dpi=500, bbox_inches="tight")
 plt.close(fig)
+
+# %% process multicon data
+behav_ls = []
+for rt, dirs, files in os.walk(IN_V4_PATH):
+    # load data
+    if "linear_track.csv" in files:
+        behav = pd.read_csv(os.path.join(rt, "linear_track.csv")).astype(
+            {"timestamp": float}
+        )
+    else:
+        continue
+    rt_splt = rt.split(os.sep)
+    anm, ss, ssid = rt_splt[-3], rt_splt[-2], rt_splt[-1]
+    # extract locations
+    loc = behav.apply(extract_location, axis="columns").astype(float).interpolate()
+    behav = behav.join(loc).dropna(subset=["x", "y"])
+    behav["linpos"] = norm(linearize_pos(behav[["x", "y"]].values)) * 99 + 1
+    behav["linpos_sign"] = code_direction(
+        behav["linpos"], smooth=PARAM_SMOOTH, diff_thres=PARAM_DIFF
+    )
+    behav = determine_trial(behav, min_fm_st=60).astype({"trial": int})
+    behav = df_set_metadata(
+        behav[["timestamp", "x", "y", "trial", "linpos", "linpos_sign"]].copy(),
+        {"animal": anm, "session": ss, "ssid": ssid},
+    )
+    behav_ls.append(behav)
+behav = pd.concat(behav_ls, ignore_index=True)
+assert (behav.groupby(["animal", "session"])["ssid"].nunique() == 1).all()
+behav = behav.drop(columns=["ssid"])
+behav.to_feather(os.path.join(OUT_FM_LABEL, "behav_v4.feat"))
