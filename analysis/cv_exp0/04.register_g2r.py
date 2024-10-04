@@ -13,6 +13,7 @@ import seaborn as sns
 import statsmodels.api as sm
 import xarray as xr
 from bokeh.palettes import Category20
+from matplotlib import gridspec
 from matplotlib_venn import venn2
 from minian.cross_registration import (
     calculate_centroid_distance,
@@ -1083,6 +1084,169 @@ for plt_type, cur_lmap in lmap.items():
             bbox_to_anchor=legend_bb,
         )
     fig.savefig(os.path.join(FIG_PATH, "{}.svg".format(plt_type)), bbox_inches="tight")
+
+
+# %% plot tracking type
+def get_group(row):
+    return tuple(row["session"].index[row["session"] >= 0].to_list())
+
+
+def get_count(map_df, ntypes=10):
+    ct_df = (
+        map_df.groupby([("meta", "animal"), ("group", "group")])
+        .size()
+        .rename("count")
+        .reset_index()
+        .rename(columns={("meta", "animal"): "animal", ("group", "group"): "act_type"})
+    )
+    ct_df["prop"] = ct_df.groupby("animal")["count"].apply(lambda c: c / c.sum())
+    typ_ct = ct_df.groupby("act_type")["prop"].mean()
+    typ_anm_ct = ct_df.groupby("act_type")["animal"].nunique()
+    ct_ord = pd.concat([typ_ct, typ_anm_ct], axis="columns").reset_index()
+    ct_ord["all_anm"] = ct_ord["animal"] >= 0.5 * ct_df["animal"].nunique()
+    typ_map, ord_map = dict(), dict()
+    for ityp, typ in enumerate(
+        ct_ord[ct_ord["all_anm"]]
+        .sort_values("prop", ascending=False)["act_type"]
+        .to_list()[:ntypes]
+    ):
+        typ_map[typ] = typ
+        ord_map[typ] = ityp
+    ct_df["act_ord"] = ct_df["act_type"].map(lambda t: ord_map.get(t, np.nan))
+    ct_df["act_type"] = ct_df["act_type"].map(lambda t: typ_map.get(t, np.nan))
+    ct_df["act_ord"] = ct_df["act_ord"].fillna(ntypes).astype(int)
+    ct_df["act_type"] = ct_df["act_type"].fillna("rest")
+    return (
+        ct_df.groupby(["animal", "act_type"])
+        .agg({"count": "sum", "prop": "sum", "act_ord": "median"})
+        .reset_index()
+        .sort_values("act_ord")
+    )
+
+
+cmap = {
+    "tdTomato cells": qualitative.Plotly[1],
+    "GCaMP cells": qualitative.Plotly[2],
+    "Stable GCaMP cells": qualitative.Plotly[4],
+    "GCaMP cells pactive": qualitative.Plotly[4],
+}
+param_ntypes = 10
+map_red = pd.read_pickle(IN_RED_MAP)
+map_green = pd.read_pickle(IN_GREEN_MAP)
+map_green_reg = pd.read_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
+map_green_reg = map_green_reg[
+    (map_green_reg["session"].notnull().sum(axis="columns") == 7)
+    & (map_green_reg["session"] >= 0).any(axis="columns")
+].copy()
+map_green_reg[("group", "group")] = map_green_reg.apply(get_group, axis="columns")
+ct_red = get_count(map_red)
+ct_green = get_count(map_green)
+ct_green_reg = get_count(map_green_reg)
+ct_red["cat"] = "tdTomato cells"
+ct_green["cat"] = "GCaMP cells"
+ct_green_reg["cat"] = "Stable GCaMP cells"
+day_map = {
+    r: "Day {}".format(int(r[-1]) * 2 + 1)
+    for r in sorted(set.union(*map_red[("group", "group")].apply(set).to_list()))
+}
+fig = plt.figure(figsize=(3.2 * 3, 3.2 * 1.6))
+gs = gridspec.GridSpec(2, 3, height_ratios=[2, 1])
+axs_bar = [fig.add_subplot(gs[0, 0])]
+axs_bar.append(fig.add_subplot(gs[0, 1], sharey=axs_bar[0]))
+axs_bar.append(fig.add_subplot(gs[0, 2], sharey=axs_bar[0]))
+with sns.axes_style("darkgrid"):
+    axs_day = [fig.add_subplot(gs[1, 0], sharex=axs_bar[0])]
+    axs_day.append(fig.add_subplot(gs[1, 1], sharex=axs_bar[1], sharey=axs_day[0]))
+    axs_day.append(fig.add_subplot(gs[1, 2], sharex=axs_bar[2], sharey=axs_day[0]))
+for icol, ct_df in enumerate([ct_red, ct_green, ct_green_reg]):
+    cat = ct_df["cat"].unique().item()
+    ax_bar = axs_bar[icol]
+    ax_day = axs_day[icol]
+    # bar plot
+    sns.barplot(
+        ct_df.astype({"act_type": str}),
+        x="act_type",
+        y="prop",
+        hue="cat",
+        errorbar="se",
+        saturation=0.8,
+        errwidth=1.5,
+        capsize=0.3,
+        palette=cmap,
+        ax=ax_bar,
+    )
+    sns.swarmplot(
+        ct_df.astype({"act_type": str}),
+        x="act_type",
+        y="prop",
+        hue="cat",
+        palette=cmap,
+        edgecolor="gray",
+        linewidth=0.8,
+        size=2,
+        warn_thresh=0.8,
+        ax=ax_bar,
+    )
+    ax_bar.get_legend().remove()
+    ax_bar.axes.get_xaxis().set_visible(False)
+    ax_bar.set_ylabel("Proportion of cells", style="italic")
+    ax_bar.set_title(cat)
+    sns.despine(ax=ax_bar)
+    # day plot
+    sns.set_theme(style="darkgrid")
+    for typ in ct_df["act_type"].unique():
+        if typ == "rest":
+            ax_day.plot(
+                [typ] * len(day_map),
+                list(day_map.values()),
+                marker="o",
+                markerfacecolor="white",
+                color="black",
+                linestyle=":",
+                alpha=0,
+            )
+            ax_day.text(
+                x=ct_df["act_type"].nunique() - 0.9,
+                y=0,
+                s="Other combinations",
+                rotation=270,
+                ha="center",
+                va="bottom",
+                fontsize="small",
+            )
+        else:
+            typ_df = pd.DataFrame(
+                {
+                    "rec": list(typ),
+                    "d": [int(t[-1]) for t in typ],
+                    "day": [day_map[t] for t in typ],
+                    "typ": [typ] * len(typ),
+                }
+            )
+            splt = np.where(typ_df["d"].diff() > 1)[0]
+            if len(splt) > 0:
+                splt = np.concatenate([[0], splt, [len(typ_df) + 1]])
+                for s0, s1 in zip(splt[:-1], splt[1:]):
+                    cur_df = typ_df[s0:s1]
+                    ax_day.plot(
+                        cur_df["typ"].astype(str).to_list(),
+                        cur_df["day"].to_list(),
+                        marker="o",
+                        color="black",
+                    )
+            else:
+                ax_day.plot(
+                    typ_df["typ"].astype(str).to_list(),
+                    typ_df["day"].to_list(),
+                    marker="o",
+                    color="black",
+                )
+    # ax_day.tick_params(axis="x", labelrotation=90)
+    ax_day.axes.get_xaxis().set_visible(False)
+fig.tight_layout()
+fig.subplots_adjust(hspace=0.08)
+fig.savefig(os.path.join(FIG_PATH, "tracking_days.svg"), dpi=500, bbox_inches="tight")
+plt.style.use("default")
 
 # %% plot missing cells
 map_red_reg = pd.read_pickle(os.path.join(OUT_PATH, "red_mapping_reg.pkl"))
