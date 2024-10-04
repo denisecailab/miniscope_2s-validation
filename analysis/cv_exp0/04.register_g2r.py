@@ -147,17 +147,17 @@ def reg_map(reg_df, map_df):
 
 
 map_red = pd.read_pickle(IN_RED_MAP)
-map_green = pd.read_pickle(IN_GREEN_MAP)
+# map_green = pd.read_pickle(IN_GREEN_MAP)
 map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv")).set_index(
     ["animal", "session", "uid_red"]
 )["uid_green"]
-map_r2g = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv")).set_index(
-    ["animal", "session", "uid_green"]
-)["uid_red"]
+# map_r2g = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv")).set_index(
+#     ["animal", "session", "uid_green"]
+# )["uid_red"]
 map_green_reg = reg_map(map_red, map_g2r)
-map_red_reg = reg_map(map_green, map_r2g)
+# map_red_reg = reg_map(map_green, map_r2g)
 map_green_reg.to_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
-map_red_reg.to_pickle(os.path.join(OUT_PATH, "red_mapping_reg.pkl"))
+# map_red_reg.to_pickle(os.path.join(OUT_PATH, "red_mapping_reg.pkl"))
 
 # %% plot cells
 im_opts = {"xaxis": None, "yaxis": None}
@@ -929,15 +929,15 @@ print(ttest_1samp(g2r_pvt["Observed"], prop))
 map_red = pd.read_pickle(IN_RED_MAP).set_index(("meta", "animal"))
 map_green = pd.read_pickle(IN_GREEN_MAP).set_index(("meta", "animal"))
 map_green_reg = pd.read_pickle(os.path.join(OUT_PATH, "green_mapping_reg.pkl"))
-map_red_reg = pd.read_pickle(os.path.join(OUT_PATH, "red_mapping_reg.pkl"))
+# map_red_reg = pd.read_pickle(os.path.join(OUT_PATH, "red_mapping_reg.pkl"))
 map_green_reg = map_green_reg[
     (map_green_reg["session"].notnull().sum(axis="columns") == 7)
     & (map_green_reg["session"] >= 0).any(axis="columns")
 ].set_index(("meta", "animal"))
-map_red_reg = map_red_reg[
-    (map_red_reg["session"].notnull().sum(axis="columns") == 7)
-    & (map_red_reg["session"] >= 0).any(axis="columns")
-].set_index(("meta", "animal"))
+# map_red_reg = map_red_reg[
+#     (map_red_reg["session"].notnull().sum(axis="columns") == 7)
+#     & (map_red_reg["session"] >= 0).any(axis="columns")
+# ].set_index(("meta", "animal"))
 map_g2r = pd.read_csv(os.path.join(OUT_PATH, "g2r_mapping.csv")).set_index(
     ["animal", "session"]
 )
@@ -951,13 +951,13 @@ for anm, ss in itt.product(all_anms, all_ss):
     ngreen = len(map_green.loc[anm, ("session", ss)].dropna())
     nreg = len(map_g2r.loc[anm, ss])
     cur_green_reg = map_green_reg.loc[anm, ("session", ss)].dropna()
-    cur_red_reg = map_red_reg.loc[anm, ("session", ss)].dropna()
+    # cur_red_reg = map_red_reg.loc[anm, ("session", ss)].dropna()
     ngreen_reg = len(cur_green_reg)
-    nred_reg = len(cur_red_reg)
+    # nred_reg = len(cur_red_reg)
     prop_red = nreg / nred
     prop_green = nreg / ngreen
     prop_green_reg = (cur_green_reg >= 0).sum() / ngreen_reg
-    prop_red_reg = (cur_red_reg >= 0).sum() / nred_reg
+    # prop_red_reg = (cur_red_reg >= 0).sum() / nred_reg
     ovlp_df.append(
         pd.Series(
             {
@@ -967,11 +967,11 @@ for anm, ss in itt.product(all_anms, all_ss):
                 "ngreen": ngreen,
                 "nreg": nreg,
                 "ngreen_reg": ngreen_reg,
-                "nred_reg": nred_reg,
+                # "nred_reg": nred_reg,
                 "prop_red": prop_red,
                 "prop_green": prop_green,
                 "prop_green_reg": prop_green_reg,
-                "prop_red_reg": prop_red_reg,
+                # "prop_red_reg": prop_red_reg,
             }
         )
     )
