@@ -14,6 +14,7 @@ import statsmodels.api as sm
 import xarray as xr
 from bokeh.palettes import Category20
 from matplotlib import gridspec
+from matplotlib.patches import ConnectionPatch
 from matplotlib_venn import venn2
 from minian.cross_registration import (
     calculate_centroid_distance,
@@ -244,15 +245,58 @@ cells_im.to_pickle(os.path.join(OUT_PATH, "cells_im.pkl"))
 
 
 # %% generate cells im figure
-def plot_cells(x, gain=1.8, **kwargs):
+def plot_cells(x, im_type, extent=None, gain=1.8, **kwargs):
     ax = plt.gca()
     im = x.values[0]
     im[:, :, :3] = (im[:, :, :3] * gain).clip(0, 1)
     ax.imshow(im)
     ax.set_axis_off()
+    if extent is not None and im_type.item() == "Overlay":
+        for iext, ext in enumerate(extent):
+            x1, x2, y1, y2 = ext
+            axins = ax.inset_axes(
+                (iext * 0.53, -0.475, 0.47, 0.47),
+                xlim=(x1, x2),
+                ylim=(y1, y2),
+                xticklabels=[],
+                yticklabels=[],
+            )
+            axins.set_axis_off()
+            axins.imshow(im, origin="lower")
+            box = ax.indicate_inset(
+                (x1, y1, x2 - x1, y2 - y1),
+                edgecolor="lightgrey",
+                transform=ax.transData,
+                alpha=1,
+                lw=0.6,
+            )
+            cp1 = ConnectionPatch(
+                xyA=(x1, y2),
+                xyB=(0, 1),
+                axesA=ax,
+                axesB=axins,
+                coordsA="data",
+                coordsB="axes fraction",
+                lw=0.6,
+                color="lightgrey",
+                ls=(0, (1, 3)),
+            )
+            cp2 = ConnectionPatch(
+                xyA=(x2, y2),
+                xyB=(1, 1),
+                axesA=ax,
+                axesB=axins,
+                coordsA="data",
+                coordsB="axes fraction",
+                lw=0.6,
+                color="lightgrey",
+                ls=(0, (1, 3)),
+            )
+            ax.add_patch(cp1)
+            ax.add_patch(cp2)
 
 
-def plot_animal(anm_df, col_order):
+def plot_animal(anm_df, col_order, extent=None):
     g = sns.FacetGrid(
         anm_df,
         row="kind",
@@ -261,7 +305,7 @@ def plot_animal(anm_df, col_order):
         margin_titles=True,
         height=1.05,
     )
-    g.map(plot_cells, "im")
+    g.map(plot_cells, "im", "kind", extent=extent)
     g.set_titles(row_template="{row_name}", col_template="{col_name}")
     fig = g.fig
     fig.tight_layout()
@@ -280,6 +324,7 @@ ss_dict = {
 }
 fig_cells_path = os.path.join(FIG_PATH, "cells")
 os.makedirs(fig_cells_path, exist_ok=True)
+extent = [(100, 180, 400, 480), (300, 380, 290, 370)]
 cells_im = pd.read_pickle(os.path.join(OUT_PATH, "cells_im.pkl"))
 cells_im["session"] = cells_im["session"].map(ss_dict)
 cells_im["kind"] = cells_im["kind"].map(
@@ -294,7 +339,9 @@ for anm, anm_df in cells_im.groupby("animal"):
     )
     plt.close(fig)
     if anm == exp_anm:
-        fig = plot_animal(anm_df[anm_df["session"].isin(exp_sess)], col_order=exp_sess)
+        fig = plot_animal(
+            anm_df[anm_df["session"].isin(exp_sess)], col_order=exp_sess, extent=extent
+        )
         fig.savefig(
             os.path.join(fig_cells_path, "{}_example.svg".format(anm)),
             dpi=500,
