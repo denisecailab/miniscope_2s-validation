@@ -68,16 +68,18 @@ plt.rcParams.update(**PARAM_PLT_RC)
 red_path = os.path.join(OUT_PATH, "Ared")
 gn_path = os.path.join(OUT_PATH, "Agn")
 gn_trans_path = os.path.join(OUT_PATH, "Agn_trans")
+gn_proj_path = os.path.join(OUT_PATH, "proj_gn_trans")
 os.makedirs(red_path, exist_ok=True)
 os.makedirs(gn_path, exist_ok=True)
 os.makedirs(gn_trans_path, exist_ok=True)
+os.makedirs(gn_proj_path, exist_ok=True)
 ss_df = pd.read_csv(IN_SS_FILE)
 ss_df = ss_df[ss_df["analyze"]]
 map_ls = []
 map_lsm_ls = []
-for anm, anm_df in tqdm(list(ss_df.groupby("animal"))):
+for anm, sub_df in tqdm(list(ss_df.groupby("animal"))):
     plt_algn_dict = dict()
-    for _, row in tqdm(list(anm_df.iterrows()), leave=False):
+    for _, row in tqdm(list(sub_df.iterrows()), leave=False):
         ss = row["session"]
         try:
             green_ds = xr.open_dataset(
@@ -92,6 +94,7 @@ for anm, anm_df in tqdm(list(ss_df.groupby("animal"))):
         # alignment
         A_red = red_ds["A"].compute()
         A_green = green_ds["A"].compute()
+        proj_green = green_ds["max_proj"].compute()
         trans, _ = est_affine(A_green.max("unit_id"), A_red.max("unit_id"))
         A_green_trans = xr.apply_ufunc(
             apply_affine,
@@ -101,9 +104,20 @@ for anm, anm_df in tqdm(list(ss_df.groupby("animal"))):
             vectorize=True,
             kwargs={"tx": trans},
         ).compute()
+        proj_green_trans = xr.apply_ufunc(
+            apply_affine,
+            proj_green,
+            input_core_dims=[["height", "width"]],
+            output_core_dims=[["height", "width"]],
+            vectorize=True,
+            kwargs={"tx": trans},
+        ).compute()
         A_red.to_netcdf(os.path.join(red_path, "{}-{}.nc".format(anm, ss)))
         A_green.to_netcdf(os.path.join(gn_path, "{}-{}.nc".format(anm, ss)))
         A_green_trans.to_netcdf(os.path.join(gn_trans_path, "{}-{}.nc".format(anm, ss)))
+        proj_green_trans.to_netcdf(
+            os.path.join(gn_proj_path, "{}-{}.nc".format(anm, ss))
+        )
         # registration
         cent_red = centroid(A_red)
         cent_green = centroid(A_green_trans)
@@ -166,6 +180,7 @@ im_opts = {"xaxis": None, "yaxis": None}
 red_path = os.path.join(OUT_PATH, "Ared")
 gn_path = os.path.join(OUT_PATH, "Agn")
 gn_trans_path = os.path.join(OUT_PATH, "Agn_trans")
+gn_proj_path = os.path.join(OUT_PATH, "proj_gn_trans")
 fig_algn_path = os.path.join(FIG_PATH, "alignment")
 fig_cells_path = os.path.join(FIG_PATH, "cells")
 os.makedirs(fig_algn_path, exist_ok=True)
@@ -182,64 +197,87 @@ map_green_reg = map_green_reg[
     map_green_reg["session"].notnull().sum(axis="columns") > 1
 ].copy()
 cells_im = []
-for anm, anm_df in tqdm(list(map_g2r.groupby("animal"))):
-    plt_algn_dict = dict()
-    plt_cells_dict = dict()
-    for ss, mapping in tqdm(list(anm_df.groupby("session")), leave=False):
-        dsname = "{}-{}.nc".format(anm, ss)
-        A_red = xr.open_dataarray(os.path.join(red_path, dsname)).compute()
-        A_green = xr.open_dataarray(os.path.join(gn_path, dsname)).compute()
-        A_green_trans = xr.open_dataarray(os.path.join(gn_trans_path, dsname)).compute()
-        plt_algn_dict[(ss, "0.before_align")] = hv.RGB(
-            plot_overlap(A_green.max("unit_id"), A_red.max("unit_id"))
-        ).opts(**im_opts)
-        plt_algn_dict[(ss, "1.after_align")] = hv.RGB(
-            plot_overlap(A_green_trans.max("unit_id"), A_red.max("unit_id"))
-        ).opts(**im_opts)
-        plt_algn_dict[(ss, "2.registered")] = hv.RGB(
-            plot_overlap(
-                A_green_trans.sel(unit_id=mapping["uid_green"].values).max("unit_id"),
-                A_red.sel(unit_id=mapping["uid_red"].values).max("unit_id"),
+for dat_src in ["A", "ps"]:
+    for anm, sub_df in tqdm(list(map_g2r.groupby("animal"))):
+        plt_algn_dict = dict()
+        plt_cells_dict = dict()
+        for ss, mapping in tqdm(list(sub_df.groupby("session")), leave=False):
+            dsname = "{}-{}.nc".format(anm, ss)
+            if dat_src == "A":
+                A_red = xr.open_dataarray(os.path.join(red_path, dsname)).compute()
+                A_green = xr.open_dataarray(os.path.join(gn_path, dsname)).compute()
+                A_green_trans = xr.open_dataarray(
+                    os.path.join(gn_trans_path, dsname)
+                ).compute()
+                plt_algn_dict[(ss, "0.before_align")] = hv.RGB(
+                    plot_overlap(A_green.max("unit_id"), A_red.max("unit_id"))
+                ).opts(**im_opts)
+                plt_algn_dict[(ss, "1.after_align")] = hv.RGB(
+                    plot_overlap(A_green_trans.max("unit_id"), A_red.max("unit_id"))
+                ).opts(**im_opts)
+                plt_algn_dict[(ss, "2.registered")] = hv.RGB(
+                    plot_overlap(
+                        A_green_trans.sel(unit_id=mapping["uid_green"].values).max(
+                            "unit_id"
+                        ),
+                        A_red.sel(unit_id=mapping["uid_red"].values).max("unit_id"),
+                    )
+                ).opts(**im_opts)
+                idx_red = map_red[map_red["meta", "animal"] == anm][
+                    "session", ss
+                ].dropna()
+                idx_green = map_green_reg[map_green_reg["meta", "animal"] == anm][
+                    "session", ss
+                ].dropna()
+                idx_green = idx_green[idx_green > 0]
+                if len(idx_green) > 0:
+                    ag = A_green_trans.sel(unit_id=np.array(idx_green)).max("unit_id")
+                else:
+                    h, w = np.array(A_green_trans.coords["height"]), np.array(
+                        A_green_trans.coords["width"]
+                    )
+                    ag = xr.DataArray(
+                        np.zeros((len(h), len(w))),
+                        dims=["height", "width"],
+                        coords={"height": h, "width": w},
+                    )
+                im_gn, im_red = ag, A_red.sel(unit_id=np.array(idx_red)).max("unit_id")
+            elif dat_src == "ps":
+                im_red = (
+                    xr.open_dataset(os.path.join(IN_RED_PATH, dsname))["max_proj"]
+                    .squeeze()
+                    .compute()
+                )
+                im_gn = (
+                    xr.open_dataset(os.path.join(gn_proj_path, dsname))["max_proj"]
+                    .squeeze()
+                    .compute()
+                )
+            c_ovly, c_gn, c_red = plot_overlap(im_gn, im_red, return_raw=True)
+            plt_cells_dict[(ss, "0.red")] = hv.RGB(c_red).opts(**im_opts)
+            plt_cells_dict[(ss, "1.green")] = hv.RGB(c_gn).opts(**im_opts)
+            plt_cells_dict[(ss, "2.overlay")] = hv.RGB(c_ovly).opts(**im_opts)
+            cells_im.append(
+                pd.DataFrame(
+                    {
+                        "animal": anm,
+                        "session": ss,
+                        "kind": ["red", "green", "ovly"],
+                        "im": [c_red, c_gn, c_ovly],
+                        "data_src": dat_src,
+                    }
+                )
             )
-        ).opts(**im_opts)
-        idx_red = map_red[map_red["meta", "animal"] == anm]["session", ss].dropna()
-        idx_green = map_green_reg[map_green_reg["meta", "animal"] == anm][
-            "session", ss
-        ].dropna()
-        idx_green = idx_green[idx_green > 0]
-        if len(idx_green) > 0:
-            ag = A_green_trans.sel(unit_id=np.array(idx_green)).max("unit_id")
-        else:
-            h, w = np.array(A_green_trans.coords["height"]), np.array(
-                A_green_trans.coords["width"]
+        if dat_src == "A":
+            ovlp_plot = hv.NdLayout(plt_algn_dict, ["session", "reg"]).cols(6)
+            hv.save(
+                ovlp_plot,
+                os.path.join(fig_algn_path, "{}-{}.html".format(anm, dat_src)),
             )
-            ag = xr.DataArray(
-                np.zeros((len(h), len(w))),
-                dims=["height", "width"],
-                coords={"height": h, "width": w},
-            )
-        c_ovly, c_gn, c_red = plot_overlap(
-            ag,
-            A_red.sel(unit_id=np.array(idx_red)).max("unit_id"),
-            return_raw=True,
+        cells_plot = hv.NdLayout(plt_cells_dict, ["session", "kind"]).cols(6)
+        hv.save(
+            cells_plot, os.path.join(fig_cells_path, "{}-{}.html".format(anm, dat_src))
         )
-        plt_cells_dict[(ss, "0.red")] = hv.RGB(c_red).opts(**im_opts)
-        plt_cells_dict[(ss, "1.green")] = hv.RGB(c_gn).opts(**im_opts)
-        plt_cells_dict[(ss, "2.overlay")] = hv.RGB(c_ovly).opts(**im_opts)
-        cells_im.append(
-            pd.DataFrame(
-                {
-                    "animal": anm,
-                    "session": ss,
-                    "kind": ["red", "green", "ovly"],
-                    "im": [c_red, c_gn, c_ovly],
-                }
-            )
-        )
-    ovlp_plot = hv.NdLayout(plt_algn_dict, ["session", "reg"]).cols(6)
-    cells_plot = hv.NdLayout(plt_cells_dict, ["session", "kind"]).cols(6)
-    hv.save(ovlp_plot, os.path.join(fig_algn_path, "{}.html".format(anm)))
-    hv.save(cells_plot, os.path.join(fig_cells_path, "{}.html".format(anm)))
 cells_im = pd.concat(cells_im, ignore_index=True)
 cells_im.to_pickle(os.path.join(OUT_PATH, "cells_im.pkl"))
 
@@ -332,18 +370,20 @@ cells_im["kind"] = cells_im["kind"].map(
 )
 exp_anm = "m22"
 exp_sess = ["Day 1", "Day 3", "Day 5", "Day 7", "Day 9", "Day 11", "Day 13"]
-for anm, anm_df in cells_im.groupby("animal"):
-    fig = plot_animal(anm_df, col_order=list(ss_dict.values()))
+for (anm, dat_src), sub_df in cells_im.groupby(["animal", "data_src"]):
+    fig = plot_animal(sub_df, col_order=list(ss_dict.values()))
     fig.savefig(
-        os.path.join(fig_cells_path, "{}.svg".format(anm)), dpi=500, bbox_inches="tight"
+        os.path.join(fig_cells_path, "{}-{}.svg".format(anm, dat_src)),
+        dpi=500,
+        bbox_inches="tight",
     )
     plt.close(fig)
     if anm == exp_anm:
         fig = plot_animal(
-            anm_df[anm_df["session"].isin(exp_sess)], col_order=exp_sess, extent=extent
+            sub_df[sub_df["session"].isin(exp_sess)], col_order=exp_sess, extent=extent
         )
         fig.savefig(
-            os.path.join(fig_cells_path, "{}_example.svg".format(anm)),
+            os.path.join(fig_cells_path, "{}-{}_example.svg".format(anm, dat_src)),
             dpi=500,
             bbox_inches="tight",
         )
@@ -1308,22 +1348,22 @@ shiftds = xr.open_dataset(os.path.join(REG_PATH, "shiftds.nc"))
 A_sh = shiftds["A_sh"]
 projs = shiftds["temps_shifted"]
 im_opts = {"cmap": "gray", "frame_width": 400, "frame_height": 400}
-for anm, anm_df in tqdm(list(map_missing.groupby(("meta", "animal")))):
+for anm, sub_df in tqdm(list(map_missing.groupby(("meta", "animal")))):
     plt_dict = dict()
     cmap = itt.cycle(Category20[20])
-    anm_df = anm_df.dropna(axis="columns", how="all").copy()
-    anm_df["variable", "color"] = [next(cmap) for _ in range(len(anm_df))]
-    for ss in tqdm(natsorted(anm_df["session"]), leave=False):
+    sub_df = sub_df.dropna(axis="columns", how="all").copy()
+    sub_df["variable", "color"] = [next(cmap) for _ in range(len(sub_df))]
+    for ss in tqdm(natsorted(sub_df["session"]), leave=False):
         curA = A_sh.sel(animal=anm, session=ss).dropna("unit_id").compute()
         cur_proj = projs.sel(animal=anm, session=ss)
         uids_all = np.array(curA.coords["unit_id"])
-        idx_ma = anm_df["session", ss].dropna()
+        idx_ma = sub_df["session", ss].dropna()
         idx_ma = idx_ma[idx_ma >= 0]
         idx_nm = np.array(list(set(uids_all) - set(np.array(idx_ma))))
         im_ma = plotA_contour(
             curA.sel(unit_id=np.array(idx_ma)),
             cur_proj,
-            cmap=anm_df.loc[idx_ma.index]
+            cmap=sub_df.loc[idx_ma.index]
             .astype({("session", ss): int})
             .set_index(("session", ss))[("variable", "color")]
             .to_dict(),
