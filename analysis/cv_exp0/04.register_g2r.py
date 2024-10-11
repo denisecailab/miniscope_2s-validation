@@ -257,7 +257,7 @@ def plot_cells(x, im_type, extent=None, gain=1.8, **kwargs):
             axins = ax.inset_axes(
                 (iext * 0.53, -0.475, 0.47, 0.47),
                 xlim=(x1, x2),
-                ylim=(y1, y2),
+                ylim=(y2, y1),
                 xticklabels=[],
                 yticklabels=[],
             )
@@ -265,7 +265,7 @@ def plot_cells(x, im_type, extent=None, gain=1.8, **kwargs):
             axins.imshow(im, origin="lower")
             box = ax.indicate_inset(
                 (x1, y1, x2 - x1, y2 - y1),
-                edgecolor="lightgrey",
+                edgecolor="white",
                 transform=ax.transData,
                 alpha=1,
                 lw=0.6,
@@ -278,7 +278,7 @@ def plot_cells(x, im_type, extent=None, gain=1.8, **kwargs):
                 coordsA="data",
                 coordsB="axes fraction",
                 lw=0.6,
-                color="lightgrey",
+                color="silver",
                 ls=(0, (1, 3)),
             )
             cp2 = ConnectionPatch(
@@ -289,7 +289,7 @@ def plot_cells(x, im_type, extent=None, gain=1.8, **kwargs):
                 coordsA="data",
                 coordsB="axes fraction",
                 lw=0.6,
-                color="lightgrey",
+                color="silver",
                 ls=(0, (1, 3)),
             )
             ax.add_patch(cp1)
