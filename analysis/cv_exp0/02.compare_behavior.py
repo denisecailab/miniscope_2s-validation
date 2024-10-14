@@ -64,7 +64,6 @@ def count_ss(ss):
     ss_vals = ss.unique()
     ss_vals.sort()
     ss_map = {s: i for i, s in enumerate(ss_vals)}
-    print(ss_map)
     return ss.map(ss_map)
 
 
