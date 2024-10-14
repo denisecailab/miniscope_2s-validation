@@ -42,7 +42,7 @@ fig.save(os.path.join(OUT_PATH, "2s_experiment.svg"))
 h_gap = 5
 sh_left = (0, 0)
 svgs = {
-    "A": "./figs/register_g2r/cells/m22_example.svg",
+    "A": "./figs/register_g2r/cells/m22-A_example.svg",
     "B": "./figs/register_g2r/overlap_ncell.svg",
     "C": "./figs/register_g2r/overlap_prop.svg",
 }
