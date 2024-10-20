@@ -1236,24 +1236,24 @@ day_map = {
     r: "Day {}".format(int(r[-1]) * 2 + 1)
     for r in sorted(set.union(*map_red[("group", "group")].apply(set).to_list()))
 }
-fig = plt.figure(figsize=(3.2 * 3, 3.2 * 1.6))
-gs = gridspec.GridSpec(2, 3, height_ratios=[2, 1])
-axs_bar = [fig.add_subplot(gs[0, 0])]
-axs_bar.append(fig.add_subplot(gs[0, 1], sharey=axs_bar[0]))
-axs_bar.append(fig.add_subplot(gs[0, 2], sharey=axs_bar[0]))
+fig = plt.figure(figsize=(3.2 * 1.6, 3.2 * 3))
+gs = gridspec.GridSpec(3, 2, width_ratios=[1, 1])
+axs_bar = [fig.add_subplot(gs[0, 1])]
+axs_bar.append(fig.add_subplot(gs[1, 1], sharex=axs_bar[0]))
+axs_bar.append(fig.add_subplot(gs[2, 1], sharex=axs_bar[0]))
 with sns.axes_style("darkgrid"):
-    axs_day = [fig.add_subplot(gs[1, 0], sharex=axs_bar[0])]
-    axs_day.append(fig.add_subplot(gs[1, 1], sharex=axs_bar[1], sharey=axs_day[0]))
-    axs_day.append(fig.add_subplot(gs[1, 2], sharex=axs_bar[2], sharey=axs_day[0]))
-for icol, ct_df in enumerate([ct_red, ct_green, ct_green_reg]):
+    axs_day = [fig.add_subplot(gs[0, 0], sharey=axs_bar[0])]
+    axs_day.append(fig.add_subplot(gs[1, 0], sharey=axs_bar[1], sharex=axs_day[0]))
+    axs_day.append(fig.add_subplot(gs[2, 0], sharey=axs_bar[2], sharex=axs_day[0]))
+for irow, ct_df in enumerate([ct_red, ct_green, ct_green_reg]):
     cat = ct_df["cat"].unique().item()
-    ax_bar = axs_bar[icol]
-    ax_day = axs_day[icol]
+    ax_bar = axs_bar[irow]
+    ax_day = axs_day[irow]
     # bar plot
     sns.barplot(
         ct_df.astype({"act_type": str}),
-        x="act_type",
-        y="prop",
+        x="prop",
+        y="act_type",
         hue="cat",
         errorbar="se",
         saturation=0.8,
@@ -1264,8 +1264,8 @@ for icol, ct_df in enumerate([ct_red, ct_green, ct_green_reg]):
     )
     sns.swarmplot(
         ct_df.astype({"act_type": str}),
-        x="act_type",
-        y="prop",
+        x="prop",
+        y="act_type",
         hue="cat",
         palette=cmap,
         edgecolor="gray",
@@ -1275,17 +1275,27 @@ for icol, ct_df in enumerate([ct_red, ct_green, ct_green_reg]):
         ax=ax_bar,
     )
     ax_bar.get_legend().remove()
-    ax_bar.axes.get_xaxis().set_visible(False)
-    ax_bar.set_ylabel("Proportion of cells", style="italic")
-    ax_bar.set_title(cat)
+    ax_bar.axes.get_yaxis().set_visible(False)
+    ax_bar.set_xlabel("Proportion of cells", style="italic")
+    ax_bar.text(
+        x=1,
+        y=0.5,
+        s=cat,
+        rotation=270,
+        # rotation_mode="anchor",
+        ha="left",
+        va="center",
+        transform=ax_bar.transAxes,
+        fontsize="medium",
+    )
     sns.despine(ax=ax_bar)
     # day plot
     sns.set_theme(style="darkgrid")
     for typ in ct_df["act_type"].unique():
         if typ == "rest":
             ax_day.plot(
-                [typ] * len(day_map),
                 list(day_map.values()),
+                [typ] * len(day_map),
                 marker="o",
                 markerfacecolor="white",
                 color="black",
@@ -1293,12 +1303,12 @@ for icol, ct_df in enumerate([ct_red, ct_green, ct_green_reg]):
                 alpha=0,
             )
             ax_day.text(
-                x=ct_df["act_type"].nunique() - 0.9,
-                y=0,
+                x=np.floor(len(day_map) / 2),
+                y=ct_df["act_type"].nunique() - 0.9,
                 s="Other combinations",
-                rotation=270,
+                # rotation=270,
                 ha="center",
-                va="bottom",
+                va="center",
                 fontsize="small",
             )
         else:
@@ -1316,22 +1326,22 @@ for icol, ct_df in enumerate([ct_red, ct_green, ct_green_reg]):
                 for s0, s1 in zip(splt[:-1], splt[1:]):
                     cur_df = typ_df[s0:s1]
                     ax_day.plot(
-                        cur_df["typ"].astype(str).to_list(),
                         cur_df["day"].to_list(),
+                        cur_df["typ"].astype(str).to_list(),
                         marker="o",
                         color="black",
                     )
             else:
                 ax_day.plot(
-                    typ_df["typ"].astype(str).to_list(),
                     typ_df["day"].to_list(),
+                    typ_df["typ"].astype(str).to_list(),
                     marker="o",
                     color="black",
                 )
-    # ax_day.tick_params(axis="x", labelrotation=90)
-    ax_day.axes.get_xaxis().set_visible(False)
+    ax_day.tick_params(axis="x", labelrotation=270)
+    ax_day.axes.get_yaxis().set_visible(False)
 fig.tight_layout()
-fig.subplots_adjust(hspace=0.08)
+fig.subplots_adjust(wspace=0.08)
 fig.savefig(os.path.join(FIG_PATH, "tracking_days.svg"), dpi=500, bbox_inches="tight")
 plt.style.use("default")
 
