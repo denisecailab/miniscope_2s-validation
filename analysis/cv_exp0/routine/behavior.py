@@ -59,19 +59,25 @@ def label_ts(behav, ms_ts):
     tstart = behav[behav["event"] == "START"]["timestamp"].item()
     tterminate = behav[behav["event"] == "TERMINATE"]["timestamp"].item()
     behav = behav[behav["timestamp"].between(tstart, tterminate, inclusive="both")]
-    behav["timestamp"] = (behav["timestamp"] - tterminate) * 1e3
-    ms_ts["timestamp"] = ms_ts["timestamp"] - ms_ts["timestamp"].iloc[-1].item()
-    fm_cut = (ms_ts["timestamp"].values[1:] + ms_ts["timestamp"].values[:-1]) / 2
-    fm_cut = np.append(np.insert(fm_cut, 0, ms_ts["timestamp"].iloc[0].item()), 0)
-    behav["ms_frame"] = pd.cut(behav["timestamp"], fm_cut, labels=ms_ts["frame"])
+    behav["ts"] = (behav["timestamp"] - tterminate) * 1e3
+    ms_ts["ts"] = ms_ts["timestamp"] - ms_ts["timestamp"].iloc[-1].item()
+    fm_cut = (ms_ts["ts"].values[1:] + ms_ts["ts"].values[:-1]) / 2
+    fm_cut = np.append(np.insert(fm_cut, 0, ms_ts["ts"].iloc[0].item()), 0)
+    behav["ms_frame"] = pd.cut(behav["ts"], fm_cut, labels=ms_ts["frame"])
     return behav[behav["ms_frame"].notnull()]
 
 
 def agg_behav(df):
     if len(df) > 0:
-        return pd.Series({"x": df["x"].median(), "y": df["y"].median()})
+        return pd.Series(
+            {
+                "timestamp": df["timestamp"].median(),
+                "x": df["x"].median(),
+                "y": df["y"].median(),
+            }
+        )
     else:
         return pd.Series(
-            data=np.full(2, np.nan),
-            index=["x", "y"],
+            data=np.full(3, np.nan),
+            index=["timestamp", "x", "y"],
         )
