@@ -17,6 +17,16 @@ PARAM_SUB_ANM = [
     "mc27",
     "mc28",
     "mc29",
+    "mc42",
+    "mc43",
+    "mc44",
+    "mc45",
+    "mc46",
+    "mc47",
+    "mc48",
+    "mc49",
+    "mc51",
+    "mc52",
     "m20",
     "m21",
     "m22",
@@ -48,7 +58,11 @@ def calculate_speed(df, scale=1, fps=30):
     if "frame" in df.columns:
         df = df.sort_values("frame")
         try:
-            spd = np.abs(np.gradient(df["linpos"])) * fps * scale
+            spd = (
+                np.abs(np.gradient(df["linpos"]))
+                / df["timestamp"].diff().bfill()
+                * scale
+            )
         except ValueError:
             spd = np.nan
         return pd.DataFrame({"frame": df["frame"], "speed": spd}).set_index("frame")
@@ -67,82 +81,96 @@ def count_ss(ss):
     return ss.map(ss_map)
 
 
+def rel_ts(df):
+    return df["timestamp"] - df["timestamp"].min()
+
+
 # %% load data and calculate speeds and trials
 behav = pd.read_feather(IN_BEHAV)
 behav_v4 = pd.read_feather(IN_V4_BEHAV)
-behav_v4["linpos"] = behav_v4["linpos"].abs()
+behav["group"] = "2s"
+behav_v4["group"] = "v4"
 # take only the last training day
 behav_v4["ss_ct"] = behav_v4.groupby("animal", group_keys=False)["session"].apply(
     count_ss
 )
 behav_v4 = behav_v4[behav_v4["ss_ct"] == 4].copy()
+behav = pd.concat([behav, behav_v4], ignore_index=True)
+behav["ts_rel"] = behav.groupby(["group", "animal", "session"], group_keys=False).apply(
+    rel_ts
+)
+behav = behav[behav["ts_rel"] <= 900]  # take first 15min
+behav["linpos"] = behav["linpos"].abs()
 scale = 103 / (behav["linpos"].max() - behav["linpos"].min())  # LT length 103cm
-scale_v4 = 103 / (
-    behav_v4["linpos"].max() - behav_v4["linpos"].min()
-)  # MultiCon LT length 103cm
 spd = (
-    behav.groupby(["animal", "session", "trial"], group_keys=True)
+    behav.groupby(["group", "animal", "session", "trial"], group_keys=True)
     .apply(calculate_speed, scale=scale)
     .reset_index()
 )
-spd_v4 = (
-    behav_v4.groupby(["animal", "session", "trial"], group_keys=True)
-    .apply(calculate_speed, scale=scale_v4)
-    .reset_index()
-)
-spd["group"] = "2s"
-spd_v4["group"] = "v4"
-spd = pd.concat([spd, spd_v4], ignore_index=True)
 spd_agg = spd.groupby(["group", "animal"])["speed"].quantile(0.95).reset_index()
-ntrials = behav.groupby(["animal", "session"])["trial"].max().reset_index()
+ntrials = behav.groupby(["group", "animal", "session"])["trial"].max().reset_index()
+ntrials_agg = ntrials.groupby(["group", "animal"])["trial"].median().reset_index()
 spd_prt = spd_agg[spd_agg["group"] == "2s"]["speed"]
 print("speed: {} +/- {}".format(spd_prt.mean(), spd_prt.sem()))
-trial_prt = ntrials.groupby("animal")["trial"].mean()
+trial_prt = ntrials[ntrials["group"] == "2s"].groupby("animal")["trial"].mean()
 print("trial: {} +/- {}".format(trial_prt.mean(), trial_prt.sem()))
 
 # %% plot speeds
+fig, axs = plt.subplots(1, 2, figsize=(5, 2))
 lmap = {"2s": "Dual-channel\nMiniscope", "v4": "Single-channel\nMiniscope"}
-spd_agg_plt = spd_agg[spd_agg["animal"].isin(PARAM_SUB_ANM)].copy()
-spd_agg_plt["group"] = spd_agg_plt["group"].map(lmap)
-fig, ax = plt.subplots(figsize=(2.8, 2))
-ax = sns.barplot(
-    spd_agg_plt,
-    x="group",
-    y="speed",
-    hue="group",
-    palette=PARAM_CMAP,
-    errorbar="se",
-    err_kws={"linewidth": 3},
-    capsize=0.2,
-    saturation=0.9,
-    alpha=0.75,
-    width=0.5,
-    legend=False,
-)
-ax = sns.swarmplot(
-    spd_agg_plt,
-    x="group",
-    y="speed",
-    hue="group",
-    palette=PARAM_CMAP,
-    linewidth=1.2,
-    warn_thresh=0.8,
-    edgecolor="gray",
-    alpha=0.9,
-    legend=False,
-)
-ax.set_xlabel("")
-ax.set_ylabel("Running Speed (cm/s)", style="italic")
+dat_map = {"speed": spd_agg, "trial": ntrials_agg}
+ylab_map = {"speed": "Running Speed (cm/s)", "trial": "Number of Trials"}
+for iax, (vname, dat) in enumerate(dat_map.items()):
+    dat_plt = dat[dat["animal"].isin(PARAM_SUB_ANM)].copy()
+    dat_plt["group"] = dat_plt["group"].map(lmap)
+    ax = sns.barplot(
+        dat_plt,
+        x="group",
+        y=vname,
+        hue="group",
+        palette=PARAM_CMAP,
+        errorbar="se",
+        err_kws={"linewidth": 3},
+        capsize=0.2,
+        saturation=0.9,
+        alpha=0.75,
+        width=0.5,
+        legend=False,
+        ax=axs[iax],
+    )
+    ax = sns.swarmplot(
+        dat_plt,
+        x="group",
+        y=vname,
+        hue="group",
+        palette=PARAM_CMAP,
+        linewidth=1.2,
+        warn_thresh=0.8,
+        edgecolor="gray",
+        alpha=0.9,
+        legend=False,
+        ax=axs[iax],
+    )
+    ax.set_xlabel("")
+    ax.set_ylabel(ylab_map[vname], style="italic")
 fig.tight_layout()
 fig.savefig(os.path.join(FIG_PATH, "comparison.svg"), bbox_inches="tight")
 
 # %% stats info
 spd_agg_sub = spd_agg[spd_agg["animal"].isin(PARAM_SUB_ANM)].copy()
+ntr_agg_sub = ntrials_agg[ntrials_agg["animal"].isin(PARAM_SUB_ANM)].copy()
 print("speed t-test")
 print(
     ttest_ind(
         spd_agg_sub[spd_agg_sub["group"] == "2s"]["speed"],
         spd_agg_sub[spd_agg_sub["group"] == "v4"]["speed"],
+    )
+)
+print("ntrials t-test")
+print(
+    ttest_ind(
+        ntr_agg_sub[ntr_agg_sub["group"] == "2s"]["trial"],
+        ntr_agg_sub[ntr_agg_sub["group"] == "v4"]["trial"],
     )
 )
 print("speeds")
