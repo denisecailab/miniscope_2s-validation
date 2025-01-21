@@ -64,7 +64,8 @@ for _, row in tqdm(list(ssmap.iterrows())):
     behav["linpos_sign"] = code_direction(
         behav["linpos"], smooth=PARAM_SMOOTH, diff_thres=PARAM_DIFF
     )
-    behav = determine_trial(behav, min_fm_st=60).astype({"trial": int})
+    med_fps = behav["timestamp"].diff().median()
+    behav = determine_trial(behav, min_fm_st=int(2 / med_fps)).astype({"trial": int})
     behav = df_set_metadata(
         behav[
             ["timestamp", "ms_frame", "x", "y", "trial", "linpos", "linpos_sign"]
@@ -117,9 +118,9 @@ behav_ls = []
 for rt, dirs, files in os.walk(IN_V4_PATH):
     # load data
     if "linear_track.csv" in files:
-        behav = pd.read_csv(os.path.join(rt, "linear_track.csv")).astype(
-            {"timestamp": float}
-        )
+        behav = pd.read_csv(os.path.join(rt, "linear_track.csv"))
+        behav["timestamp"] = pd.to_numeric(behav["timestamp"], errors="coerce")
+        behav = behav.dropna()
     else:
         continue
     rt_splt = rt.split(os.sep)
@@ -131,7 +132,8 @@ for rt, dirs, files in os.walk(IN_V4_PATH):
     behav["linpos_sign"] = code_direction(
         behav["linpos"], smooth=PARAM_SMOOTH, diff_thres=PARAM_DIFF
     )
-    behav = determine_trial(behav, min_fm_st=60).astype({"trial": int})
+    med_fps = behav["timestamp"].diff().median()
+    behav = determine_trial(behav, min_fm_st=int(2 / med_fps)).astype({"trial": int})
     behav = df_set_metadata(
         behav[["timestamp", "x", "y", "trial", "linpos", "linpos_sign"]].copy(),
         {"animal": anm, "session": ss, "ssid": ssid},
