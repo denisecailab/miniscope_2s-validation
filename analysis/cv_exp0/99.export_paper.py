@@ -12,7 +12,6 @@ os.makedirs(OUT_PATH, exist_ok=True)
 w_gap = 10
 h_gap = 25
 sh_left = (0, 0)
-sh_top = (0, 14)
 svgs = {
     "A": "./figs/external/linear_track.svg",
     "B": "./figs/behav_comparison/example.svg",
@@ -21,9 +20,9 @@ svgs = {
 for fn in svgs.values():
     svg_unique_id(fn)
 
-panA = make_svg_panel("A", svgs["A"], PARAMT_TEXT, im_scale=0.065, sh=sh_top)
+panA = make_svg_panel("A", svgs["A"], PARAMT_TEXT, im_scale=0.09, sh=(7, 0))
 panB = make_svg_panel("B", svgs["B"], PARAMT_TEXT, sh=sh_left)
-panC = make_svg_panel("C", svgs["C"], PARAMT_TEXT, sh=sh_top)
+panC = make_svg_panel("C", svgs["C"], PARAMT_TEXT, sh=(0, 5))
 
 h_col1 = panA.height + panC.height + h_gap
 w_col1 = max(panA.width, panC.width)
