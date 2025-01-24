@@ -16,8 +16,8 @@ PARAM_PLT_RC = {
     "font.sans-serif": "Arial",
 }
 PARAM_CMAP = {
-    "Dual-channel\nMiniscope": qualitative.Plotly[5],
-    "Single-channel\nMiniscope": qualitative.Plotly[8],
+    "Dual\nChannel\nMiniscope": qualitative.Plotly[5],
+    "Single\nChannel\nMiniscope": qualitative.Plotly[8],
 }
 plt.rcParams.update(**PARAM_PLT_RC)
 
@@ -40,14 +40,14 @@ df_within = (
 df_plt = df_within.copy()
 df_plt["metric"] = df_plt["metric"].map(cap_metrics)
 df_plt["group"] = df_plt["group"].replace(
-    {"2c ": "Dual-channel\nMiniscope", "1c ": "Single-channel\nMiniscope"}
+    {"2c ": "Dual\nChannel\nMiniscope", "1c ": "Single\nChannel\nMiniscope"}
 )
 g = sns.FacetGrid(
     df_plt,
     col="metric",
     sharey=False,
     height=2.5,
-    aspect=0.9,
+    aspect=0.8,
 )
 g.map_dataframe(
     sns.barplot,
@@ -68,7 +68,8 @@ g.map_dataframe(
     y="value",
     hue="group",
     palette=PARAM_CMAP,
-    linewidth=1.2,
+    size=3.5,
+    linewidth=1,
     warn_thresh=0.8,
     edgecolor="auto",
     alpha=0.9,
@@ -86,6 +87,7 @@ g.map_dataframe(
     hue=None,
     zorder=1,
 )
+g.set(ymargin=0.1)
 g.set_titles(col_template="{col_name}")
 g.set_axis_labels(x_var="", y_var="")
 g.despine(top=False, right=False)
