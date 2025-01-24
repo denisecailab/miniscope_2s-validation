@@ -45,8 +45,8 @@ PARAM_PLT_RC = {
     "font.sans-serif": "Arial",
 }
 PARAM_CMAP = {
-    "Dual-channel\nMiniscope": qualitative.Plotly[5],
-    "Single-channel\nMiniscope": qualitative.Plotly[8],
+    "Dual\nChannel\nMiniscope": qualitative.Plotly[5],
+    "Single\nChannel\nMiniscope": qualitative.Plotly[8],
 }
 FIG_PATH = "./figs/behav_comparison"
 
@@ -115,9 +115,9 @@ print("speed: {} +/- {}".format(spd_prt.mean(), spd_prt.sem()))
 trial_prt = ntrials[ntrials["group"] == "2s"].groupby("animal")["trial"].mean()
 print("trial: {} +/- {}".format(trial_prt.mean(), trial_prt.sem()))
 
-# %% plot speeds
-fig, axs = plt.subplots(1, 2, figsize=(5, 2))
-lmap = {"2s": "Dual-channel\nMiniscope", "v4": "Single-channel\nMiniscope"}
+# %% plot speeds and trials
+fig, axs = plt.subplots(1, 2, figsize=(4, 2))
+lmap = {"2s": "Dual\nChannel\nMiniscope", "v4": "Single\nChannel\nMiniscope"}
 dat_map = {"speed": spd_agg, "trial": ntrials_agg}
 ylab_map = {"speed": "Running Speed (cm/s)", "trial": "Number of Trials"}
 for iax, (vname, dat) in enumerate(dat_map.items()):
@@ -144,15 +144,18 @@ for iax, (vname, dat) in enumerate(dat_map.items()):
         y=vname,
         hue="group",
         palette=PARAM_CMAP,
-        linewidth=1.2,
+        size=3.5,
+        linewidth=1,
         warn_thresh=0.8,
-        edgecolor="gray",
+        edgecolor="auto",
         alpha=0.9,
         legend=False,
         ax=axs[iax],
     )
+    ax.margins(y=0.15)
     ax.set_xlabel("")
-    ax.set_ylabel(ylab_map[vname], style="italic")
+    ax.set_ylabel("")
+    ax.set_title(ylab_map[vname])
 fig.tight_layout()
 fig.savefig(os.path.join(FIG_PATH, "comparison.svg"), bbox_inches="tight")
 
