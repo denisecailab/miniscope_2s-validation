@@ -25,6 +25,8 @@ plt.rcParams.update(**PARAM_PLT_RC)
 def cap_metrics(met: str):
     if met == "distance traveled (m)":
         return "Distance Travelled (m)"
+    elif met == "laps run in the correct direction":
+        return "Total Valid Laps"
     else:
         return met.title()
 
@@ -45,7 +47,7 @@ g = sns.FacetGrid(
     col="metric",
     sharey=False,
     height=2.5,
-    aspect=0.95,
+    aspect=0.9,
 )
 g.map_dataframe(
     sns.barplot,
