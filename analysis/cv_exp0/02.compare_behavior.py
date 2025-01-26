@@ -179,7 +179,7 @@ print(
 print("speeds")
 print(spd_agg_sub.groupby("group")["speed"].agg(["mean", "sem"]).reset_index())
 print("trials")
-print(ntrials["trial"].agg(["mean", "sem"]))
+print(ntr_agg_sub.groupby("group")["trial"].agg(["mean", "sem"]).reset_index())
 
 
 # %% plot example
