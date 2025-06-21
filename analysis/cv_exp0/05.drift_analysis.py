@@ -431,7 +431,7 @@ smap = {
 lmap = {
     "green/raw-shared": "Always active GCaMP cells",
     "green/raw-zero_padded": "All GCaMP cells",
-    # "red/registered-shared": "Active GCaMP cells\nregistered with tdTomato",
+    # "red/registered-shared": "Active GCaMP cells\nregistered with dTomato",
     "red/registered-zero_padded": "Stable GCaMP cells",
 }
 pv_corr = pd.read_csv(os.path.join(OUT_PATH, "pv_corr_agg.csv"))
@@ -486,7 +486,7 @@ for by, cur_corr in corr_dict.items():
                     corr_sub[
                         (
                             corr_sub["map_method"]
-                            == "Active GCaMP cells registered\nwith tdTomato (zero-padded)"
+                            == "Active GCaMP cells registered\nwith dTomato (zero-padded)"
                         )
                         & (corr_sub["tdist"] == t)
                     ]["corr"],
@@ -524,7 +524,7 @@ cmap = {
     "red/registered": qualitative.Plotly[4],
 }
 lmap = {
-    # "red/raw": "tdTomato cells",
+    # "red/raw": "dTomato cells",
     "green/raw": "All GCaMP cells",
     "red/registered": "Stable GCaMP cells",
 }
@@ -603,7 +603,7 @@ for inclusion, cur_ovlp in ovlp.groupby("inclusion"):
                     cur_ovlp[
                         (
                             cur_ovlp["map_method"]
-                            == "GCaMP cells\nregistered with tdTomato"
+                            == "GCaMP cells\nregistered with dTomato"
                         )
                         & (cur_ovlp["tdist"] == t)
                     ][metric],

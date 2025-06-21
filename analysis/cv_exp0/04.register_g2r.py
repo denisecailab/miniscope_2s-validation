@@ -366,7 +366,7 @@ extent = [(100, 180, 400, 480), (300, 380, 290, 370)]
 cells_im = pd.read_pickle(os.path.join(OUT_PATH, "cells_im.pkl"))
 cells_im["session"] = cells_im["session"].map(ss_dict)
 cells_im["kind"] = cells_im["kind"].map(
-    {"red": "tdTomato", "green": "GCaMP", "ovly": "Overlay"}
+    {"red": "dTomato", "green": "GCaMP", "ovly": "Overlay"}
 )
 exp_anm = "m22"
 exp_sess = ["Day 1", "Day 3", "Day 5", "Day 7", "Day 9", "Day 11", "Day 13"]
@@ -544,12 +544,12 @@ map_green_reg = map_green_reg[
 ].copy()
 map_green_reg.to_csv(os.path.join(OUT_PATH, "green_reg_pactive.csv"), index=False)
 green_reg_agg = map_green_reg.groupby("animal").apply(agg_pactive).reset_index()
-red_agg["method"] = "tdTomato cells"
+red_agg["method"] = "dTomato cells"
 green_agg["method"] = "GCaMP cells"
 reg_agg["method"] = "Stable GCaMP cells"
 green_reg_agg["method"] = "GCaMP cells pactive"
 cmap = {
-    "tdTomato cells": qualitative.Plotly[1],
+    "dTomato cells": qualitative.Plotly[1],
     "GCaMP cells": qualitative.Plotly[2],
     "Stable GCaMP cells": qualitative.Plotly[4],
     "GCaMP cells pactive": qualitative.Plotly[4],
@@ -736,7 +736,7 @@ for ir, row in map_smp.iterrows():
     ax_A.imshow(im)
     ax_tr.plot(
         zscore(Tred),
-        label="tdTomato Channel" if ir == 0 else "",
+        label="dTomato Channel" if ir == 0 else "",
         color=cmap["red"],
         lw=lw,
     )
@@ -932,7 +932,7 @@ sns.lineplot(
     x="wavelength",
     y="trans_red",
     color=qualitative.Plotly[1],
-    label="tdTomato Channel\nEmission Filter",
+    label="dTomato Channel\nEmission Filter",
     ax=ax,
 )
 sns.lineplot(
@@ -1067,27 +1067,27 @@ ovlp_df = pd.concat(ovlp_df, axis="columns").T
 
 # %% plot overlap over time
 cmap = {
-    "tdTomato cells": qualitative.Plotly[1],
+    "dTomato cells": qualitative.Plotly[1],
     "GCaMP cells": qualitative.Plotly[2],
-    # "Stable tdTomato": qualitative.Plotly[4],
+    # "Stable dTomato": qualitative.Plotly[4],
     # "Stable GCaMP": qualitative.Plotly[7],
 }
 lmap = {
     "overlap_ncell": {
-        "nred": "tdTomato cells",
+        "nred": "dTomato cells",
         "ngreen": "GCaMP cells",
-        # "ngreen_reg": "Stable tdTomato",
+        # "ngreen_reg": "Stable dTomato",
         # "nred_reg": "Stable GCaMP",
     },
     "overlap_prop": {
-        "prop_red": "tdTomato cells",
+        "prop_red": "dTomato cells",
         "prop_green": "GCaMP cells",
-        # "prop_green_reg": "Stable tdTomato",
+        # "prop_green_reg": "Stable dTomato",
         # "prop_red_reg": "Stable GCaMP",
     },
 }
 legmap = {
-    "tdTomato cells": r"tdTomato$ = \frac{O}{A + O}$",
+    "dTomato cells": r"dTomato$ = \frac{O}{A + O}$",
     "GCaMP cells": r"GCaMP$ = \frac{O}{B + O}$",
 }
 ylab = {
@@ -1158,7 +1158,7 @@ for plt_type, cur_lmap in lmap.items():
             bbox_transform=ax.transAxes,
         )
         v = venn2(
-            subsets=(1, 1, 1), set_labels=["tdTomato\ncells", "GCaMP\ncells"], ax=axins
+            subsets=(1, 1, 1), set_labels=["dTomato\ncells", "GCaMP\ncells"], ax=axins
         )
         v.get_label_by_id("01").set_text("B")
         v.get_label_by_id("10").set_text("A")
@@ -1212,7 +1212,7 @@ def get_count(map_df, ntypes=10):
 
 
 cmap = {
-    "tdTomato cells": qualitative.Plotly[1],
+    "dTomato cells": qualitative.Plotly[1],
     "GCaMP cells": qualitative.Plotly[2],
     "Stable GCaMP cells": qualitative.Plotly[4],
     "GCaMP cells pactive": qualitative.Plotly[4],
@@ -1229,7 +1229,7 @@ map_green_reg[("group", "group")] = map_green_reg.apply(get_group, axis="columns
 ct_red = get_count(map_red)
 ct_green = get_count(map_green)
 ct_green_reg = get_count(map_green_reg)
-ct_red["cat"] = "tdTomato cells"
+ct_red["cat"] = "dTomato cells"
 ct_green["cat"] = "GCaMP cells"
 ct_green_reg["cat"] = "Stable GCaMP cells"
 day_map = {
